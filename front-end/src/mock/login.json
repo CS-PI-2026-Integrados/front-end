@@ -1,0 +1,34 @@
+{
+  "logins": [
+    {
+      "nome": "Tayná",
+      "cpf": "00000000000",
+      "senha": "123321123321"
+    },
+    {
+      "nome": "Mauro",
+      "cpf": "11111111111",
+      "senha": "senha123"
+    },
+    {
+      "nome": "Brayan",
+      "cpf": "22222222222",
+      "senha": "abc123"
+    },
+    {
+      "nome": "Diego",
+      "cpf": "33333333333",
+      "senha": "joao@2024"
+    },
+    {
+      "nome": "Luan",
+      "cpf": "44444444444",
+      "senha": "anaSenha!"
+    },
+    {
+      "nome": "Simon",
+      "cpf": "55555555555",
+      "senha": "SimonzeraBRZ"
+    }
+  ]
+}
