@@ -7,6 +7,7 @@ import Convicteds from './pages/Convicteds';
 import Institutions from './pages/Institutions';
 import Certificate from './pages/Certificate';
 import NotFound from './pages/NotFound';
+import DashboardLayout from './layout/DashboardLayout';
 
 const ComarcaRoutes = () => {
   const { tenantId } = useParams();
@@ -20,10 +21,14 @@ const ComarcaRoutes = () => {
   return (
     <Routes>
       <Route path="login" element={<Login />} />
-      <Route path="dashboard" element={<Dashboard />} />
-      <Route path="apenados" element={<Convicteds />} />
-      <Route path="instituicoes" element={<Institutions />} />
-      <Route path="comprovante" element={<Certificate />} />
+
+      <Route path='/dashboard' element={<DashboardLayout />}>
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="apenados" element={<Convicteds />} />
+        <Route path="instituicoes" element={<Institutions />} />
+        <Route path="comprovante" element={<Certificate />} />
+      </Route>
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
