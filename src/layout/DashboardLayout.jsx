@@ -14,8 +14,8 @@ import { Outlet } from "react-router-dom";
 export default function DashboardLayout() {
   return (
     <>
-      <div className="h-dvh flex flex-col">
-        <header className="h-14 border-b flex items-center justify-between bg-background">
+      <div className="h-dvh flex flex-col overflow-hidden">
+        <header className="h-14 shrink-0 border-b flex items-center justify-between bg-background">
           <div className="w-60 h-full flex px-4 border-e">
             <span className="my-auto text-green-700 font-medium">SICAPE</span>
           </div>
@@ -36,7 +36,7 @@ export default function DashboardLayout() {
             </DropdownMenu>
           </div>
         </header>
-        <div className="flex h-full">
+        <div className="flex flex-1 overflow-hidden">
           <aside className="w-60 p-4 border-e h-full flex flex-col gap-1">
             <Button className="justify-start">
               <LayoutDashboard /> Dashboard
@@ -57,7 +57,7 @@ export default function DashboardLayout() {
               <Settings /> Configuracões
             </Button>
           </aside>
-          <main className="p-4">
+          <main className="flex-1 w-full overflow-y-auto bg-muted/60">
             <Outlet />
           </main>
         </div>

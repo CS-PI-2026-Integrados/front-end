@@ -6,7 +6,6 @@ import {RecentActivities} from "@/components/dashboard/RecentActivities.jsx";
 
 const Dashboard = () => {
     return (
-        <main className="flex-1 overflow-y-auto">
             <div className="mx-auto max-w-7x1 p-6">
                 <div className="space-y-6">
                     {/*container header dashboard*/}
@@ -29,17 +28,16 @@ const Dashboard = () => {
                     </div>
 
                     {/*container grid dados*/}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
                         <div className="lg:col-span-2">
                             <ProofData/>
                         </div>
-                        <div className="lg:col-span-1">
+                        <div className="lg:col-span-2">
                             <RecentActivities/>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
     );
 };
 
