@@ -1,10 +1,20 @@
 import React from 'react';
-import {Users, FileText, CheckCircle, TriangleAlertIcon} from 'lucide-react';
+import {Users, FileText, CheckCircle, TriangleAlert} from 'lucide-react';
 import {MetricCard} from '../components/dashboard/MetricCard.jsx'
 import {ProofData} from "@/components/dashboard/ProofData.jsx";
 import {RecentActivities} from "@/components/dashboard/RecentActivities.jsx";
+import {useComarca} from "@/context/ComarcaContext.jsx";
+import {mockApenados} from "@/mocks/apenados.mock.js";
+import {mockPresenca} from "@/mocks/presenca.mock.js";
+
+
 
 const Dashboard = () => {
+    const {comarca} = useComarca();
+
+    const apenados = mockApenados[comarca] || [];
+    const presencas = mockPresenca[comarca] || [];
+
     return (
             <div className="mx-auto max-w-7x1 p-6">
                 <div className="space-y-6">
@@ -23,7 +33,7 @@ const Dashboard = () => {
                         <MetricCard title="Em conformidade" value="215" description="Situação regular"
                                     icon={<CheckCircle className="h-4 w-4 text-muted-foreground"/>}/>
                         <MetricCard title="Irregulares" value="32" description="Situação irregular"
-                                    icon={<TriangleAlertIcon
+                                    icon={<TriangleAlert
                                         className="h-4 w-4 text-muted-foreground"/>}/>
                     </div>
 
