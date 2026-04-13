@@ -20,7 +20,6 @@ const Dashboard = () => {
     const trintaDiasAtras = new Date();
     trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 30);
 
-
     const apenadosRegulares = apenados.filter(a => {
         const presencasDesseApenado = presencas.filter(p => p.apenadoId === a.id);
         if (presencasDesseApenado.length === 0) return false;

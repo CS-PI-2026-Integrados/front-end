@@ -8,7 +8,7 @@ export function MetricCard({ data, icon, title, description, className }) {
                 <CardTitle className="font-medium text-muted-foreground">{title}</CardTitle>
                 {icon}
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent>
                 <div className="text-2xl font-bold">{data}</div>
                 <p className="text-xs text-muted-foreground mt-1">{description}</p>
             </CardContent>
