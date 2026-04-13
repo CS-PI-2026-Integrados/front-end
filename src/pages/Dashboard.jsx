@@ -8,46 +8,71 @@ import {mockApenados} from "@/mocks/apenados.mock.js";
 import {mockPresenca} from "@/mocks/presenca.mock.js";
 
 
-
 const Dashboard = () => {
     const {comarca} = useComarca();
-
     const apenados = mockApenados[comarca] || [];
     const presencas = mockPresenca[comarca] || [];
 
+    const seteDiasAtras = new Date();
+    seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+    const comprovantesRecentes = presencas.filter(presenca => new Date(presenca.dateTime) >= seteDiasAtras).length;
+
+    const trintaDiasAtras = new Date();
+    trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 30);
+
+
+    const apenadosRegulares = apenados.filter(a => {
+        const presencasDesseApenado = presencas.filter(p => p.apenadoId === a.id);
+        if (presencasDesseApenado.length === 0) return false;
+        const datas = presencasDesseApenado.map((p) => new Date(p.dateTime).getTime());
+        const ultimaPresenca = Math.max(...datas);
+        return ultimaPresenca >= trintaDiasAtras.getTime();
+    });
+
     return (
-            <div className="mx-auto max-w-7x1 p-6">
-                <div className="space-y-6">
-                    {/*container header dashboard*/}
-                    <div>
-                        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-                        <p className="text-muted-foreground">Visão geral</p>
-                    </div>
+        <div className="mx-auto max-w-7x1 p-6">
+            <div className="space-y-6">
+                {/*container header dashboard*/}
+                <div>
+                    <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+                    <p className="text-muted-foreground">Visão geral</p>
+                </div>
 
-                    {/*container grid metricas*/}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                        <MetricCard title="Total de apenados" value="247" description="Cadastrados no sistema"
-                                    icon={<Users className="h-4 w-4 text-muted-foreground"/>}/>
-                        <MetricCard title="Comprovantes emitidos" value="156" description="Total de comprovantes"
-                                    icon={<FileText className="h-4 w-4 text-muted-foreground"/>}/>
-                        <MetricCard title="Em conformidade" value="215" description="Situação regular"
-                                    icon={<CheckCircle className="h-4 w-4 text-muted-foreground"/>}/>
-                        <MetricCard title="Irregulares" value="32" description="Situação irregular"
-                                    icon={<TriangleAlert
-                                        className="h-4 w-4 text-muted-foreground"/>}/>
-                    </div>
+                {/*container grid metricas*/}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                    <MetricCard
+                        title="Total de apenados"
+                        description="Cadastrados no sistema"
+                        data={apenados.length}
+                        icon={<Users className="h-4 w-4 text-muted-foreground"/>}/>
+                    <MetricCard
+                        title="Comprovantes emitidos"
+                        description="Nos últimos 7 dias"
+                        data={comprovantesRecentes}
+                        icon={<FileText className="h-4 w-4 text-muted-foreground"/>}/>
+                    <MetricCard
+                        title="Em Conformidade"
+                        description="Situacão regular"
+                        data={apenadosRegulares.length}
+                        icon={<CheckCircle className="h-4 w-4 text-muted-foreground"/>}/>
+                    <MetricCard
+                        title="Irregulares"
+                        description="Situação irregular"
+                        data={apenados.length - apenadosRegulares.length}
+                        icon={<TriangleAlert className="h-4 w-4 text-muted-foreground"/>}/>
+                </div>
 
-                    {/*container grid dados*/}
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-                        <div className="lg:col-span-2">
-                            <ProofData/>
-                        </div>
-                        <div className="lg:col-span-2">
-                            <RecentActivities/>
-                        </div>
+                {/*container grid dados*/}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+                    <div className="lg:col-span-2">
+                        <ProofData/>
+                    </div>
+                    <div className="lg:col-span-2">
+                        <RecentActivities/>
                     </div>
                 </div>
             </div>
+        </div>
     );
 };
 
