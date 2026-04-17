@@ -1,11 +1,12 @@
 export const mockPresenca = {
-    "paranavai_01": [
+    "presencas": [
         {
             id: "1",
             apenadoId: "1",
+            tenantId: "1",
             apenadoName: "João Silva Santos",
             cpf: "123.456.789-00",
-            dateTime: "2026-04-12T09:30:00", // Hoje
+            dateTime: "2026-04-12T09:30:00",
             operatorName: "Operator User",
             verificationCode: "COMP-1702834200000-ABC123XYZ",
             photoUrl: "/diverse-group.png",
@@ -14,9 +15,10 @@ export const mockPresenca = {
         {
             id: "2",
             apenadoId: "3",
+            tenantId: "1",
             apenadoName: "Pedro Oliveira Costa",
             cpf: "456.789.123-00",
-            dateTime: "2026-04-11T10:00:00", // Ontem
+            dateTime: "2026-04-11T10:00:00",
             operatorName: "Operator User",
             verificationCode: "COMP-1702641600000-DEF456ABC",
             photoUrl: "/diverse-group.png",
@@ -25,9 +27,10 @@ export const mockPresenca = {
         {
             id: "3",
             apenadoId: "5",
+            tenantId: "1",
             apenadoName: "Carlos Almeida Pereira",
             cpf: "321.654.987-00",
-            dateTime: "2026-04-09T15:30:00", // 3 dias atrás
+            dateTime: "2026-04-09T15:30:00",
             operatorName: "Admin User",
             verificationCode: "COMP-1702314600000-GHI789DEF",
             photoUrl: "/diverse-group.png",
@@ -36,6 +39,7 @@ export const mockPresenca = {
         {
             id: "4",
             apenadoId: "2",
+            tenantId: "1",
             apenadoName: "Maria Santos Oliveira",
             cpf: "987.654.321-00",
             dateTime: "2024-11-20T14:00:00",
@@ -47,6 +51,7 @@ export const mockPresenca = {
         {
             id: "5",
             apenadoId: "1",
+            tenantId: "1",
             apenadoName: "João Silva Santos",
             cpf: "123.456.789-00",
             dateTime: "2024-11-15T10:30:00",
@@ -58,6 +63,7 @@ export const mockPresenca = {
         {
             id: "6",
             apenadoId: "4",
+            tenantId: "1",
             apenadoName: "Ana Costa Lima",
             cpf: "789.123.456-00",
             dateTime: "2024-11-08T11:15:00",
@@ -69,6 +75,7 @@ export const mockPresenca = {
         {
             id: "7",
             apenadoId: "3",
+            tenantId: "1",
             apenadoName: "Pedro Oliveira Costa",
             cpf: "456.789.123-00",
             dateTime: "2024-10-25T09:00:00",
@@ -80,6 +87,7 @@ export const mockPresenca = {
         {
             id: "8",
             apenadoId: "5",
+            tenantId: "1",
             apenadoName: "Carlos Almeida Pereira",
             cpf: "321.654.987-00",
             dateTime: "2024-10-18T16:45:00",
@@ -91,6 +99,8 @@ export const mockPresenca = {
         {
             id: "9",
             apenadoId: "2",
+            tenantId: "1",
+            apenadoName: "Maria Santos Oliveira", // Adicionado para consistência
             cpf: "987.654.321-00",
             dateTime: "2024-09-22T13:30:00",
             operatorName: "Operator User",
@@ -101,6 +111,8 @@ export const mockPresenca = {
         {
             id: "10",
             apenadoId: "1",
+            tenantId: "1",
+            apenadoName: "João Silva Santos", // Adicionado para consistência
             cpf: "123.456.789-00",
             dateTime: "2024-09-10T08:45:00",
             operatorName: "Admin User",
@@ -111,6 +123,7 @@ export const mockPresenca = {
         {
             id: "11",
             apenadoId: "4",
+            tenantId: "1",
             apenadoName: "Ana Costa Lima",
             cpf: "789.123.456-00",
             dateTime: "2024-08-28T10:00:00",
@@ -122,6 +135,7 @@ export const mockPresenca = {
         {
             id: "12",
             apenadoId: "3",
+            tenantId: "1",
             apenadoName: "Pedro Oliveira Costa",
             cpf: "456.789.123-00",
             dateTime: "2024-08-15T14:20:00",
