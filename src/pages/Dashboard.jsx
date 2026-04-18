@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Users, FileText, CheckCircle, TriangleAlert} from 'lucide-react';
 import {MetricCard} from '../components/dashboard/MetricCard.jsx'
 import {ProofData} from "@/components/dashboard/ProofData.jsx";
@@ -6,12 +6,26 @@ import {RecentActivities} from "@/components/dashboard/RecentActivities.jsx";
 import {useComarca} from "@/context/ComarcaContext.jsx";
 import {mockApenados} from "@/mocks/apenados.mock.js";
 import {mockPresenca} from "@/mocks/presenca.mock.js";
+import {mockTenants} from "@/mocks/tenants.mock.js";
+import { useParams} from 'react-router-dom';
 
+function getTenantApenados(tenantId) {
+    return mockApenados.apenados.filter(a => a.tenantId === tenantId);
+}
 
 const Dashboard = () => {
-    const {comarca} = useComarca();
-    const apenados = mockApenados[comarca] || [];
-    const presencas = mockPresenca[comarca] || [];
+    const { tenantId } = useParams();
+    const { setComarca } = useComarca();
+
+    useEffect(() => {
+        if(tenantId) {
+            setComarca(tenantId);
+        }
+    }, [tenantId, setComarca]);
+    
+    const tenants = mockTenants.tenants || [];
+    const apenados = mockApenados.apenados || [];
+    const presencas = mockPresenca.presencas || [];
 
     const seteDiasAtras = new Date();
     seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
@@ -20,13 +34,16 @@ const Dashboard = () => {
     const trintaDiasAtras = new Date();
     trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 30);
 
-    const apenadosRegulares = apenados.filter(a => {
-        const presencasDesseApenado = presencas.filter(p => p.apenadoId === a.id);
-        if (presencasDesseApenado.length === 0) return false;
-        const datas = presencasDesseApenado.map((p) => new Date(p.dateTime).getTime());
-        const ultimaPresenca = Math.max(...datas);
-        return ultimaPresenca >= trintaDiasAtras.getTime();
-    });
+    
+    const apenadosRegulares = getTenantApenados(tenants[0].id);
+    console.log(apenadosRegulares);
+    // const apenadosRegulares = apenados.filter(a => {
+    //     const presencasDesseApenado = presencas.filter(p => if(a.tenantId === ) p.apenadoId === a.id);
+    //     if (presencasDesseApenado.length === 0) return false;
+    //     const datas = presencasDesseApenado.map((p) => new Date(p.dateTime).getTime());
+    //     const ultimaPresenca = Math.max(...datas);
+    //     return ultimaPresenca >= trintaDiasAtras.getTime();
+    // });
 
     return (
         <div className="mx-auto max-w-7x1 p-6">
