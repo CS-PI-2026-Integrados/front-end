@@ -1,7 +1,39 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export function LoginForm({ className, ...props }) {
+
+  // validação
+  const [cpf, setCpf] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (cpf === '000.000.000-00' && password === '123456') {
+      console.log('Login realizado com sucesso!');
+      navigate('/home');
+    } else {
+      alert('Credenciais inválidas.');
+    }
+  };
+
+  const formatCpf = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    return digits
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+  };
+
+  const handleCpfChange = (e) => {
+    setCpf(formatCpf(e.target.value));
+  };
+
   return (
     <form className="login-form">
 

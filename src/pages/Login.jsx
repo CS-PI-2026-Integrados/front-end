@@ -1,49 +1,30 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '@/components/ui/login-form'
+import loginBg from '../assets/images/login-bg.jpg'
 
 const Login = () => {
 
-  // validação
-  const [cpf, setCpf] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (cpf === '000.000.000-00' && password === '123456') {
-      console.log('Login realizado com sucesso!');
-      navigate('/home');
-    } else {
-      alert('Credenciais inválidas.');
-    }
-  };
-
-  const formatCpf = (value) => {
-    const digits = value.replace(/\D/g, '').slice(0, 11);
-    return digits
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
-      .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
-  };
-
-  const handleCpfChange = (e) => {
-    setCpf(formatCpf(e.target.value));
-  };
-
   return (
-    <div className="login-page">
-      <div className="login-left">
+    <div className="flex min-h-screen">
 
-        <span className="login-brand">SICAPE</span>
-        <p className="login-tagline">
+      {/* left side */}
+      <div className="relative hidden w-1/2 flex-col justify-between bg-zinc-900 p-15 text-white z-0 lg:flex">
+
+        <img
+          src='../assets/images/login-bg.jpg'
+          alt="Background"
+          className="absolute inset-0 h-full w-full object-cover mix-blend-overlay z-1"
+        />
+
+        <div className="absolute inset-0 bg-emerald-900/80 z-2"></div>
+
+        <span className="inset-0 z-3">SICAPE</span>
+        <p className="inset-0 z-3">
           A prova de fraudes, a favor da sua comarca.
         </p>
 
       </div>
 
+      {/* right side */}
       <div className="login-right">
         <div className="login-form-wrapper">
 
@@ -52,7 +33,9 @@ const Login = () => {
           <LoginForm />
 
         </div>
+
       </div >
+
     </div >
   );
 };
