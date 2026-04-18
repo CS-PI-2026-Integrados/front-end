@@ -7,43 +7,40 @@ import {useComarca} from "@/context/ComarcaContext.jsx";
 import {mockApenados} from "@/mocks/apenados.mock.js";
 import {mockPresenca} from "@/mocks/presenca.mock.js";
 import {mockTenants} from "@/mocks/tenants.mock.js";
-import { useParams} from 'react-router-dom';
 
-function getTenantApenados(tenantId) {
-    return mockApenados.apenados.filter(a => a.tenantId === tenantId);
+
+
+function getTenantRegulares(tenantId, apenadosGlobais, presencasGlobais) {
+   const apenadosDaComarca =  apenadosGlobais.filter(a => a.tenantId === tenantId);
+
+    const limiteTempo = () => { 
+        const trintaDias = new Date();
+        trintaDias.setDate(trintaDias.getDate() - 30);
+        return trintaDias.getTime();
+    } 
+   
+   return apenadosDaComarca.filter(a => {
+    const presencasApenado = presencasGlobais.filter(p => p.apenadoId === a.id);
+    
+    if (presencasApenado.length === 0) return false;
+    const datas = presencasApenado.map((p) => new Date(p.dateTime).getTime());
+    const ultimaPresenca = Math.max(...datas);
+    return ultimaPresenca >= limiteTempo();
+   });
 }
 
 const Dashboard = () => {
-    const { tenantId } = useParams();
-    const { setComarca } = useComarca();
+    const {comarca} = useComarca();
 
-    useEffect(() => {
-        if(tenantId) {
-            setComarca(tenantId);
-        }
-    }, [tenantId, setComarca]);
-    
     const tenants = mockTenants.tenants || [];
     const apenados = mockApenados.apenados || [];
     const presencas = mockPresenca.presencas || [];
-
-    const seteDiasAtras = new Date();
-    seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
-    const comprovantesRecentes = presencas.filter(presenca => new Date(presenca.dateTime) >= seteDiasAtras).length;
-
-    const trintaDiasAtras = new Date();
-    trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 30);
-
     
-    const apenadosRegulares = getTenantApenados(tenants[0].id);
+    const tenantAtual = tenants.find(t => t.uuid === comarca);
+    //vou ter um token que vai ser da pessoa. esse token vai identificar quem é a pessoa. a identifacção vai ver a lista de usuários e vai ver qual a comarca dela e apartir do login dela vamos fazer as queries.
+ 
+    const apenadosRegulares = getTenantRegulares(tenantAtual?.id, apenados, presencas);
     console.log(apenadosRegulares);
-    // const apenadosRegulares = apenados.filter(a => {
-    //     const presencasDesseApenado = presencas.filter(p => if(a.tenantId === ) p.apenadoId === a.id);
-    //     if (presencasDesseApenado.length === 0) return false;
-    //     const datas = presencasDesseApenado.map((p) => new Date(p.dateTime).getTime());
-    //     const ultimaPresenca = Math.max(...datas);
-    //     return ultimaPresenca >= trintaDiasAtras.getTime();
-    // });
 
     return (
         <div className="mx-auto max-w-7x1 p-6">
@@ -64,7 +61,7 @@ const Dashboard = () => {
                     <MetricCard
                         title="Comprovantes emitidos"
                         description="Nos últimos 7 dias"
-                        data={comprovantesRecentes}
+                        data={0}
                         icon={<FileText className="h-4 w-4 text-muted-foreground"/>}/>
                     <MetricCard
                         title="Em Conformidade"
