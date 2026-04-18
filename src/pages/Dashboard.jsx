@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useMemo} from 'react';
 import {Users, FileText, CheckCircle, TriangleAlert} from 'lucide-react';
 import {MetricCard} from '../components/dashboard/MetricCard.jsx'
 import {ProofData} from "@/components/dashboard/ProofData.jsx";
@@ -9,49 +9,48 @@ import {mockPresenca} from "@/mocks/presenca.mock.js";
 import {mockTenants} from "@/mocks/tenants.mock.js";
 
 
-
-function getTenantRegulares(tenantId, apenadosGlobais, presencasGlobais) {
-   const apenadosDaComarca =  apenadosGlobais.filter(a => a.tenantId === tenantId);
-
-    const limiteTempo = () => { 
-        const trintaDias = new Date();
-        trintaDias.setDate(trintaDias.getDate() - 30);
-        return trintaDias.getTime();
-    } 
-   
-   return apenadosDaComarca.filter(a => {
-    const presencasApenado = presencasGlobais.filter(p => p.apenadoId === a.id);
-    
-    if (presencasApenado.length === 0) return false;
-    const datas = presencasApenado.map((p) => new Date(p.dateTime).getTime());
-    const ultimaPresenca = Math.max(...datas);
-    return ultimaPresenca >= limiteTempo();
-   });
-}
-
-function ultimosComprovantesEmitidos(tenantId, presencasGlobais) {
-    const presencas = presencasGlobais.filter(p => p.tenantId === tenantId);
-    const dataReferencia = () => {
-        const seteDias = new Date();
-        seteDias.setDate(seteDias.getDate() - 7);
-        return seteDias.getTime();
-    }
-    return presencas.filter(p => new Date(p.dateTime).getTime() >= dataReferencia());
-}
-
 const Dashboard = () => {
     const {comarca} = useComarca();
 
     const tenants = mockTenants.tenants || [];
     const apenados = mockApenados.apenados || [];
     const presencas = mockPresenca.presencas || [];
-    
+
     const tenantAtual = tenants.find(t => t.uuid === comarca);
+
+    const {apenadosRegulares, comprovantesRecentes} = useMemo(() => {
+        const agora = Date.now();
+        const limite7Dias = agora - (7 * 24 * 60 * 60 * 1000);
+        const limite30Dias = agora - (30 * 24 * 60 * 60 * 1000);
+
+        const ultimaPresenca = {};
+
+        let recentes = 0;
+
+        for (let i = 0; i < presencas.length; i++) {
+            const p = presencas[i];
+            const timestamp = new Date(p.dateTime).getTime();
+            if (timestamp >= limite7Dias) recentes++;
+
+            if (!ultimaPresenca[p.apenadoId] || timestamp > ultimaPresenca[p.apenadoId]) {
+                ultimaPresenca[p.apenadoId] = timestamp;
+            }
+        }
+
+        let regulares = 0;
+
+        for (let i = 0; i < apenados.length; i++) {
+            const ultimaData = ultimaPresenca[apenados[i].id];
+            if (ultimaData && ultimaData >= limite30Dias) {
+                regulares++
+            }
+        }
+
+        return {apenadosRegulares: regulares, comprovantesRecentes: recentes};
+    }, [apenados, presencas]);
+
+    console.log(tenantAtual);
     //vou ter um token que vai ser da pessoa. esse token vai identificar quem é a pessoa. a identifacção vai ver a lista de usuários e vai ver qual a comarca dela e apartir do login dela vamos fazer as queries.
- 
-    const apenadosRegulares = getTenantRegulares(tenantAtual?.id, apenados, presencas);
-    const ultimosComprovantes = ultimosComprovantesEmitidos(tenantAtual?.id, presencas);
-    console.log(apenadosRegulares);
 
     return (
         <div className="mx-auto max-w-7x1 p-6">
@@ -72,17 +71,17 @@ const Dashboard = () => {
                     <MetricCard
                         title="Comprovantes emitidos"
                         description="Nos últimos 7 dias"
-                        data={ultimosComprovantes.length}
+                        data={comprovantesRecentes}
                         icon={<FileText className="h-4 w-4 text-muted-foreground"/>}/>
                     <MetricCard
                         title="Em Conformidade"
                         description="Situacão regular"
-                        data={apenadosRegulares.length}
+                        data={apenadosRegulares}
                         icon={<CheckCircle className="h-4 w-4 text-muted-foreground"/>}/>
                     <MetricCard
                         title="Irregulares"
                         description="Situação irregular"
-                        data={apenados.length - apenadosRegulares.length}
+                        data={apenados.length - apenadosRegulares}
                         icon={<TriangleAlert className="h-4 w-4 text-muted-foreground"/>}/>
                 </div>
 
