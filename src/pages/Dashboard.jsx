@@ -29,6 +29,16 @@ function getTenantRegulares(tenantId, apenadosGlobais, presencasGlobais) {
    });
 }
 
+function ultimosComprovantesEmitidos(tenantId, presencasGlobais) {
+    const presencas = presencasGlobais.filter(p => p.tenantId === tenantId);
+    const dataReferencia = () => {
+        const seteDias = new Date();
+        seteDias.setDate(seteDias.getDate() - 7);
+        return seteDias.getTime();
+    }
+    return presencas.filter(p => new Date(p.dateTime).getTime() >= dataReferencia());
+}
+
 const Dashboard = () => {
     const {comarca} = useComarca();
 
@@ -40,6 +50,7 @@ const Dashboard = () => {
     //vou ter um token que vai ser da pessoa. esse token vai identificar quem é a pessoa. a identifacção vai ver a lista de usuários e vai ver qual a comarca dela e apartir do login dela vamos fazer as queries.
  
     const apenadosRegulares = getTenantRegulares(tenantAtual?.id, apenados, presencas);
+    const ultimosComprovantes = ultimosComprovantesEmitidos(tenantAtual?.id, presencas);
     console.log(apenadosRegulares);
 
     return (
@@ -61,7 +72,7 @@ const Dashboard = () => {
                     <MetricCard
                         title="Comprovantes emitidos"
                         description="Nos últimos 7 dias"
-                        data={0}
+                        data={ultimosComprovantes.length}
                         icon={<FileText className="h-4 w-4 text-muted-foreground"/>}/>
                     <MetricCard
                         title="Em Conformidade"
