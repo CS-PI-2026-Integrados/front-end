@@ -12,8 +12,10 @@ export const ComarcaProvider = ({ children }) => {
 
 export const useComarca = () => {
   const context = useContext(ComarcaContext)
+
   if (!context) {
     throw new Error('useComarca deve ser usado dentro de ComarcaProvider')
   }
+
   return context
 }
