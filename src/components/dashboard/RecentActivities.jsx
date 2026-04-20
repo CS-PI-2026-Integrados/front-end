@@ -6,16 +6,16 @@ import {Card, CardHeader, CardTitle, CardContent, CardDescription} from "@/compo
 export function RecentActivities({atividadesRecentes}) {
 
     return (
-        <Card>
+        <Card className="h-full">
             <CardHeader>
                 <CardTitle className="font-bold">Atividades Recentes</CardTitle>
                 <CardDescription className="text-muted-foreground text-sm">Últimas ações no sistema</CardDescription>
             </CardHeader>
-            <CardContent>
-                <div className="space-y-6">
+            <CardContent className="pt-0">
+                <div className="flex flex-col">
                     {atividadesRecentes?.length > 0 ? atividadesRecentes.map((a) => (
-                        <div key={a.id} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
-                            <div className="h-2 w-2 rounded-full bg-primary mt-2"></div>
+                        <div key={a.id} className="flex items-start gap-3 py-3 border-b border-border last:border-0 first:pt-0 last:pb-0">
+                            <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0"></div>
                             <div className="flex-1 space-y-1">
                                 <p className="text-sm font-medium leading-none">{a.apenadoName}</p>
                                 <p className="text-sm text-muted-foreground">Comprovante: {a.verificationCode}</p>

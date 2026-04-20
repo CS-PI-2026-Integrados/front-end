@@ -16,8 +16,7 @@ export function ProofData({ultimosMesesGrafico = [], contagemMeses = []}) {
         <Card>
             <CardHeader>
                 <CardTitle className="font-bold">Comprovantes Mensais</CardTitle>
-                <CardDescription className="text-muted-foreground text-sm">Total de comprovantes emitidos por mês em
-                    2024</CardDescription>
+                <CardDescription className="text-muted-foreground text-sm">Total de comprovantes emitidos por mês nos últimos 6 meses</CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="h-[300px] w-full mt-4">
