@@ -100,7 +100,7 @@ export const mockPresenca = {
             id: "9",
             apenadoId: "2",
             tenantId: "1",
-            apenadoName: "Maria Santos Oliveira", // Adicionado para consistência
+            apenadoName: "Maria Santos Oliveira",
             cpf: "987.654.321-00",
             dateTime: "2024-09-22T13:30:00",
             operatorName: "Operator User",
@@ -112,7 +112,7 @@ export const mockPresenca = {
             id: "10",
             apenadoId: "1",
             tenantId: "1",
-            apenadoName: "João Silva Santos", // Adicionado para consistência
+            apenadoName: "João Silva Santos",
             cpf: "123.456.789-00",
             dateTime: "2024-09-10T08:45:00",
             operatorName: "Admin User",

@@ -1,16 +1,16 @@
 import { useMemo } from "react";
 
 export function useDashboardMetrics(presencas, apenados) {
-    const { comprovantesRecentes, ultimosMesesGrafico, contagemMeses, ultimaPresenca } = useMemo(() => {
+    const { comprovantesRecentes, ultimosMesesGrafico, contagemMeses, ultimaPresenca , atividadesRecentes} = useMemo(() => {
         const limite7Dias = new Date().getTime() - (7 * 24 * 60 * 60 * 1000);
         const mapaUltimaPresenca = {};
 
-        const ultimasAtividades = [];
+        let recentes = 0;
 
         for (let i = 0; i < presencas.length; i++) {
             const p = presencas[i];
             const timestamp = new Date(p.dateTime).getTime();
-            if (timestamp >= limite7Dias) ultimasAtividades.push(p);
+            if (timestamp >= limite7Dias) recentes++;
 
             if (!mapaUltimaPresenca[p.apenadoId] || timestamp > mapaUltimaPresenca[p.apenadoId]) {
                 mapaUltimaPresenca[p.apenadoId] = timestamp;
@@ -34,14 +34,16 @@ export function useDashboardMetrics(presencas, apenados) {
         });
 
         const contagemPresencas = [...ultimosMeses.keys()].map((c) => ultimosMeses.get(c).length);
+        const ultimasAtividades = [...presencas].sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime)).slice(0, 4);
 
         return {
-            comprovantesRecentes: ultimasAtividades,
+            comprovantesRecentes: recentes,
             ultimosMesesGrafico: [...ultimosMeses.keys()].map((k) => {
                 return parseInt(k.split('-')[1], 10) - 1;
             }),
             contagemMeses: contagemPresencas,
-            ultimaPresenca: mapaUltimaPresenca
+            ultimaPresenca: mapaUltimaPresenca,
+            atividadesRecentes: [...ultimasAtividades]
         };
     }, [presencas]);
 
@@ -63,6 +65,7 @@ export function useDashboardMetrics(presencas, apenados) {
         comprovantesRecentes,
         ultimosMesesGrafico,
         contagemMeses,
-        apenadosRegulares
+        apenadosRegulares,
+        atividadesRecentes
     };
 }

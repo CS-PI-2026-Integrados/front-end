@@ -33,6 +33,7 @@ export function ProofData({ultimosMesesGrafico = [], contagemMeses = []}) {
                                 dy={6}
                             />
                             <YAxis
+                                allowDecimals={false}
                                 axisLine={true}
                                 tickLine={true}
                                 tick={{fill: '#6b7280', fontSize: 12}}
@@ -51,7 +52,7 @@ export function ProofData({ultimosMesesGrafico = [], contagemMeses = []}) {
                             <Bar
                                 dataKey="total"
                                 fill="#166534"
-                                radius={[4, 4, 0, 0]}
+                                radius={[6, 6, 0, 0]}
                                 barSize={60}
                             />
                         </BarChart>
@@ -61,4 +62,3 @@ export function ProofData({ultimosMesesGrafico = [], contagemMeses = []}) {
         </Card>
     );
 }
-

@@ -3,7 +3,7 @@ import {Card, CardHeader, CardTitle, CardContent, CardDescription} from "@/compo
 
 // const listActivities = mockPresenca.
 
-export function RecentActivities() {
+export function RecentActivities({atividadesRecentes}) {
 
     return (
         <Card>
@@ -13,16 +13,22 @@ export function RecentActivities() {
             </CardHeader>
             <CardContent>
                 <div className="space-y-6">
-                    {/*div para o container de atividades*/}
-                    <div className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
-                        <div className="h-2 w-2 rounded-full bg-primary mt-2"></div>
-                        <div className="flex-1 space-y-1">
-                            <p className="text-sm font-medium leading-none">Ação</p>
-                            <p className="text-sm text-muted-foreground">Comprovante</p>
-                            <p className="text-xs text-muted-foreground">Data</p>
+                    {atividadesRecentes?.length > 0 ? atividadesRecentes.map((a) => (
+                        <div key={a.id} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
+                            <div className="h-2 w-2 rounded-full bg-primary mt-2"></div>
+                            <div className="flex-1 space-y-1">
+                                <p className="text-sm font-medium leading-none">{a.apenadoName}</p>
+                                <p className="text-sm text-muted-foreground">Comprovante: {a.verificationCode}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {new Date(a.dateTime).toLocaleDateString('pt-BR')}
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    )) : (
+                        <p className="text-sm text-muted-foreground">Nenhuma atividade registrada.</p>
+                    )}
                 </div>
+
             </CardContent>
         </Card>
     );

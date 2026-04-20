@@ -46,7 +46,7 @@ const Dashboard = () => {
                     <MetricCard
                         title="Comprovantes emitidos"
                         description="Nos últimos 7 dias"
-                        data={dashboardData.comprovantesRecentes.length}
+                        data={dashboardData.comprovantesRecentes}
                         icon={<FileText className="h-4 w-4 text-muted-foreground"/>}/>
                     <MetricCard
                         title="Em Conformidade"
@@ -66,7 +66,7 @@ const Dashboard = () => {
                         <ProofData ultimosMesesGrafico={dashboardData.ultimosMesesGrafico} contagemMeses={dashboardData.contagemMeses}/>
                     </div>
                     <div className="lg:col-span-2">
-                        <RecentActivities activities={dashboardData.comprovantesRecentes} />
+                        <RecentActivities atividadesRecentes={dashboardData.atividadesRecentes} />
                     </div>
                 </div>
             </div>
