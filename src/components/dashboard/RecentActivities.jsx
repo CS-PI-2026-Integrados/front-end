@@ -3,8 +3,7 @@ import {Card, CardHeader, CardTitle, CardContent, CardDescription} from "@/compo
 
 // const listActivities = mockPresenca.
 
-export function RecentActivities(props) {
-
+export function RecentActivities() {
 
     return (
         <Card>

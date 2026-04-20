@@ -15,7 +15,6 @@ const ComarcaRoutes = () => {
 
   useEffect(() => {
     setComarca(tenantId);
-    console.log('comarca:', tenantId);
   }, [tenantId, setComarca]);
 
   return (

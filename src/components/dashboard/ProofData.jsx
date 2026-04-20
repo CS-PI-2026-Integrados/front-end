@@ -2,16 +2,16 @@ import {Card, CardTitle, CardHeader, CardDescription, CardContent} from "@/compo
 import {Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid} from "recharts";
 
 
-const data = [
-    {name: "Jan", total: 12},
-    {name: "Fev", total: 28},
-    {name: "Mar", total: 24},
-    {name: "Abr", total: 32},
-    {name: "Mai", total: 26},
-    {name: "Jun", total: 30},
-];
+export function ProofData({ultimosMesesGrafico = [], contagemMeses = []}) {
+    const nomesMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-export function ProofData() {
+    const dadosGrafico = ultimosMesesGrafico.map((numeroMes, index) => {
+        return {
+            name: nomesMeses[numeroMes],
+            total: contagemMeses[index] || 0
+        };
+    }).reverse();
+
     return (
         <Card>
             <CardHeader>
@@ -22,7 +22,7 @@ export function ProofData() {
             <CardContent>
                 <div className="h-[300px] w-full mt-4">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={data}>
+                        <BarChart data={dadosGrafico}>
                             {/*grid horizontal*/}
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb"/>
                             <XAxis
