@@ -22,7 +22,8 @@ export function ProofData({ultimosMesesGrafico = [], contagemMeses = []}) {
                 <CardDescription className="text-muted-foreground text-sm">Total de comprovantes emitidos por mês nos últimos 6 meses</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="h-75 w-full mt-4">
+
+                <div style={{ width: '100%', height: 300, position: 'relative' }} className="mt-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={dadosGrafico}>
                             {/*grid horizontal*/}

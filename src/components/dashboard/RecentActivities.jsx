@@ -43,20 +43,20 @@ export function RecentActivities({ atividadesRecentes }) {
     if (!atividadesRecentes || !Array.isArray(atividadesRecentes)) return null;
 
     return (
-        <Card className="h-full">
-            <CardHeader>
+        <Card className="h-full flex flex-col min-h-0">
+            <CardHeader className="shrink-0">
                 <CardTitle className="font-bold">Atividades Recentes</CardTitle>
-                <CardDescription className="text-muted-foreground text-sm">Últimas ações no sistema</CardDescription>
+                <CardDescription className="text-muted-foreground text-sm">Últimos comprovantes emitidos no sistema</CardDescription>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 flex-1 overflow-y-auto">
                 <div className="flex flex-col">
                     {atividadesFormatadas.length > 0 ? atividadesFormatadas.map((a, index) => (
                         <div key={a.id || `activity-${index}`}
                              className="flex items-start gap-3 py-3 border-b border-border last:border-0 first:pt-0 last:pb-0">
                             <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0"></div>
-                            <div className="flex-1 space-y-1">
-                                <p className="text-sm font-medium leading-none">{a.apenadoName}</p>
-                                <p className="text-sm text-muted-foreground">Comprovante: {a.verificationCode}</p>
+                            <div className="flex-1 space-y-1 min-w-0">
+                                <p className="text-sm font-medium leading-none truncate" title={a.apenadoName}>{a.apenadoName}</p>
+                                <p className="text-sm text-muted-foreground truncate" title={a.verificationCode}>Comprovante: {a.verificationCode}</p>
                                 <p className="text-xs text-muted-foreground">
                                     Há {a.tempoFormatado}
                                 </p>
