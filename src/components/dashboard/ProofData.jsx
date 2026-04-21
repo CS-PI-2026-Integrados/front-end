@@ -1,16 +1,19 @@
+import {useMemo} from "react";
 import {Card, CardTitle, CardHeader, CardDescription, CardContent} from "@/components/ui/card.jsx";
 import {Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid} from "recharts";
 
 
 export function ProofData({ultimosMesesGrafico = [], contagemMeses = []}) {
-    const nomesMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const dadosGrafico = useMemo(() => {
+        const nomesMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-    const dadosGrafico = ultimosMesesGrafico.map((numeroMes, index) => {
-        return {
-            name: nomesMeses[numeroMes],
-            total: contagemMeses[index] || 0
-        };
-    }).reverse();
+        return ultimosMesesGrafico.map((numeroMes, index) => {
+            return {
+                name: nomesMeses[numeroMes],
+                total: contagemMeses[index] || 0
+            };
+        }).reverse();
+    }, [ultimosMesesGrafico, contagemMeses]);
 
     return (
         <Card>
@@ -19,7 +22,7 @@ export function ProofData({ultimosMesesGrafico = [], contagemMeses = []}) {
                 <CardDescription className="text-muted-foreground text-sm">Total de comprovantes emitidos por mês nos últimos 6 meses</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="h-[300px] w-full mt-4">
+                <div className="h-75 w-full mt-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={dadosGrafico}>
                             {/*grid horizontal*/}

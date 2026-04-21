@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 export function useDashboardMetrics(presencas, apenados) {
-    const { comprovantesRecentes, ultimosMesesGrafico, contagemMeses, ultimaPresenca , atividadesRecentes} = useMemo(() => {
+    const { comprovantesRecentes, ultimosMesesGrafico, contagemMeses, ultimaPresenca, atividadesRecentes } = useMemo(() => {
         const limite7Dias = new Date().getTime() - (7 * 24 * 60 * 60 * 1000);
         const mapaUltimaPresenca = {};
 
@@ -23,17 +23,17 @@ export function useDashboardMetrics(presencas, apenados) {
             dataMes.setDate(1);
             dataMes.setMonth(dataMes.getMonth() - i);
             const anoMes = dataMes.toISOString().slice(0, 7);
-            ultimosMeses.set(anoMes, []);
+            ultimosMeses.set(anoMes, 0);
         }
 
         presencas.forEach((p) => {
             const mesPresenca = new Date(p.dateTime).toISOString().slice(0, 7);
             if (ultimosMeses.has(mesPresenca)) {
-                ultimosMeses.get(mesPresenca).push(p);
+                ultimosMeses.set(mesPresenca, ultimosMeses.get(mesPresenca) + 1);
             }
         });
 
-        const contagemPresencas = [...ultimosMeses.keys()].map((c) => ultimosMeses.get(c).length);
+        const contagemPresencas = [...ultimosMeses.values()];
         const ultimasAtividades = [...presencas].sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime)).slice(0, 4);
 
         return {
@@ -43,7 +43,7 @@ export function useDashboardMetrics(presencas, apenados) {
             }),
             contagemMeses: contagemPresencas,
             ultimaPresenca: mapaUltimaPresenca,
-            atividadesRecentes: [...ultimasAtividades]
+            atividadesRecentes: ultimasAtividades
         };
     }, [presencas]);
 
