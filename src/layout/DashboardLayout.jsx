@@ -1,28 +1,27 @@
-import { ChartBar, FileText, FolderArchive, LayoutDashboard, Settings, Users } from "lucide-react";
+import { FileText, LayoutDashboard, Settings, Users } from 'lucide-react'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Outlet } from "react-router-dom";
-
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Outlet } from 'react-router-dom'
 
 export default function DashboardLayout() {
   return (
     <>
-      <div className="h-dvh flex flex-col">
-        <header className="h-14 border-b flex items-center justify-between bg-background">
-          <div className="w-60 h-full flex px-4 border-e">
-            <span className="my-auto text-green-700 font-medium">SICAPE</span>
+      <div className="flex h-dvh flex-col">
+        <header className="bg-background flex h-14 items-center justify-between border-b">
+          <div className="flex h-full w-60 border-e px-4">
+            <span className="my-auto font-medium text-green-700">SICAPE</span>
           </div>
           <div className="flex items-center gap-3 px-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 h-auto">
+                <Button variant="ghost" className="h-auto p-0">
                   <Avatar>
                     <AvatarFallback>LG</AvatarFallback>
                   </Avatar>
@@ -37,7 +36,7 @@ export default function DashboardLayout() {
           </div>
         </header>
         <div className="flex h-full">
-          <aside className="w-60 p-4 border-e h-full flex flex-col gap-1">
+          <aside className="flex h-full w-60 flex-col gap-1 border-e p-4">
             <Button className="justify-start">
               <LayoutDashboard /> Dashboard
             </Button>
@@ -62,7 +61,6 @@ export default function DashboardLayout() {
           </main>
         </div>
       </div>
-      
     </>
-  );
+  )
 }
