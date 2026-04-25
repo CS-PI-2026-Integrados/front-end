@@ -1,15 +1,14 @@
-import { ChartBar, FileText, FolderArchive, LayoutDashboard, Settings, Users } from "lucide-react";
+import { FileText, LayoutDashboard, Settings, Users } from 'lucide-react'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Outlet } from "react-router-dom";
-
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Outlet } from 'react-router-dom'
 
 export default function DashboardLayout() {
   return (
@@ -22,7 +21,7 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-3 px-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 h-auto">
+                <Button variant="ghost" className="h-auto p-0">
                   <Avatar>
                     <AvatarFallback>LG</AvatarFallback>
                   </Avatar>
@@ -62,7 +61,6 @@ export default function DashboardLayout() {
           </main>
         </div>
       </div>
-      
     </>
-  );
+  )
 }
