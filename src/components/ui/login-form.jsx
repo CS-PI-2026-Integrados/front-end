@@ -1,7 +1,6 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 export function LoginForm({ className, ...props }) {
 
@@ -35,7 +34,7 @@ export function LoginForm({ className, ...props }) {
   };
 
   return (
-    <form className="login-form">
+    <form className="space-y-6" onSubmit={handleSubmit}>
 
       <div className="fiel-group">
         <label htmlFor="cpf" className="field-label">CPF</label>

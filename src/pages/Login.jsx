@@ -1,7 +1,7 @@
 import { LoginForm } from '@/components/ui/login-form'
 import loginBg from '../assets/images/login-bg.jpg'
-import sicapeLogo from '../assets/images/sicape-logo-white.png'
-// import 
+import logoWhite from '../assets/images/logo-white.png'
+import logo from '../assets/images/logo.png'
 
 const Login = () => {
 
@@ -18,16 +18,16 @@ const Login = () => {
         />
 
         {/* <div className="absolute inset-0 bg-emerald-950/30 mix-blend-multiply"></div> */}
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-900/30 to-emerald-900/60"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-900/50 to-green-900/30"></div>
 
         <img
-          src={sicapeLogo}
-          alt="Background"
-          className="relative z-10 w-25"
+          src={logoWhite}
+          alt="Logo white"
+          className="relative z-10 w-20"
         />
 
-        <div className="relative z-10">
-          <h1 className="font-instrument-sans text-6xl">
+        <div className="relative z-10 [mask-image:linear-gradient(to_bottom_right,black_20%,transparent_80%)] [mask-repeat:no-repeat]">
+          <h1 className="font-serif text-7xl text-white/90">
             Gestão <br />
             inteligente <br />
             para você.
@@ -37,10 +37,16 @@ const Login = () => {
       </div>
 
       {/* right side */}
-      <div className="login-right">
-        <div className="login-form-wrapper">
+      <div className="flex w-full items-center justify-center bg-white lg:w-1/2">
+        <div className="w-full max-w-sm space-y-10 px-6">
 
-          <span className="login-logo">login-logo</span>
+          <div className='flex justify-center m-0'>
+            <img
+              src={logo}
+              alt="Logo"
+              className="h-24 w-24 object-contain"
+            />
+          </div>
 
           <LoginForm />
 
