@@ -1,5 +1,7 @@
 import { LoginForm } from '@/components/ui/login-form'
 import loginBg from '../assets/images/login-bg.jpg'
+import sicapeLogo from '../assets/images/sicape-logo-white.png'
+// import 
 
 const Login = () => {
 
@@ -10,17 +12,27 @@ const Login = () => {
       <div className="relative hidden w-1/2 flex-col justify-between bg-zinc-900 p-15 text-white z-0 lg:flex">
 
         <img
-          src='../assets/images/login-bg.jpg'
+          src={loginBg}
           alt="Background"
-          className="absolute inset-0 h-full w-full object-cover mix-blend-overlay z-1"
+          className="absolute inset-0 h-full w-full object-cover"
         />
 
-        <div className="absolute inset-0 bg-emerald-900/80 z-2"></div>
+        {/* <div className="absolute inset-0 bg-emerald-950/30 mix-blend-multiply"></div> */}
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-900/30 to-emerald-900/60"></div>
 
-        <span className="inset-0 z-3">SICAPE</span>
-        <p className="inset-0 z-3">
-          A prova de fraudes, a favor da sua comarca.
-        </p>
+        <img
+          src={sicapeLogo}
+          alt="Background"
+          className="relative z-10 w-25"
+        />
+
+        <div className="relative z-10">
+          <h1 className="font-instrument-sans text-6xl">
+            Gestão <br />
+            inteligente <br />
+            para você.
+          </h1>
+        </div>
 
       </div>
 
