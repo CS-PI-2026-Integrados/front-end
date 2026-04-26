@@ -2,6 +2,7 @@ import { LoginForm } from '@/components/ui/login-view'
 import loginBg from '../assets/images/login-bg.jpg'
 import logoWhite from '../assets/images/logo-white.png'
 import logo from '../assets/images/logo.png'
+import React from 'react'
 
 const Login = () => {
 
