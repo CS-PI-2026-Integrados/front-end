@@ -20,8 +20,6 @@ const ComarcaRoutes = () => {
 
   return (
     <Routes>
-      <Route path="login" element={<Login />} />
-
       <Route path='/dashboard' element={<DashboardLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="apenados" element={<Convicteds />} />
@@ -37,6 +35,7 @@ const ComarcaRoutes = () => {
 const AppRouter = () => {
   return (
     <Routes>
+      <Route path="login" element={<Login />} />
       <Route path="/:tenantId/*" element={<ComarcaRoutes />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

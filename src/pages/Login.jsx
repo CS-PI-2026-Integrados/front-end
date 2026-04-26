@@ -1,4 +1,4 @@
-import { LoginForm } from '@/components/ui/login-form'
+import { LoginForm } from '@/components/ui/login-view'
 import loginBg from '../assets/images/login-bg.jpg'
 import logoWhite from '../assets/images/logo-white.png'
 import logo from '../assets/images/logo.png'
@@ -38,13 +38,13 @@ const Login = () => {
 
       {/* right side */}
       <div className="flex w-full items-center justify-center bg-white lg:w-1/2">
-        <div className="w-full max-w-sm space-y-10 px-6">
+        <div className="w-full max-w-[480px] space-y-8 px-6">
 
           <div className='flex justify-center m-0'>
             <img
               src={logo}
               alt="Logo"
-              className="h-24 w-24 object-contain"
+              className="h-28 w-28 object-contain"
             />
           </div>
 

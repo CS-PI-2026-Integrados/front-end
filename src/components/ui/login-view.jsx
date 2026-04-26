@@ -29,33 +29,31 @@ export function LoginForm({ className, ...props }) {
       .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
   };
 
-  const handleCpfChange = (e) => {
-    setCpf(formatCpf(e.target.value));
-  };
-
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
 
-      <div className="fiel-group">
-        <label htmlFor="cpf" className="field-label">CPF</label>
+      <div>
+        <label htmlFor="cpf" className="text-lg text-gray-600">CPF</label>
         <input
           id="cpf"
           type="text"
           inputMode="numeric"
           placeholder="000.000.000-00"
           value={cpf}
-          onChange={handleCpfChange}
-          className="field-input"
+          onChange={(e) => setCpf(formatCpf(e.target.value))}
+          className="w-full border-2 rounded-[8px] px-3 py-4 text-sm outline-none 
+          border-gray-400 text-black placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500 
+          focus:border-emerald-500"
         // autoComplete="username"
         />
       </div>
 
-      <div className="fiel-group">
-        <div className="fiel-label-row">
-          <label htmlFor="Senha" className="fiel-label">Senha</label>
-          <a href="#" className="forgot-link">Esqueceu a senha?</a>
+      <div>
+        <div className="flex justify-between">
+          <label htmlFor="Senha" className="text-lg text-gray-600">Senha</label>
+          <a href="#" className="text-sm text-emerald-500 hover:text-emerald-700">Esqueceu a senha?</a>
         </div>
-        <div className="password-wrapper">
+        <div className="relative mt-1">
           <input
             id="password"
             type="text"
@@ -63,21 +61,32 @@ export function LoginForm({ className, ...props }) {
             placeholder="Digite sua senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="field-input password-input"
+            className="w-full border-2 rounded-[8px] px-3 py-4 text-sm outline-none 
+            border-gray-400 text-black placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500 
+            focus:border-emerald-500"
           // autoComplete="current-password"
           />
           <button
             type="button"
-            className="toggle-password"
             onClick={() => setShowPassword((prev) => !prev)}
             aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none p-1"
           >
-            {/* {showPassword ? (<EyeOffIcon />) : (<EyeIcon />)} */}
+            {showPassword ? (
+              <EyeOff size={24} strokeWidth={1.5}/>
+            ) : (
+              <Eye size={24} strokeWidth={1.5} />
+            )}
           </button>
         </div>
       </div>
 
-      <button type="button" className="btn-entrar" onClick={handleSubmit}>
+      <button
+        type="submit"
+        onClick={handleSubmit}
+        className="w-full bg-green-600/90 rounded-[8px] px-3 py-4 text-lg 
+        text-white hover:ring-2 hover:ring-emerald-700"
+      >
         Entrar
       </button>
     </form>
