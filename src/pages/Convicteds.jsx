@@ -62,17 +62,50 @@ function EmptyState({ query }) {
   )
 }
 
+function ModalInative({ apenado, onConfirmar, onCancelar }) {
+  if (!apenado) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+        <h2 className="text-lg font-bold text-gray-900">Inativar Apenado</h2>
+        <p className="mt-2 text-sm text-gray-600">
+          Deseja inativar <strong>{apenado.nome}</strong>? O status será alterado para{' '}
+          <span className="font-semibold text-gray-500">Inativo</span>.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={onCancelar}
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirmar}
+            className="rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+          >
+            Inativar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const Convicteds = () => {
   const { comarca } = useComarca()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Todos')
   const [currentPage, setCurrentPage] = useState(1)
 
+  const [apenados, setApenados] = useState(mockApenados)
+
+  const [apenadoInativar, setApenadoInativar] = useState(null)
+
   const filtered = useMemo(() => {
     if (!comarca) return []
     const term = search.toLowerCase().trim()
 
-    return mockApenados
+    return apenados
       .filter((item) => item.tenant_id === comarca)
       .filter((a) => {
         const matchStatus = statusFilter === 'Todos' || a.status === statusFilter
@@ -88,13 +121,27 @@ const Convicteds = () => {
 
         return matchNome || matchCPF
       })
-  }, [comarca, search, statusFilter])
+  }, [comarca, search, statusFilter, apenados])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
+  function handleInativar() {
+    setApenados((prev) =>
+      prev.map((a) => (a.id === apenadoInativar.id ? { ...a, status: 'Inativo' } : a))
+    )
+    setApenadoInativar(null)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
+      {/* Modal */}
+      <ModalInative
+        apenado={apenadoInativar}
+        onConfirmar={handleInativar}
+        onCancelar={() => setApenadoInativar(null)}
+      />
+
       {/* Header */}
       <div className="mb-7 flex items-start justify-between">
         <div>
@@ -246,6 +293,7 @@ const Convicteds = () => {
                           {/* Inativar */}
                           <button
                             title="Inativar"
+                            onClick={() => setApenadoInativar(a)}
                             className="rounded p-1.5 text-red-400 transition-colors hover:bg-gray-100"
                           >
                             <svg
