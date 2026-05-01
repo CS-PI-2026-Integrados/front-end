@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useComarca } from '../context/ComarcaContext'
 import mockApenados from '../mock/apenados.JSON'
 
 const ITEMS_PER_PAGE = 10
+const STORAGE_KEY = 'apenados_data'
 
 function maskCPF(cpf) {
   return cpf.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**')
@@ -91,15 +92,122 @@ function ModalInative({ apenado, onConfirmar, onCancelar }) {
   )
 }
 
+function ModalEditar({ apenado, onSalvar, onCancelar }) {
+  const [form, setForm] = useState(apenado || {})
+
+  if (!apenado) return null
+
+  function handleChange(e) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+        <h2 className="text-lg font-bold text-gray-900">Editar Apenado</h2>
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Nome</label>
+            <input
+              name="nome"
+              value={form.nome}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">CPF</label>
+            <input
+              name="cpf"
+              value={form.cpf}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Telefone</label>
+            <input
+              name="telefone"
+              value={form.telefone}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Endereço</label>
+            <input
+              name="endereco"
+              value={form.endereco}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">
+              Sit. Trabalhista
+            </label>
+            <select
+              name="sit_trabalhista"
+              value={form.sit_trabalhista}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            >
+              <option>Trabalho Registrado</option>
+              <option>Trabalho Informal</option>
+              <option>Nao Trabalha</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Status</label>
+            <select
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            >
+              <option>Regular</option>
+              <option>Pendente</option>
+              <option>Irregular</option>
+              <option>Inativo</option>
+            </select>
+          </div>
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={onCancelar}
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => onSalvar(form)}
+            className="rounded-lg bg-green-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-900"
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const Convicteds = () => {
   const { comarca } = useComarca()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Todos')
   const [currentPage, setCurrentPage] = useState(1)
 
-  const [apenados, setApenados] = useState(mockApenados)
+  const [apenados, setApenados] = useState(() => {
+    const salvo = localStorage.getItem(STORAGE_KEY)
+    return salvo ? JSON.parse(salvo) : mockApenados
+  })
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(apenados))
+  }, [apenados])
 
   const [apenadoInativar, setApenadoInativar] = useState(null)
+  const [apenadoEditar, setApenadoEditar] = useState(null)
 
   const filtered = useMemo(() => {
     if (!comarca) return []
@@ -133,13 +241,24 @@ const Convicteds = () => {
     setApenadoInativar(null)
   }
 
+  function handleSalvar(form) {
+    setApenados((prev) => prev.map((a) => (a.id === form.id ? { ...form } : a)))
+    setApenadoEditar(null)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      {/* Modal */}
+      {/* Modais */}
       <ModalInative
         apenado={apenadoInativar}
         onConfirmar={handleInativar}
         onCancelar={() => setApenadoInativar(null)}
+      />
+      <ModalEditar
+        key={apenadoEditar?.id}
+        apenado={apenadoEditar}
+        onSalvar={handleSalvar}
+        onCancelar={() => setApenadoEditar(null)}
       />
 
       {/* Header */}
@@ -274,6 +393,7 @@ const Convicteds = () => {
                           {/* Editar */}
                           <button
                             title="Editar"
+                            onClick={() => setApenadoEditar(a)}
                             className="rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100"
                           >
                             <svg
