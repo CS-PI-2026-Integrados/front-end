@@ -15,16 +15,14 @@ const ComarcaRoutes = () => {
 
   useEffect(() => {
     setComarca(tenantId)
-    // eslint-disable-next-line no-console
-    console.log('comarca:', tenantId)
   }, [tenantId, setComarca])
 
   return (
     <Routes>
       <Route path="login" element={<Login />} />
 
-      <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route path="dashboard" element={<Dashboard />} />
+      <Route path="dashboard" element={<DashboardLayout />}>
+        <Route index element={<Dashboard />} />
         <Route path="apenados" element={<Convicteds />} />
         <Route path="instituicoes" element={<Institutions />} />
         <Route path="comprovante" element={<Certificate />} />
