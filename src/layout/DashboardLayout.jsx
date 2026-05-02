@@ -1,4 +1,4 @@
-import { FileText, LayoutDashboard, Settings, Users } from 'lucide-react'
+import { FileText, LayoutDashboard, Settings, Users, ClipboardPen } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -13,10 +13,10 @@ import { Outlet } from 'react-router-dom'
 export default function DashboardLayout() {
   return (
     <>
-      <div className="h-dvh flex flex-col overflow-hidden">
-        <header className="h-14 shrink-0 border-b flex items-center justify-between bg-background">
-          <div className="w-60 h-full flex px-4 border-e">
-            <span className="my-auto text-green-700 font-medium">SICAPE</span>
+      <div className="flex h-dvh flex-col overflow-hidden">
+        <header className="bg-background flex h-14 shrink-0 items-center justify-between border-b">
+          <div className="flex h-full w-60 border-e px-4">
+            <span className="my-auto font-medium text-green-700">SICAPE</span>
           </div>
           <div className="flex items-center gap-3 px-4">
             <DropdownMenu>
@@ -36,7 +36,7 @@ export default function DashboardLayout() {
           </div>
         </header>
         <div className="flex flex-1 overflow-hidden">
-          <aside className="w-60 p-4 border-e h-full flex flex-col gap-1">
+          <aside className="flex h-full w-60 flex-col gap-1 border-e p-4">
             <Button className="justify-start">
               <LayoutDashboard /> Dashboard
             </Button>
@@ -45,6 +45,9 @@ export default function DashboardLayout() {
             </Button>
             <Button variant="ghost" className="justify-start">
               <FileText /> Comprovantes
+            </Button>
+            <Button variant="ghost" className="justify-start">
+              <ClipboardPen /> Atendimento
             </Button>
             {/* <Button variant="ghost" className="justify-start">
               <FolderArchive /> Documentos
@@ -56,7 +59,7 @@ export default function DashboardLayout() {
               <Settings /> Configuracões
             </Button>
           </aside>
-          <main className="flex-1 w-full overflow-y-auto bg-muted/60">
+          <main className="bg-muted/60 w-full flex-1 overflow-y-auto">
             <Outlet />
           </main>
         </div>
