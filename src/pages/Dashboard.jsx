@@ -1,18 +1,20 @@
-import { useMemo } from 'react'
 import { Users, FileText, CheckCircle, TriangleAlert } from 'lucide-react'
 import { MetricCard } from '../components/dashboard/MetricCard.jsx'
 import { ProofData } from '@/components/dashboard/ProofData.jsx'
 import { RecentActivities } from '@/components/dashboard/RecentActivities.jsx'
-import { useComarca } from '@/context/ComarcaContext.jsx'
 import { useDashboardMetrics } from '@/lib/useDashboardMetrics.js'
 import { useDistrictData } from '@/lib/useDistrictData.js'
 
 const Dashboard = () => {
-  const { comarca } = useComarca()
+  const { apenados, presencas } = useDistrictData()
 
-  const districtData = useDistrictData(comarca)
-
-  const dashboardData = useDashboardMetrics(districtData.presencas, districtData.apenados)
+  const {
+    comprovantesRecentes,
+    ultimosMesesGrafico,
+    contagemMeses,
+    apenadosRegulares,
+    atividadesRecentes,
+  } = useDashboardMetrics(presencas, apenados)
 
   return (
     <div className="max-w-7x1 mx-auto p-6">
@@ -26,38 +28,35 @@ const Dashboard = () => {
           <MetricCard
             title="Total de apenados"
             description="Cadastrados no sistema"
-            data={districtData.apenados.length}
+            data={apenados.length}
             icon={<Users className="text-muted-foreground h-4 w-4" />}
           />
           <MetricCard
             title="Comprovantes emitidos"
             description="Nos últimos 7 dias"
-            data={dashboardData.comprovantesRecentes}
+            data={comprovantesRecentes}
             icon={<FileText className="text-muted-foreground h-4 w-4" />}
           />
           <MetricCard
             title="Em Conformidade"
             description="Situacão regular"
-            data={dashboardData.apenadosRegulares}
+            data={apenadosRegulares}
             icon={<CheckCircle className="text-muted-foreground h-4 w-4" />}
           />
           <MetricCard
             title="Irregulares"
             description="Situação irregular"
-            data={districtData.apenados.length - dashboardData.apenadosRegulares}
+            data={apenados.length - apenadosRegulares}
             icon={<TriangleAlert className="text-muted-foreground h-4 w-4" />}
           />
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-4">
           <div className="lg:col-span-2">
-            <ProofData
-              ultimosMesesGrafico={dashboardData.ultimosMesesGrafico}
-              contagemMeses={dashboardData.contagemMeses}
-            />
+            <ProofData ultimosMesesGrafico={ultimosMesesGrafico} contagemMeses={contagemMeses} />
           </div>
           <div className="lg:col-span-2">
-            <RecentActivities atividadesRecentes={dashboardData.atividadesRecentes} />
+            <RecentActivities atividadesRecentes={atividadesRecentes} />
           </div>
         </div>
       </div>
