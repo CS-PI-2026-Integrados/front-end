@@ -1,22 +1,22 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, useParams } from 'react-router-dom';
-import { useSession } from './context/SessionContext';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Convicteds from './pages/Convicteds';
-import Institutions from './pages/Institutions';
-import Certificate from './pages/Certificate';
-import NotFound from './pages/NotFound';
-import DashboardLayout from './layout/DashboardLayout';
+import React, { useEffect } from 'react'
+import { Routes, Route, useParams } from 'react-router-dom'
+import { useSession } from './context/SessionContext'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import Convicteds from './pages/Convicteds'
+import Institutions from './pages/Institutions'
+import Certificate from './pages/Certificate'
+import NotFound from './pages/NotFound'
+import DashboardLayout from './layout/DashboardLayout'
 
 const AppRouter = () => {
-  const { session } = useSession();
+  const { session } = useSession()
 
   useEffect(() => {
     if (session !== null) {
-      console.log('session:', session);
+      console.log('session:', session)
     }
-  }, [session]);
+  }, [session])
 
   return (
     <Routes>
@@ -29,7 +29,7 @@ const AppRouter = () => {
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
-  );
-};
+  )
+}
 
-export default AppRouter;
+export default AppRouter

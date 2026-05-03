@@ -2,7 +2,7 @@ import { ChartBar, FileText, FolderArchive, LayoutDashboard, Settings, Users, Us
 import { Link } from "react-router-dom";
 import Logo from '/assets/logo/to-light-background.svg';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -91,7 +91,6 @@ export default function DashboardLayout() {
           </main>      
         </div>
       </div>
-      
     </>
-  );
+  )
 }

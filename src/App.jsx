@@ -1,7 +1,6 @@
-import { BrowserRouter } from 'react-router-dom';
-import { SessionProvider } from './context/SessionContext';
-import AppRouter from './AppRouter';
-// import './App.css';
+import { BrowserRouter } from 'react-router-dom'
+import { SessionProvider } from './context/SessionContext'
+import AppRouter from './AppRouter'
 
 function App() {
   return (
@@ -10,7 +9,7 @@ function App() {
         <AppRouter />
       </SessionProvider>
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App
