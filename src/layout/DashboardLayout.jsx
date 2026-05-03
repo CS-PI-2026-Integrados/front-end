@@ -46,9 +46,6 @@ export default function DashboardLayout() {
             <Button variant="ghost" className="justify-start">
               <FileText /> Comprovantes
             </Button>
-            <Button variant="ghost" className="justify-start">
-              <ClipboardPen /> Atendimento
-            </Button>
             {/* <Button variant="ghost" className="justify-start">
               <FolderArchive /> Documentos
             </Button>

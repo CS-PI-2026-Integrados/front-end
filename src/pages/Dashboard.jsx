@@ -4,30 +4,15 @@ import { MetricCard } from '../components/dashboard/MetricCard.jsx'
 import { ProofData } from '@/components/dashboard/ProofData.jsx'
 import { RecentActivities } from '@/components/dashboard/RecentActivities.jsx'
 import { useComarca } from '@/context/ComarcaContext.jsx'
-import { mockApenados } from '@/mocks/apenados.mock.js'
-import { mockPresenca } from '@/mocks/presenca.mock.js'
-import { mockTenants } from '@/mocks/tenants.mock.js'
 import { useDashboardMetrics } from '@/lib/useDashboardMetrics.js'
+import { useDistrictData } from '@/lib/useDistrictData.js'
 
 const Dashboard = () => {
   const { comarca } = useComarca()
 
-  const tenantAtual = useMemo(
-    () => mockTenants.tenants.find((t) => t.uuid === comarca) || {},
-    [comarca]
-  )
+  const districtData = useDistrictData(comarca)
 
-  const apenados = useMemo(
-    () => (mockApenados.apenados || []).filter((a) => a.tenantId === tenantAtual.id),
-    [tenantAtual.id]
-  )
-
-  const presencas = useMemo(
-    () => (mockPresenca.presencas || []).filter((p) => p.tenantId === tenantAtual.id),
-    [tenantAtual.id]
-  )
-
-  const dashboardData = useDashboardMetrics(presencas, apenados)
+  const dashboardData = useDashboardMetrics(districtData.presencas, districtData.apenados)
 
   return (
     <div className="max-w-7x1 mx-auto p-6">
@@ -41,7 +26,7 @@ const Dashboard = () => {
           <MetricCard
             title="Total de apenados"
             description="Cadastrados no sistema"
-            data={apenados.length}
+            data={districtData.apenados.length}
             icon={<Users className="text-muted-foreground h-4 w-4" />}
           />
           <MetricCard
@@ -59,7 +44,7 @@ const Dashboard = () => {
           <MetricCard
             title="Irregulares"
             description="Situação irregular"
-            data={apenados.length - dashboardData.apenadosRegulares}
+            data={districtData.apenados.length - dashboardData.apenadosRegulares}
             icon={<TriangleAlert className="text-muted-foreground h-4 w-4" />}
           />
         </div>
