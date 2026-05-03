@@ -1,11 +1,3 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-
 import { Label } from '@/components/ui/label.jsx'
 
 import { useDistrictData } from '@/lib/useDistrictData.js'
@@ -21,10 +13,11 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button.jsx'
-import { ChevronsUpDown, Search } from 'lucide-react'
+import { ChevronsUpDown } from 'lucide-react'
+import { ConvictedInfoCard } from '@/components/service/ConvictedInfoCard.jsx'
 
 export function SelectConvicted() {
-  const { apenados, presencas } = useDistrictData()
+  const { apenados } = useDistrictData()
 
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
@@ -57,6 +50,8 @@ export function SelectConvicted() {
     return resultados
   }, [search, apenados])
 
+  const apenadoSelecionado = apenados.find((a) => String(a.id) === value)
+
   return (
     <div className="w-full space-y-2">
       <Label>
@@ -65,8 +60,8 @@ export function SelectConvicted() {
       <Popover className="flex w-full" open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" role="combobox" className="w-full justify-between">
-            {value ? (
-              apenados.filter((a) => a.id === value)
+            {value && apenadoSelecionado ? (
+              apenadoSelecionado.fullName
             ) : (
               <span className="text-muted-foreground font-light">Selecione um apenado</span>
             )}
@@ -101,6 +96,25 @@ export function SelectConvicted() {
           </Command>
         </PopoverContent>
       </Popover>
+      {value && apenadoSelecionado && (
+        <ConvictedInfoCard apenado={apenadoSelecionado}></ConvictedInfoCard>
+      )}
+
+      <div className="space-y-2">
+        <Label>Data e Hora</Label>
+        <div className="bg-muted rounded-lg p-3">
+          <p className="text-sm font-medium">
+            {new Date().toLocaleString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </p>
+          <p className="text-muted-foreground mt-1 text-xs">Automático</p>
+        </div>
+      </div>
     </div>
   )
 }
