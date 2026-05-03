@@ -1,6 +1,15 @@
-import { ChartBar, FileText, FolderArchive, LayoutDashboard, Settings, Users, User, Menu } from "lucide-react";
-import { Link } from "react-router-dom";
-import Logo from '/assets/logo/to-light-background.svg';
+import {
+  ChartBar,
+  FileText,
+  FolderArchive,
+  LayoutDashboard,
+  Settings,
+  Users,
+  User,
+  Menu,
+} from 'lucide-react'
+import { Link } from 'react-router-dom'
+import Logo from '/assets/logo/to-light-background.svg'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -8,38 +17,42 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useSession } from "@/context/SessionContext";
-
+} from '@/components/ui/dropdown-menu'
+import { Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useSession } from '@/context/SessionContext'
 
 export default function DashboardLayout() {
-  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false)
+  const [isMenuVisible, setisMenuVisible] = useState(false)
   const { session } = useSession()
 
   return (
     <>
-      <div className="min-h-dvh flex">
-        <div open={isMenuCollapsed} className="h-full open:w-full w-[0px] group z-10 absolute bg-black/5 md:bg-black/0"
-        onClick={() => {setIsMenuCollapsed(false)}}>
-          <div className=" bg-background transition-all group-open:shadow-lg group-open:md:shadow-none flex flex-col h-full w-60 border-e -translate-x-60 group-open:-translate-x-0 md:-translate-x-0 md:static">
-            <div className=" flex px-4 h-14 border-b">
+      <div className="flex h-dvh">
+        <div
+          open={isMenuVisible}
+          className="group absolute z-10 h-dvh w-[0px] bg-black/5 open:w-full md:static md:w-auto md:bg-black/0 open:md:w-auto"
+          onClick={() => {
+            setisMenuVisible(false)
+          }}
+        >
+          <div className="bg-background flex h-full w-60 -translate-x-60 flex-col border-e transition-all group-open:-translate-x-0 group-open:shadow-lg md:static md:-translate-x-0 group-open:md:shadow-none">
+            <div className="flex h-14 border-b px-4">
               <img src={Logo} alt="Logo marca" className="w-14" />
             </div>
-            <aside className="p-4 flex flex-col gap-1">
+            <aside className="flex flex-col gap-1 p-4">
               <Button asChild className="justify-start">
-                <Link to="/dashboard" className="flex items-center gap-2 w-full">
+                <Link to="/dashboard" className="flex w-full items-center gap-2">
                   <LayoutDashboard /> Dashboard
                 </Link>
               </Button>
               <Button asChild variant="ghost" className="justify-start">
-                <Link to="/apenados" className="flex items-center gap-2 w-full">
+                <Link to="/apenados" className="flex w-full items-center gap-2">
                   <Users /> Apenados
                 </Link>
               </Button>
               <Button asChild variant="ghost" className="justify-start">
-                <Link to="/comprovantes" className="flex items-center gap-2 w-full">
+                <Link to="/comprovantes" className="flex w-full items-center gap-2">
                   <FileText /> Comprovantes
                 </Link>
               </Button>
@@ -54,27 +67,35 @@ export default function DashboardLayout() {
                 </Link>
               </Button> */}
               <Button asChild variant="ghost" className="justify-start">
-                <Link to="/configuracoes" className="flex items-center gap-2 w-full">
+                <Link to="/configuracoes" className="flex w-full items-center gap-2">
                   <Settings /> Configuracões
                 </Link>
               </Button>
             </aside>
           </div>
         </div>
-        <div className="flex flex-col h-full" style={{flex: 1}}>
-          <header className="h-14 border-b flex items-center justify-between bg-background">
-            <div className="flex items-center gap-3 px-4 w-full">
-              <Button variant="ghost" className="md:hidden" onClick={() => {setIsMenuCollapsed(!isMenuCollapsed)}}>
+        <div className="flex h-full flex-col" style={{ flex: 1 }}>
+          <header className="bg-background flex h-14 items-center justify-between border-b">
+            <div className="flex w-full items-center gap-3 px-4">
+              <Button
+                variant="ghost"
+                className="md:hidden"
+                onClick={() => {
+                  setisMenuVisible(!isMenuVisible)
+                }}
+              >
                 <Menu />
               </Button>
               <div className="ml-auto">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="px-2 py-1 flex gap-2">
+                    <Button variant="ghost" className="flex gap-2 px-2 py-1">
                       <User />
-                      <div className="text-start flex flex-col">
-                        <span className="text-black/75 font-medium text-sm">{session?.user.name}</span>
-                        <span className="text-black/50 text-xs">{session?.tenant.name}</span>
+                      <div className="flex flex-col text-start">
+                        <span className="text-sm font-medium text-black/75">
+                          {session?.user.name}
+                        </span>
+                        <span className="text-xs text-black/50">{session?.tenant.name}</span>
                       </div>
                     </Button>
                   </DropdownMenuTrigger>
@@ -86,9 +107,12 @@ export default function DashboardLayout() {
               </div>
             </div>
           </header>
-          <main className="p-4" style={{flex: 1}}>
+          <main
+            className="h-dvh p-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-black/20 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-transparent dark:[&::-webkit-scrollbar-track]:bg-neutral-700"
+            style={{ flex: 1, overflow: 'auto' }}
+          >
             <Outlet />
-          </main>      
+          </main>
         </div>
       </div>
     </>
