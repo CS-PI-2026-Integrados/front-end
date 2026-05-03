@@ -17,7 +17,7 @@ export function ConvictedInfoCard({ apenado }) {
 
   return (
     <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
-      <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm">
+      <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
         <p>
           <span className="text-muted-foreground">Processo:</span> {apenado.processNumber}
         </p>
@@ -29,13 +29,18 @@ export function ConvictedInfoCard({ apenado }) {
         </p>
       </div>
 
-      <div className="flex items-center gap-2 pt-2">
-        <Checkbox id="enableEditing" checked={canEdit} onCheckedChange={setCanEdit} />
+      <div className="flex items-start gap-2 pt-2 md:items-center">
+        <Checkbox
+          id="enableEditing"
+          checked={canEdit}
+          onCheckedChange={setCanEdit}
+          className="mt-1 shrink-0 md:mt-0"
+        />
         <Label
           htmlFor="enableEditing"
-          className="flex cursor-pointer items-center gap-2 text-sm font-medium"
+          className="flex cursor-pointer items-center gap-2 text-sm leading-relaxed font-medium md:leading-none"
         >
-          <Pencil className="h-4 w-4" />
+          <Pencil className="h-4 w-4 shrink-0" />
           Habilitar edição dos dados para este comprovante
         </Label>
       </div>
@@ -74,7 +79,7 @@ export function ConvictedInfoCard({ apenado }) {
             </SelectContent>
           </Select>
           {!canEdit && (
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted-foreground text-xs leading-relaxed">
               Marque a opcao acima para editar os dados antes de gerar o comprovante.
             </p>
           )}
