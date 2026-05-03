@@ -101,5 +101,3 @@ export function SelectConvicted() {
     </div>
   )
 }
-
-export default SelectConvicted

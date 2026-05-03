@@ -15,19 +15,30 @@ import {
 export function ConvictedInfoCard({ apenado }) {
   const [canEdit, setCanEdit] = useState(false)
 
+  // Pegamos o primeiro processo para exibir de forma simplificada por enquanto
+  // Se o apenado puder ter vários, você pode querer mudar isso depois para um select de processos
+  const processoAtivo =
+    apenado.processos && apenado.processos.length > 0 ? apenado.processos[0] : null
+
   return (
     <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
-      <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
-        <p>
-          <span className="text-muted-foreground">Processo:</span> {apenado.processNumber}
-        </p>
-        <p>
-          <span className="text-muted-foreground">Situação:</span> {apenado.judicialStatus}
-        </p>
-        <p>
-          <span className="text-muted-foreground">Instituição:</span> {apenado.institution}
-        </p>
-      </div>
+      {processoAtivo ? (
+        <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
+          <p>
+            <span className="text-muted-foreground">Processo:</span> {processoAtivo.processNumber}
+          </p>
+          <p>
+            <span className="text-muted-foreground">Situação:</span> {processoAtivo.judicialStatus}
+          </p>
+          <p>
+            <span className="text-muted-foreground">Instituição:</span> {processoAtivo.institution}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-center text-sm">
+          <p className="text-muted-foreground">Nenhum processo vinculado a este apenado.</p>
+        </div>
+      )}
 
       <div className="flex items-start gap-2 pt-2 md:items-center">
         <Checkbox
