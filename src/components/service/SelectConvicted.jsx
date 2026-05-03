@@ -10,7 +10,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { DropdownMenu } from '@/components/ui/dropdown-menu.jsx'
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button.jsx'
@@ -81,23 +81,6 @@ export function SelectConvicted() {
       {value && apenadoSelecionado && (
         <ConvictedInfoCard apenado={apenadoSelecionado}></ConvictedInfoCard>
       )}
-
-      <div className="space-y-2">
-        <Label>Data e Hora</Label>
-        <div className="bg-muted rounded-lg p-3">
-          <p className="text-sm font-medium">
-            {new Date().toLocaleString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-            })}
-          </p>
-          <p className="text-muted-foreground mt-1 text-xs">Automático</p>
-        </div>
-      </div>
     </div>
   )
 }

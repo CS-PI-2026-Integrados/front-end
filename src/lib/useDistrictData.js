@@ -16,10 +16,18 @@ export const useDistrictData = () => {
     const baseApenados = (mockApenados.apenados || []).filter((a) => a.tenantId === tenantAtual.id)
     const processosAtuais = mockProcessos.processos || []
 
+    const processosPorApenado = processosAtuais.reduce((acc, processo) => {
+      if (!acc[processo.apenadoId]) {
+        acc[processo.apenadoId] = []
+      }
+      acc[processo.apenadoId].push(processo)
+      return acc
+    }, {})
+
     return baseApenados.map((apenado) => {
       return {
         ...apenado,
-        processos: processosAtuais.filter((p) => p.apenadoId === apenado.id),
+        processos: processosPorApenado[apenado.id] || [],
       }
     })
   }, [tenantAtual.id])

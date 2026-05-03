@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Label } from '@/components/ui/label.jsx'
 import { SelectConvicted } from './SelectConvicted.jsx'
 
 export function ConvictedCard({ className }) {
@@ -17,6 +18,22 @@ export function ConvictedCard({ className }) {
       </CardHeader>
       <CardContent className="space-y-4 px-4 pb-0 md:space-y-6 md:px-6">
         <SelectConvicted></SelectConvicted>
+        <div className="space-y-2">
+          <Label>Data e Hora</Label>
+          <div className="bg-muted rounded-lg p-3">
+            <p className="text-sm font-medium">
+              {new Date().toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+              })}
+            </p>
+            <p className="text-muted-foreground mt-1 text-xs">Automático</p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )

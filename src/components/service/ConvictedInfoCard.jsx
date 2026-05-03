@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Pencil, Info } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Pencil } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -14,25 +14,55 @@ import {
 
 export function ConvictedInfoCard({ apenado }) {
   const [canEdit, setCanEdit] = useState(false)
+  const [selectedProcessId, setSelectedProcessId] = useState('')
 
-  // Pegamos o primeiro processo para exibir de forma simplificada por enquanto
-  // Se o apenado puder ter vários, você pode querer mudar isso depois para um select de processos
-  const processoAtivo =
-    apenado.processos && apenado.processos.length > 0 ? apenado.processos[0] : null
+  const processos = useMemo(() => apenado.processos || [], [apenado.processos])
+
+  const processoAtivo = useMemo(() => {
+    if (processos.length === 0) return null
+    const found = processos.find((p) => String(p.id) === selectedProcessId)
+    return found || processos[0]
+  }, [processos, selectedProcessId])
 
   return (
     <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
-      {processoAtivo ? (
-        <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
-          <p>
-            <span className="text-muted-foreground">Processo:</span> {processoAtivo.processNumber}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Situação:</span> {processoAtivo.judicialStatus}
-          </p>
-          <p>
-            <span className="text-muted-foreground">Instituição:</span> {processoAtivo.institution}
-          </p>
+      {processos.length > 0 ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Processo Ativo</Label>
+            <Select
+              value={processoAtivo ? processoAtivo.id : ''}
+              onValueChange={setSelectedProcessId}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecione um processo" />
+              </SelectTrigger>
+              <SelectContent>
+                {processos.map((processo) => (
+                  <SelectItem key={processo.id} value={String(processo.id)}>
+                    {processo.processNumber}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {processoAtivo && (
+            <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
+              <p>
+                <span className="text-muted-foreground">Processo:</span>{' '}
+                {processoAtivo.processNumber}
+              </p>
+              <p>
+                <span className="text-muted-foreground">Situação:</span>{' '}
+                {processoAtivo.judicialStatus}
+              </p>
+              <p>
+                <span className="text-muted-foreground">Instituição:</span>{' '}
+                {processoAtivo.institution}
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-center text-sm">

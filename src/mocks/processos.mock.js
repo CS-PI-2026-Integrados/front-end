@@ -10,6 +10,15 @@ export const mockProcessos = {
       status: 'regular',
     },
     {
+      id: 'p1_2',
+      apenadoId: '1',
+      tenantId: '1',
+      processNumber: '0009999-99.2024.8.00.0001',
+      judicialStatus: 'Pagamento de Pecúlia',
+      institution: 'Fórum Central',
+      status: 'regular',
+    },
+    {
       id: 'p2',
       apenadoId: '2',
       tenantId: '1',
