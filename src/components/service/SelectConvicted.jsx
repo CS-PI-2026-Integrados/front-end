@@ -89,6 +89,9 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
           apenado={atendimento.apenado}
           processoAtivo={atendimento.processo}
           onChangeProcesso={(proc) => onChangeAtendimento({ ...atendimento, processo: proc })}
+          onChangeApenado={(novoApenado) =>
+            onChangeAtendimento({ ...atendimento, apenado: novoApenado })
+          }
         />
       )}
     </div>

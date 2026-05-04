@@ -110,13 +110,18 @@ export function PhotoCaptureCard({ className, isReady, isSubmitting, photo, onPh
           </>
         )}
 
-        <div className="mt-auto pt-4">
-          <Button
-            type="submit"
-            form="form-atendimento"
-            className="w-full"
-            disabled={!preview || !isReady || isSubmitting}
-          >
+        <div className="mt-auto space-y-2 pt-4">
+          {!preview && !isSubmitting && isReady && (
+            <p className="text-muted-foreground text-center text-xs">
+              Tire ou envie uma foto para continuar
+            </p>
+          )}
+          {preview && !isReady && (
+            <p className="text-muted-foreground text-center text-xs">
+              Selecione um apenado e processo (se houver) para gerar
+            </p>
+          )}
+          <Button type="submit" className="w-full" disabled={!preview || !isReady || isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

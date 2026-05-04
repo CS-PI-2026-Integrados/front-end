@@ -18,13 +18,12 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
   const preview = useMemo(() => {
     if (!photo) return null
     if (typeof photo === 'string') return photo
-    const url = URL.createObjectURL(photo)
-    return url
+    return URL.createObjectURL(photo)
   }, [photo])
 
   useEffect(() => {
     return () => {
-      if (preview && preview.startsWith('blob:')) {
+      if (preview && typeof preview === 'string' && preview.startsWith('blob:')) {
         URL.revokeObjectURL(preview)
       }
     }
@@ -34,7 +33,11 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
     (e) => {
       const file = e.target.files?.[0]
       if (file) {
-        onPhotoSelect?.(file)
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          onPhotoSelect?.(event.target.result)
+        }
+        reader.readAsDataURL(file)
       }
     },
     [onPhotoSelect]
@@ -42,8 +45,9 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
 
   const clearPhoto = useCallback(() => {
     if (fileInputRef.current) fileInputRef.current.value = ''
+    stopCamera()
     onPhotoSelect?.(null)
-  }, [onPhotoSelect])
+  }, [onPhotoSelect, stopCamera])
 
   const startCamera = useCallback(async () => {
     setError(null)
@@ -56,7 +60,6 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
       setIsStreaming(true)
     } catch (err) {
       setError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
-      console.error('Erro ao acessar a câmera:', err)
     }
   }, [])
 

@@ -13,6 +13,7 @@ export function useGenerateReceipt({ setAtendimento }) {
   const generateReceipt = useCallback(
     (params = {}) =>
       new Promise((resolve, reject) => {
+        //apenas para o mock. futuramente, implementação pra API
         setTimeout(() => {
           const { apenadoAtualizado, foiAlterado, processoAtivo, fotoAtendimento } = params
           if (!apenadoAtualizado) {
@@ -22,6 +23,7 @@ export function useGenerateReceipt({ setAtendimento }) {
           const now = new Date().toISOString()
           const apenadoFinal = { ...apenadoAtualizado, lastProof: now }
 
+          //remover quando conectar o springboot
           if (foiAlterado) {
             const index = mockApenados.apenados.findIndex((a) => a.id === apenadoFinal.id)
             if (index !== -1) {
@@ -29,6 +31,7 @@ export function useGenerateReceipt({ setAtendimento }) {
             }
           }
 
+          //substituir com post para a API
           setAtendimento((prev) => ({
             ...prev,
             apenado: apenadoFinal,
@@ -60,8 +63,8 @@ export function useGenerateReceipt({ setAtendimento }) {
             photoUrl: snapshot.photo64,
             pdfUrl: null,
           }
+          //persiste o comprovante, futuramente rota /presencas ou comprovantes
           mockPresenca.presencas.push(novaPresenca)
-          console.log(mockPresenca.presencas, mockApenados.apenados)
           resolve(novaPresenca)
         }, 500)
       }),

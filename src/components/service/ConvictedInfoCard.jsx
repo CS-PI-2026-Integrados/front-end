@@ -12,33 +12,22 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) {
+export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, onChangeApenado }) {
   const [canEdit, setCanEdit] = useState(false)
 
   const processos = apenado.processos || []
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleFieldChange = (field, newValue) => {
+    if (!canEdit) return
 
-    const formData = new FormData(e.target)
-    const phone = formData.get('phone')
-    const address = formData.get('address')
-    const workStatus = formData.get('workStatus')
-
-    const isPhoneChanged = phone !== (apenado.phone || '')
-    const isAddressChanged = address !== (apenado.address || '')
-    const isWorkStatusChanged = workStatus !== (apenado.workStatus || 'nao-trabalha')
-
-    const foiAlterado = canEdit && (isPhoneChanged || isAddressChanged || isWorkStatusChanged)
-    const apenadoAtualizado = { ...apenado, phone, address, workStatus }
+    const currentValue = apenado[field] || ''
+    if (newValue !== currentValue) {
+      onChangeApenado?.({ ...apenado, [field]: newValue })
+    }
   }
 
   return (
-    <form
-      id="form-atendimento"
-      onSubmit={handleSubmit}
-      className="animate-in fade-in slide-in-from-top-4 space-y-4"
-    >
+    <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
       {processos.length > 0 ? (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -110,9 +99,12 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) 
           <Input
             id="editPhone"
             name="phone"
+            type="tel"
+            key={`phone-${apenado?.id}`}
             disabled={!canEdit}
             placeholder="(00) 00000-0000"
-            defaultValue={apenado.phone}
+            defaultValue={apenado.phone || ''}
+            onBlur={(e) => handleFieldChange('phone', e.target.value)}
           />
         </div>
 
@@ -121,9 +113,11 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) 
           <Input
             id="editAddress"
             name="address"
+            key={`address-${apenado?.id}`}
             disabled={!canEdit}
             placeholder="Rua, número..."
-            defaultValue={apenado.address}
+            defaultValue={apenado.address || ''}
+            onBlur={(e) => handleFieldChange('address', e.target.value)}
           />
         </div>
 
@@ -131,16 +125,17 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) 
           <Label>Situação Trabalhista</Label>
           <Select
             disabled={!canEdit}
-            defaultValue={apenado.workStatus || 'nao-trabalha'}
-            name="workStatus"
+            name="workingStatus"
+            value={apenado.workingStatus || ''}
+            onValueChange={(value) => handleFieldChange('workingStatus', value)}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="trabalha">Trabalha</SelectItem>
-              <SelectItem value="nao-trabalha">Não Trabalha</SelectItem>
-              <SelectItem value="autonomo">Autônomo</SelectItem>
+              <SelectItem value="not_working">Não Trabalha</SelectItem>
+              <SelectItem value="working_formal">Trabalha</SelectItem>
+              <SelectItem value="working_informal">Autônomo</SelectItem>
             </SelectContent>
           </Select>
           {!canEdit && (
@@ -150,6 +145,6 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) 
           )}
         </div>
       </div>
-    </form>
+    </div>
   )
 }
