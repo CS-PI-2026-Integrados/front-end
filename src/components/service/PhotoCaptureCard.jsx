@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { cn } from '@/lib/utils.js'
 import { Button } from '@/components/ui/button.jsx'
-import { Camera, Upload, X } from 'lucide-react'
+import { Camera, Loader2, Upload, X } from 'lucide-react'
 import { usePhotoCaptureCard } from '@/hooks/usePhotoCaptureCard.js'
 
-export function PhotoCaptureCard({ className, onPhotoSelect }) {
+export function PhotoCaptureCard({ className, isReady, isSubmitting, photo, onPhotoSelect }) {
   const {
     preview,
     isStreaming,
@@ -16,7 +16,7 @@ export function PhotoCaptureCard({ className, onPhotoSelect }) {
     stopCamera,
     takePhoto,
     openFileDialog,
-  } = usePhotoCaptureCard({ onPhotoSelect })
+  } = usePhotoCaptureCard({ photo, onPhotoSelect })
 
   return (
     <Card className={cn('flex flex-col shadow-sm', className)}>
@@ -107,8 +107,14 @@ export function PhotoCaptureCard({ className, onPhotoSelect }) {
         )}
 
         <div className="mt-auto pt-4">
-          <Button type="submit" form="form-atendimento" className="w-full" disabled={!preview}>
-            Gerar Comprovante
+          <Button
+            type="submit"
+            form="form-atendimento"
+            className="w-full"
+            disabled={!preview || !isReady || isSubmitting}
+          >
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {isSubmitting ? 'Gerando...' : 'Gerar Comprovante'}
           </Button>
         </div>
       </CardContent>

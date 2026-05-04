@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 
-export function usePhotoCaptureCard({ onPhotoSelect }) {
-  const [preview, setPreview] = useState(null)
+export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
   const [isStreaming, setIsStreaming] = useState(false)
   const fileInputRef = useRef(null)
   const videoRef = useRef(null)
@@ -15,12 +14,25 @@ export function usePhotoCaptureCard({ onPhotoSelect }) {
     setIsStreaming(false)
   }, [])
 
+  const preview = useMemo(() => {
+    if (!photo) return null
+    if (typeof photo === 'string') return photo
+    const url = URL.createObjectURL(photo)
+    return url
+  }, [photo])
+
+  useEffect(() => {
+    return () => {
+      if (preview && preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview)
+      }
+    }
+  }, [preview])
+
   const handleFileChange = useCallback(
     (e) => {
       const file = e.target.files?.[0]
       if (file) {
-        const imageUrl = URL.createObjectURL(file)
-        setPreview(imageUrl)
         onPhotoSelect?.(file)
       }
     },
@@ -28,7 +40,6 @@ export function usePhotoCaptureCard({ onPhotoSelect }) {
   )
 
   const clearPhoto = useCallback(() => {
-    setPreview(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
     onPhotoSelect?.(null)
   }, [onPhotoSelect])
@@ -61,7 +72,6 @@ export function usePhotoCaptureCard({ onPhotoSelect }) {
 
     const base64Image = canvas.toDataURL('image/jpeg', 0.9)
 
-    setPreview(base64Image)
     stopCamera()
     onPhotoSelect?.(base64Image)
   }, [onPhotoSelect, stopCamera])

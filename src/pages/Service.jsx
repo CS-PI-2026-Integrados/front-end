@@ -11,6 +11,7 @@ const Service = () => {
   })
 
   const [fotoAtendimento, setFotoAtendimento] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isReadyToCapture = Boolean(
     atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
@@ -20,6 +21,21 @@ const Service = () => {
     setAtendimento,
     fotoAtendimento,
   })
+
+  const handleFinalSubmit = async (params) => {
+    setIsSubmitting(true)
+    try {
+      await generateReceipt(params)
+      setTimeout(() => {
+        setAtendimento({ apenado: null, processo: null })
+        setFotoAtendimento(null)
+      }, 300)
+    } catch (error) {
+      console.error('Falha ao gerar comprovante:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6">
@@ -45,14 +61,20 @@ const Service = () => {
                 className="w-full md:flex-1"
                 atendimento={atendimento}
                 onChangeAtendimento={setAtendimento}
-                onFinalSubmit={generateReceipt}
+                isSubmitting={isSubmitting}
+                onFinalSubmit={handleFinalSubmit}
               />
               <div
                 className={`w-full transition-all duration-300 md:flex-1 ${
                   !isReadyToCapture ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
                 }`}
               >
-                <PhotoCaptureCard onPhotoSelect={setFotoAtendimento} />
+                <PhotoCaptureCard
+                  isReady={isReadyToCapture}
+                  isSubmitting={isSubmitting}
+                  photo={fotoAtendimento}
+                  onPhotoSelect={setFotoAtendimento}
+                />
               </div>
             </TabsContent>
           </Tabs>
