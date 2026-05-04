@@ -16,19 +16,32 @@ const Service = () => {
     atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
   )
 
-  const handleGerarComprovante = ({ apenadoAtualizado, foiAlterado, processoAtivo }) => {
+  const handleGerarComprovante = (params = {}) => {
+    const { apenadoAtualizado, foiAlterado, processoAtivo } = params
+    if (!apenadoAtualizado) return
+
+    const now = new Date().toISOString()
+    const apenadoFinal = { ...apenadoAtualizado, lastProof: now }
+
     if (foiAlterado) {
-      {
-        /*aqui vai a lógica para persistir as mudanças do apenado na API*/
-      }
-      const index = mockApenados.apenados.findIndex((a) => a.id === apenadoAtualizado.id)
+      const index = mockApenados.apenados.findIndex((a) => a.id === apenadoFinal.id)
       if (index !== -1) {
-        mockApenados.apenados[index] = apenadoAtualizado
+        mockApenados.apenados[index] = apenadoFinal
       }
-      setAtendimento((prev) => ({ ...prev, apenado: apenadoAtualizado }))
     }
-    {
-      /*aqui vai a lógica para persistir a foto na API*/
+
+    setAtendimento((prev) => ({
+      ...prev,
+      apenado: apenadoFinal,
+      processo: processoAtivo || prev.processo,
+    }))
+
+    const snapshot = {
+      idApenado: apenadoFinal.id,
+      idProcesso: processoAtivo?.id || atendimento.processo?.id,
+      fotoBase64: fotoAtendimento,
+      timestamp: now,
+      tenant_id: 'default-tenant',
     }
   }
 

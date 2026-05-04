@@ -11,6 +11,7 @@ export const mockApenados = {
       workingStatus: 'working_formal',
       observations: 'Cumprindo regularmente as obrigações',
       createdAt: '2024-01-15',
+      lastProof: '2026-04-17T09:30:00',
     },
     {
       id: '2',
@@ -23,6 +24,7 @@ export const mockApenados = {
       workingStatus: 'working_informal',
       observations: 'Aguardando comparecimento',
       createdAt: '2024-02-10',
+      lastProof: '2024-11-20T14:00:00',
     },
     {
       id: '3',
@@ -35,6 +37,7 @@ export const mockApenados = {
       workingStatus: 'not_working',
       observations: 'Sem intercorrências',
       createdAt: '2024-01-20',
+      lastProof: '2026-04-16T10:00:00',
     },
     {
       id: '4',
@@ -47,6 +50,7 @@ export const mockApenados = {
       workingStatus: 'working_formal',
       observations: 'Falta não justificada registrada',
       createdAt: '2024-03-05',
+      lastProof: '2024-11-08T11:15:00',
     },
     {
       id: '5',
@@ -59,6 +63,7 @@ export const mockApenados = {
       workingStatus: 'working_informal',
       observations: 'Comparecimentos regulares',
       createdAt: '2024-02-01',
+      lastProof: '2026-04-16T15:30:00',
     },
   ],
 }
