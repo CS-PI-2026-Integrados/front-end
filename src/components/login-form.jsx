@@ -5,7 +5,31 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
-const mock_users = [{ id: 1, cpf: '096.767.219.80', password: 'admin' }]
+const mock_users = [
+  { id: 1, tenant: 'Terra Rica', name: 'João Admin', cpf: '117.813.789-91', password: '123' },
+]
+
+const authenticateUser = async (cpf, password) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const userFound = mock_users.find((user) => user.cpf === cpf && user.password === password)
+
+      if (userFound) {
+        const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockToken_' + Date.now()
+        const { password: _, tenant: originalTenant, ...userData } = userFound
+        const formattedTenant = originalTenant.toLowerCase().replace(/\s+/g, '')
+
+        resolve({
+          user: userData,
+          tenant: formattedTenant,
+          token: fakeToken,
+        })
+      } else {
+        reject(new Error('CPF ou senha incorretos.'))
+      }
+    }, 1000)
+  })
+}
 
 const validateCPF = (cpf) => {
   const digits = cpf.replace(/\D/g, '')
@@ -33,6 +57,9 @@ const loginSchema = z.object({
 
 export function LoginForm({ className, ...props }) {
   const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [authError, setAuthError] = useState('')
+
   const navigate = useNavigate()
 
   const {
@@ -44,13 +71,21 @@ export function LoginForm({ className, ...props }) {
     mode: 'onTouched',
   })
 
-  const onSubmit = (data) => {
-    // data.cpf e data.password já chegam validados aqui
-    if (data.password === '123456') {
-      console.log('Login realizado com sucesso!')
-      navigate('/tenant/dashboard')
-    } else {
-      alert('Credenciais inválidas.')
+  const onSubmit = async (data) => {
+    setIsLoading(true)
+    setAuthError('')
+
+    try {
+      const response = await authenticateUser(data.cpf, data.password)
+
+      localStorage.setItem('@sicape:user', JSON.stringify(response.user))
+      localStorage.setItem('@sicape:token', response.token)
+
+      navigate(`/${response.tenant}/dashboard`)
+    } catch (error) {
+      setAuthError(error.message)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -82,10 +117,13 @@ export function LoginForm({ className, ...props }) {
             e.target.value = formatCpf(e.target.value) // Aplica a máscara visualmente
             onCpfChange(e) // Envia o valor mascarado para o React Hook Form
           }}
-          className={`w-full rounded-[8px] border-2 px-3 py-4 text-sm text-black transition-colors outline-none placeholder:text-gray-300 ${errors.cpf ? 'border-red-500 focus:ring-red-500' : 'border-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500'} `}
+          disabled={isLoading}
+          className={`w-full rounded-[8px] border-2 px-3 py-4 text-sm text-black transition-colors outline-none placeholder:text-gray-300 ${errors.cpf || authError ? 'border-red-500 focus:ring-red-500' : 'border-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500'} ${isLoading ? 'bg-gray-100 opacity-70' : 'bg-white'} `}
         />
-        {errors.cpf && (
-          <span className="mt-1 block text-sm text-red-500">{errors.cpf.message}</span>
+        {(errors.cpf || authError) && (
+          <span className="mt-1 block text-sm text-red-500">
+            {errors.cpf?.message || authError}
+          </span>
         )}
       </div>
 
@@ -104,11 +142,13 @@ export function LoginForm({ className, ...props }) {
             type={showPassword ? 'text' : 'password'}
             inputMode="text"
             placeholder="Digite sua senha"
+            disabled={isLoading}
             {...register('password')}
-            className={`w-full rounded-[8px] border-2 px-3 py-4 pr-12 text-sm text-black transition-colors outline-none placeholder:text-gray-300 ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500'} `}
+            className={`w-full rounded-[8px] border-2 px-3 py-4 pr-12 text-sm text-black transition-colors outline-none placeholder:text-gray-300 ${errors.password || authError ? 'border-red-500 focus:ring-red-500' : 'border-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500'} ${isLoading ? 'bg-gray-100 opacity-70' : 'bg-white'} `}
           />
           <button
             type="button"
+            disabled={isLoading}
             onClick={() => setShowPassword((prev) => !prev)}
             aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
             className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 focus:outline-none"
@@ -120,21 +160,23 @@ export function LoginForm({ className, ...props }) {
             )}
           </button>
         </div>
-        {errors.password && (
-          <span className="mt-1 block text-sm text-red-500">{errors.password.message}</span>
+        {(errors.password || authError) && (
+          <span className="mt-1 block text-sm text-red-500">
+            {errors.password?.message || authError}
+          </span>
         )}
       </div>
 
       <button
         type="submit"
         disabled={!isValid}
-        className={`w-full rounded-[8px] px-3 py-4 text-lg font-medium text-white transition-all ${
-          isValid
-            ? 'cursor-pointer bg-green-600/90 hover:ring-2 hover:ring-emerald-700'
-            : 'cursor-not-allowed bg-gray-400 opacity-70'
+        className={`flex w-full items-center justify-center rounded-[8px] px-3 py-4 text-lg font-medium text-white transition-all ${
+          !isValid || isLoading
+            ? 'cursor-not-allowed bg-gray-400 opacity-70'
+            : 'cursor-pointer bg-green-600/90 hover:ring-2 hover:ring-emerald-700'
         } `}
       >
-        Entrar
+        {isLoading ? <Loader2 className="animate-spin text-white" size={24} /> : 'Entrar'}
       </button>
     </form>
   )
