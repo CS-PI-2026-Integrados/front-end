@@ -1,6 +1,6 @@
 import { Label } from '@/components/ui/label.jsx'
-import { useDistrictData } from '@/lib/useDistrictData.js'
-import { useFilteredConvicted } from '@/lib/useFilteredConvicted.js'
+import { useDistrictData } from '@/hooks/useDistrictData.js'
+import { useFilteredConvicted } from '@/hooks/useFilteredConvicted.js'
 import {
   Command,
   CommandEmpty,

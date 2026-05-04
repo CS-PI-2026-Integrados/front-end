@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card.jsx'
-import { formatarTempoRelativo } from '@/lib/useDashboardMetrics.js'
+import { formatarTempoRelativo } from '@/hooks/useDashboardMetrics.js'
 
 export function RecentActivities({ atividadesRecentes }) {
   const atividadesFormatadas = useMemo(() => {

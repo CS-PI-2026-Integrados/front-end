@@ -1,82 +1,22 @@
-import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { cn } from '@/lib/utils.js'
 import { Button } from '@/components/ui/button.jsx'
 import { Camera, Upload, X } from 'lucide-react'
+import { usePhotoCaptureCard } from '@/hooks/usePhotoCaptureCard.js'
 
 export function PhotoCaptureCard({ className, onPhotoSelect }) {
-  const [preview, setPreview] = useState(null)
-  const [isStreaming, setIsStreaming] = useState(false)
-  const fileInputRef = useRef(null)
-  const videoRef = useRef(null)
-  const streamRef = useRef(null)
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const imageUrl = URL.createObjectURL(file)
-      setPreview(imageUrl)
-
-      if (onPhotoSelect) onPhotoSelect(file)
-    }
-  }
-
-  const clearPhoto = () => {
-    setPreview(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-    if (onPhotoSelect) onPhotoSelect(null)
-  }
-
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
-      setIsStreaming(true)
-    } catch (err) {
-      console.error('Erro ao acessar a câmera:', err)
-    }
-  }
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
-    }
-    setIsStreaming(false)
-  }
-
-  const takePhoto = () => {
-    if (!videoRef.current) return
-
-    const video = videoRef.current
-    const canvas = document.createElement('canvas')
-
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-
-    const ctx = canvas.getContext('2d')
-
-    ctx.translate(canvas.width, 0)
-    ctx.scale(-1, 1)
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-
-    const base64Image = canvas.toDataURL('image/jpeg', 0.9)
-
-    setPreview(base64Image)
-    stopCamera()
-
-    if (onPhotoSelect) onPhotoSelect(base64Image)
-  }
-
-  useEffect(() => {
-    return () => {
-      stopCamera()
-    }
-  }, [])
+  const {
+    preview,
+    isStreaming,
+    videoRef,
+    fileInputRef,
+    handleFileChange,
+    clearPhoto,
+    startCamera,
+    stopCamera,
+    takePhoto,
+    openFileDialog,
+  } = usePhotoCaptureCard({ onPhotoSelect })
 
   return (
     <Card className={cn('flex flex-col shadow-sm', className)}>
@@ -146,7 +86,7 @@ export function PhotoCaptureCard({ className, onPhotoSelect }) {
               type="button"
               variant="outline"
               className="bg-background h-auto w-full py-2 whitespace-normal"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={openFileDialog}
             >
               <Upload className="mr-2 h-4 w-4 shrink-0" />
               <span className="text-left">Upload de Foto (Galeria)</span>

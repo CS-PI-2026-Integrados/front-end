@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ConvictedCard } from '@/components/service/ConvictedCard.jsx'
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { PhotoCaptureCard } from '@/components/service/PhotoCaptureCard.jsx'
-import { mockApenados } from '@/mocks/apenados.mock.js'
+import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
 
 const Service = () => {
   const [atendimento, setAtendimento] = useState({
@@ -16,34 +16,10 @@ const Service = () => {
     atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
   )
 
-  const handleGerarComprovante = (params = {}) => {
-    const { apenadoAtualizado, foiAlterado, processoAtivo } = params
-    if (!apenadoAtualizado) return
-
-    const now = new Date().toISOString()
-    const apenadoFinal = { ...apenadoAtualizado, lastProof: now }
-
-    if (foiAlterado) {
-      const index = mockApenados.apenados.findIndex((a) => a.id === apenadoFinal.id)
-      if (index !== -1) {
-        mockApenados.apenados[index] = apenadoFinal
-      }
-    }
-
-    setAtendimento((prev) => ({
-      ...prev,
-      apenado: apenadoFinal,
-      processo: processoAtivo || prev.processo,
-    }))
-
-    const snapshot = {
-      idApenado: apenadoFinal.id,
-      idProcesso: processoAtivo?.id || atendimento.processo?.id,
-      fotoBase64: fotoAtendimento,
-      timestamp: now,
-      tenant_id: 'default-tenant',
-    }
-  }
+  const { generateReceipt } = useGenerateReceipt({
+    setAtendimento,
+    fotoAtendimento,
+  })
 
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6">
@@ -69,7 +45,7 @@ const Service = () => {
                 className="w-full md:flex-1"
                 atendimento={atendimento}
                 onChangeAtendimento={setAtendimento}
-                onFinalSubmit={handleGerarComprovante}
+                onFinalSubmit={generateReceipt}
               />
               <div
                 className={`w-full transition-all duration-300 md:flex-1 ${

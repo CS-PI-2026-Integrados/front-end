@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils.js'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Label } from '@/components/ui/label.jsx'
 import { SelectConvicted } from './SelectConvicted.jsx'

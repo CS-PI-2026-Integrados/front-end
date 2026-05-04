@@ -2,8 +2,8 @@ import { Users, FileText, CheckCircle, TriangleAlert } from 'lucide-react'
 import { MetricCard } from '../components/dashboard/MetricCard.jsx'
 import { ProofData } from '@/components/dashboard/ProofData.jsx'
 import { RecentActivities } from '@/components/dashboard/RecentActivities.jsx'
-import { useDashboardMetrics } from '@/lib/useDashboardMetrics.js'
-import { useDistrictData } from '@/lib/useDistrictData.js'
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics.js'
+import { useDistrictData } from '@/hooks/useDistrictData.js'
 
 const Dashboard = () => {
   const { apenados, presencas } = useDistrictData()
