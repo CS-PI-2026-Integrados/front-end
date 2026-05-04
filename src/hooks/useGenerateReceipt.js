@@ -38,6 +38,7 @@ export function useGenerateReceipt({ setAtendimento }) {
           const snapshot = {
             idApenado: apenadoFinal?.id,
             idTenant: apenadoFinal?.tenantId,
+            idProcesso: processoAtivo?.id,
             name: apenadoFinal?.fullName,
             photo64: fotoAtendimento,
             cpf: apenadoFinal.cpf,
@@ -50,6 +51,7 @@ export function useGenerateReceipt({ setAtendimento }) {
             id: Date.now().toString(),
             apenadoId: snapshot.idApenado,
             tenantId: snapshot.idTenant,
+            processoId: snapshot.idProcesso,
             apenadoName: snapshot.name,
             cpf: snapshot.cpf,
             dateTime: snapshot.timestamp,
@@ -58,9 +60,8 @@ export function useGenerateReceipt({ setAtendimento }) {
             photoUrl: snapshot.photo64,
             pdfUrl: null,
           }
-
           mockPresenca.presencas.push(novaPresenca)
-          console.log('Nova presença registrada no mock:', novaPresenca)
+          console.log(mockPresenca.presencas, mockApenados.apenados)
           resolve(novaPresenca)
         }, 500)
       }),

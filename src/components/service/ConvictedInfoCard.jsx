@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, onFinalSubmit }) {
+export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) {
   const [canEdit, setCanEdit] = useState(false)
 
   const processos = apenado.processos || []
@@ -31,10 +31,6 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
 
     const foiAlterado = canEdit && (isPhoneChanged || isAddressChanged || isWorkStatusChanged)
     const apenadoAtualizado = { ...apenado, phone, address, workStatus }
-
-    if (onFinalSubmit) {
-      onFinalSubmit({ apenadoAtualizado, foiAlterado, processoAtivo })
-    }
   }
 
   return (

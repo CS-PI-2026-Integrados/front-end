@@ -10,12 +10,12 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
 import { ConvictedInfoCard } from '@/components/service/ConvictedInfoCard.jsx'
 
-export function SelectConvicted({ atendimento, onChangeAtendimento, onFinalSubmit }) {
+export function SelectConvicted({ atendimento, onChangeAtendimento }) {
   const { apenados } = useDistrictData()
 
   const [open, setOpen] = useState(false)
@@ -89,7 +89,6 @@ export function SelectConvicted({ atendimento, onChangeAtendimento, onFinalSubmi
           apenado={atendimento.apenado}
           processoAtivo={atendimento.processo}
           onChangeProcesso={(proc) => onChangeAtendimento({ ...atendimento, processo: proc })}
-          onFinalSubmit={onFinalSubmit}
         />
       )}
     </div>
