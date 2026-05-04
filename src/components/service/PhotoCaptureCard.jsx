@@ -32,9 +32,7 @@ export function PhotoCaptureCard({ className }) {
         </div>
 
         <div className="mt-auto pt-4">
-          <Button className="w-full" disabled>
-            Gerar Comprovante
-          </Button>
+          <Button className="w-full">Gerar Comprovante</Button>
         </div>
       </CardContent>
     </Card>

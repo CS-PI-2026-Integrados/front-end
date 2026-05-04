@@ -1,8 +1,18 @@
+import { useState } from 'react'
 import { ConvictedCard } from '@/components/service/ConvictedCard.jsx'
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { PhotoCaptureCard } from '@/components/service/PhotoCaptureCard.jsx'
 
 const Service = () => {
+  const [atendimento, setAtendimento] = useState({
+    apenado: null,
+    processo: null,
+  })
+
+  const isReadyToCapture = Boolean(
+    atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
+  )
+
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6">
       <div>
@@ -23,8 +33,18 @@ const Service = () => {
               value="novo"
               className="flex w-full flex-col items-start gap-6 md:flex-row"
             >
-              <ConvictedCard className="w-full md:flex-1" />
-              <PhotoCaptureCard className="w-full md:flex-1" />
+              <ConvictedCard
+                className="w-full md:flex-1"
+                atendimento={atendimento}
+                onChangeAtendimento={setAtendimento}
+              />
+              <div
+                className={`w-full transition-all duration-300 md:flex-1 ${
+                  !isReadyToCapture ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
+                }`}
+              >
+                <PhotoCaptureCard />
+              </div>
             </TabsContent>
           </Tabs>
         </div>

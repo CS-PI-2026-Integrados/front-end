@@ -1,5 +1,4 @@
 import { Label } from '@/components/ui/label.jsx'
-
 import { useDistrictData } from '@/lib/useDistrictData.js'
 import { useFilteredConvicted } from '@/lib/useFilteredConvicted.js'
 import {
@@ -10,23 +9,32 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
 import { ConvictedInfoCard } from '@/components/service/ConvictedInfoCard.jsx'
 
-export function SelectConvicted() {
+export function SelectConvicted({ atendimento, onChangeAtendimento }) {
   const { apenados } = useDistrictData()
 
   const [open, setOpen] = useState(false)
-  const [value, setValue] = useState('')
   const [search, setSearch] = useState('')
 
   const apenadosFiltrados = useFilteredConvicted(apenados, search)
 
-  const apenadoSelecionado = apenados?.find((a) => String(a.id) === value)
+  const handleSelectApenado = (currentValue) => {
+    setOpen(false)
+    const apenado = apenados?.find((a) => String(a.id) === currentValue)
+
+    if (apenado) {
+      const processoPadrao =
+        apenado.processos && apenado.processos.length > 0 ? apenado.processos[0] : null
+      onChangeAtendimento({ apenado, processo: processoPadrao })
+    } else {
+      onChangeAtendimento({ apenado: null, processo: null })
+    }
+  }
 
   return (
     <div className="w-full space-y-4 md:space-y-6">
@@ -41,8 +49,8 @@ export function SelectConvicted() {
               role="combobox"
               className="w-full justify-between bg-transparent"
             >
-              {value && apenadoSelecionado ? (
-                apenadoSelecionado.fullName
+              {atendimento.apenado ? (
+                atendimento.apenado.fullName
               ) : (
                 <span className="text-muted-foreground font-normal">Selecione um apenado</span>
               )}
@@ -59,10 +67,7 @@ export function SelectConvicted() {
                     <CommandItem
                       key={a.id}
                       value={String(a.id)}
-                      onSelect={(currentValue) => {
-                        setValue(currentValue)
-                        setOpen(false)
-                      }}
+                      onSelect={handleSelectApenado}
                       className="flex flex-col items-start px-2 py-1.5"
                     >
                       <span className="w-full truncate text-left font-medium">{a.fullName}</span>
@@ -78,8 +83,13 @@ export function SelectConvicted() {
         </Popover>
       </div>
 
-      {value && apenadoSelecionado && (
-        <ConvictedInfoCard apenado={apenadoSelecionado}></ConvictedInfoCard>
+      {atendimento.apenado && (
+        <ConvictedInfoCard
+          key={atendimento.apenado.id}
+          apenado={atendimento.apenado}
+          processoAtivo={atendimento.processo}
+          onChangeProcesso={(proc) => onChangeAtendimento({ ...atendimento, processo: proc })}
+        />
       )}
     </div>
   )

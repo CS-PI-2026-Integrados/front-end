@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { Pencil } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
@@ -12,17 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export function ConvictedInfoCard({ apenado }) {
+export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) {
   const [canEdit, setCanEdit] = useState(false)
-  const [selectedProcessId, setSelectedProcessId] = useState('')
 
-  const processos = useMemo(() => apenado.processos || [], [apenado.processos])
-
-  const processoAtivo = useMemo(() => {
-    if (processos.length === 0) return null
-    const found = processos.find((p) => String(p.id) === selectedProcessId)
-    return found || processos[0]
-  }, [processos, selectedProcessId])
+  const processos = apenado.processos || []
 
   return (
     <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
@@ -31,8 +24,13 @@ export function ConvictedInfoCard({ apenado }) {
           <div className="space-y-2">
             <Label>Processo Ativo</Label>
             <Select
-              value={processoAtivo ? processoAtivo.id : ''}
-              onValueChange={setSelectedProcessId}
+              value={processoAtivo ? String(processoAtivo.id) : ''}
+              onValueChange={(id) => {
+                const proc = processos.find((p) => String(p.id) === id)
+                if (proc) {
+                  onChangeProcesso(proc)
+                }
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecione um processo" />
