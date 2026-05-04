@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useComarca } from '../context/ComarcaContext'
 import mockApenados from '../mock/apenados.JSON'
-import ModalInative from '../components/ui/modalInative'
-import ModalEditar from '../components/ui/modalEditar'
+import ModalInative from '../components/hooks/modalInative'
+import ModalEditar from '../components/hooks/modalEditar'
 
 const ITEMS_PER_PAGE = 10
 const STORAGE_KEY = 'apenados_data'
