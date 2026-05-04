@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { cn } from '@/lib/utils.js'
 import { Button } from '@/components/ui/button.jsx'
@@ -6,8 +6,10 @@ import { Camera, Upload, X } from 'lucide-react'
 
 export function PhotoCaptureCard({ className, onPhotoSelect }) {
   const [preview, setPreview] = useState(null)
+  const [isStreaming, setIsStreaming] = useState(false)
   const fileInputRef = useRef(null)
-  const cameraInputRef = useRef(null)
+  const videoRef = useRef(null)
+  const streamRef = useRef(null)
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0]
@@ -22,9 +24,59 @@ export function PhotoCaptureCard({ className, onPhotoSelect }) {
   const clearPhoto = () => {
     setPreview(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
-    if (cameraInputRef.current) cameraInputRef.current.value = ''
     if (onPhotoSelect) onPhotoSelect(null)
   }
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      streamRef.current = stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+      }
+      setIsStreaming(true)
+    } catch (err) {
+      console.error('Erro ao acessar a câmera:', err)
+    }
+  }
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+    setIsStreaming(false)
+  }
+
+  const takePhoto = () => {
+    if (!videoRef.current) return
+
+    const video = videoRef.current
+    const canvas = document.createElement('canvas')
+
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    const ctx = canvas.getContext('2d')
+
+    ctx.translate(canvas.width, 0)
+    ctx.scale(-1, 1)
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    const base64Image = canvas.toDataURL('image/jpeg', 0.9)
+
+    setPreview(base64Image)
+    stopCamera()
+
+    if (onPhotoSelect) onPhotoSelect(base64Image)
+  }
+
+  useEffect(() => {
+    return () => {
+      stopCamera()
+    }
+  }, [])
 
   return (
     <Card className={cn('flex flex-col shadow-sm', className)}>
@@ -54,16 +106,40 @@ export function PhotoCaptureCard({ className, onPhotoSelect }) {
               <X className="h-4 w-4" />
             </Button>
           </div>
+        ) : isStreaming ? (
+          <div className="space-y-4">
+            <div className="relative mx-auto w-full max-w-[200px] overflow-hidden rounded-md border bg-black shadow-sm">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="aspect-[3/4] h-auto w-full scale-x-[-1] object-cover"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-md"
+                onClick={stopCamera}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <Button type="button" className="w-full" onClick={takePhoto}>
+              <Camera className="mr-2 h-4 w-4 shrink-0" />
+              Tirar Foto
+            </Button>
+          </div>
         ) : (
           <div className="space-y-3">
             <Button
               type="button"
               variant="outline"
               className="h-auto w-full bg-transparent py-2 whitespace-normal"
-              onClick={() => cameraInputRef.current?.click()}
+              onClick={startCamera}
             >
               <Camera className="mr-2 h-4 w-4 shrink-0" />
-              <span className="text-left">Capturar com Câmera (Celular)</span>
+              <span className="text-left">Iniciar Captura</span>
             </Button>
 
             <Button
@@ -76,14 +152,6 @@ export function PhotoCaptureCard({ className, onPhotoSelect }) {
               <span className="text-left">Upload de Foto (Galeria)</span>
             </Button>
 
-            <input
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              type="file"
-              ref={cameraInputRef}
-              onChange={handleFileChange}
-            />
             <input
               accept="image/*"
               className="hidden"
