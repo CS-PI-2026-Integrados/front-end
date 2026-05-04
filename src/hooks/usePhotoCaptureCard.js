@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 
 export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
   const [isStreaming, setIsStreaming] = useState(false)
+  const [error, setError] = useState(null)
   const fileInputRef = useRef(null)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
@@ -45,6 +46,7 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
   }, [onPhotoSelect])
 
   const startCamera = useCallback(async () => {
+    setError(null)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
       streamRef.current = stream
@@ -53,6 +55,7 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
       }
       setIsStreaming(true)
     } catch (err) {
+      setError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
       console.error('Erro ao acessar a câmera:', err)
     }
   }, [])
@@ -88,6 +91,7 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
 
   return {
     preview,
+    error,
     isStreaming,
     videoRef,
     fileInputRef,

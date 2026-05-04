@@ -19,17 +19,18 @@ const Service = () => {
 
   const { generateReceipt } = useGenerateReceipt({
     setAtendimento,
-    fotoAtendimento,
   })
+
+  const resetForm = () => {
+    setAtendimento({ apenado: null, processo: null })
+    setFotoAtendimento(null)
+  }
 
   const handleFinalSubmit = async (params) => {
     setIsSubmitting(true)
     try {
-      await generateReceipt(params)
-      setTimeout(() => {
-        setAtendimento({ apenado: null, processo: null })
-        setFotoAtendimento(null)
-      }, 300)
+      await generateReceipt({ ...params, fotoAtendimento })
+      resetForm()
     } catch (error) {
       console.error('Falha ao gerar comprovante:', error)
     } finally {

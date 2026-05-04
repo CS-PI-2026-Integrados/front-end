@@ -9,13 +9,15 @@ const generateRandomCode = (length = 9) => {
     .toUpperCase()
 }
 
-export function useGenerateReceipt({ setAtendimento, fotoAtendimento }) {
+export function useGenerateReceipt({ setAtendimento }) {
   const generateReceipt = useCallback(
     (params = {}) =>
-      new Promise((resolve) => {
+      new Promise((resolve, reject) => {
         setTimeout(() => {
-          const { apenadoAtualizado, foiAlterado, processoAtivo } = params
-          if (!apenadoAtualizado) return
+          const { apenadoAtualizado, foiAlterado, processoAtivo, fotoAtendimento } = params
+          if (!apenadoAtualizado) {
+            return reject(new Error('Dados do apenado não fornecidos para gerar o comprovante'))
+          }
 
           const now = new Date().toISOString()
           const apenadoFinal = { ...apenadoAtualizado, lastProof: now }
@@ -62,7 +64,7 @@ export function useGenerateReceipt({ setAtendimento, fotoAtendimento }) {
           resolve(novaPresenca)
         }, 500)
       }),
-    [fotoAtendimento, setAtendimento]
+    [setAtendimento]
   )
 
   return { generateReceipt }

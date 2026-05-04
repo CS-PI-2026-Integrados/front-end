@@ -6,6 +6,7 @@ import { usePhotoCaptureCard } from '@/hooks/usePhotoCaptureCard.js'
 
 export function PhotoCaptureCard({ className, isReady, isSubmitting, photo, onPhotoSelect }) {
   const {
+    error,
     preview,
     isStreaming,
     videoRef,
@@ -71,39 +72,42 @@ export function PhotoCaptureCard({ className, isReady, isSubmitting, photo, onPh
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-auto w-full bg-transparent py-2 whitespace-normal"
-              onClick={startCamera}
-            >
-              <Camera className="mr-2 h-4 w-4 shrink-0" />
-              <span className="text-left">Iniciar Captura</span>
-            </Button>
+          <>
+            {error && <p className="text-destructive text-center text-sm">{error}</p>}
+            <div className="space-y-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-auto w-full bg-transparent py-2 whitespace-normal"
+                onClick={startCamera}
+              >
+                <Camera className="mr-2 h-4 w-4 shrink-0" />
+                <span className="text-left">Iniciar Captura</span>
+              </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="bg-background h-auto w-full py-2 whitespace-normal"
-              onClick={openFileDialog}
-            >
-              <Upload className="mr-2 h-4 w-4 shrink-0" />
-              <span className="text-left">Upload de Foto (Galeria)</span>
-            </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="bg-background h-auto w-full py-2 whitespace-normal"
+                onClick={openFileDialog}
+              >
+                <Upload className="mr-2 h-4 w-4 shrink-0" />
+                <span className="text-left">Upload de Foto (Galeria)</span>
+              </Button>
 
-            <input
-              accept="image/*"
-              className="hidden"
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-            />
+              <input
+                accept="image/*"
+                className="hidden"
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+              />
 
-            <p className="text-muted-foreground text-center text-xs">
-              Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB
-            </p>
-          </div>
+              <p className="text-muted-foreground text-center text-xs">
+                Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB
+              </p>
+            </div>
+          </>
         )}
 
         <div className="mt-auto pt-4">
@@ -113,8 +117,14 @@ export function PhotoCaptureCard({ className, isReady, isSubmitting, photo, onPh
             className="w-full"
             disabled={!preview || !isReady || isSubmitting}
           >
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {isSubmitting ? 'Gerando...' : 'Gerar Comprovante'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Gerando...
+              </>
+            ) : (
+              'Gerar Comprovante'
+            )}
           </Button>
         </div>
       </CardContent>
