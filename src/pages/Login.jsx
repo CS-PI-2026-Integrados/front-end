@@ -15,12 +15,11 @@ const Login = () => {
           className="absolute inset-0 h-full w-full object-cover"
         />
 
-        {/* <div className="absolute inset-0 bg-emerald-950/30 mix-blend-multiply"></div> */}
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-900/50 to-green-900/30"></div>
+        <div className="absolute inset-0 bg-linear-to-b from-emerald-900/50 to-green-900/30"></div>
 
         <img src={logoWhite} alt="Logo white" className="relative z-10 w-20" />
 
-        <div className="relative z-10 [mask-image:linear-gradient(to_bottom_right,black_20%,transparent_80%)] [mask-repeat:no-repeat]">
+        <div className="relative z-10 mask-[linear-gradient(to_bottom_right,black_20%,transparent_80%)] mask-no-repeat">
           <h1 className="font-serif text-7xl text-white/90">
             Gestão <br />
             inteligente <br />
@@ -31,7 +30,7 @@ const Login = () => {
 
       {/* right side */}
       <div className="flex w-full items-center justify-center bg-white lg:w-1/2">
-        <div className="w-full max-w-[480px] space-y-8 px-6">
+        <div className="w-full max-w-120 space-y-8 px-6">
           <div className="m-0 flex justify-center">
             <img src={logo} alt="Logo" className="h-28 w-28 object-contain" />
           </div>

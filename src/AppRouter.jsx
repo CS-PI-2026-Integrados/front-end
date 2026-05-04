@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Routes, Route, useParams } from 'react-router-dom'
+import { Routes, Route, useParams, Navigate } from 'react-router-dom'
 import { useComarca } from './context/ComarcaContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -21,7 +21,8 @@ const ComarcaRoutes = () => {
 
   return (
     <Routes>
-      <Route path='/dashboard' element={<DashboardLayout />}>
+      <Route path="dashboard" element={<DashboardLayout />}>
+        <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="apenados" element={<Convicteds />} />
         <Route path="instituicoes" element={<Institutions />} />
@@ -36,6 +37,7 @@ const ComarcaRoutes = () => {
 const AppRouter = () => {
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="login" element={<Login />} />
       <Route path="/:tenantId/*" element={<ComarcaRoutes />} />
       <Route path="*" element={<NotFound />} />
