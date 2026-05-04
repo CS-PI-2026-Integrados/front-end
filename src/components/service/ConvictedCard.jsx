@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label.jsx'
 import { SelectConvicted } from './SelectConvicted.jsx'
 
-export function ConvictedCard({ className, atendimento, onChangeAtendimento }) {
+export function ConvictedCard({ className, atendimento, onChangeAtendimento, onFinalSubmit }) {
   const currentDateTime = useMemo(
     () =>
       new Date().toLocaleString('pt-BR', {
@@ -31,7 +31,11 @@ export function ConvictedCard({ className, atendimento, onChangeAtendimento }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 px-4 pb-0 md:space-y-6 md:px-6">
-        <SelectConvicted atendimento={atendimento} onChangeAtendimento={onChangeAtendimento} />
+        <SelectConvicted
+          atendimento={atendimento}
+          onChangeAtendimento={onChangeAtendimento}
+          onFinalSubmit={onFinalSubmit}
+        />
         <div className="space-y-2">
           <Label>Data e Hora</Label>
           <div className="bg-muted rounded-lg p-3">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ConvictedCard } from '@/components/service/ConvictedCard.jsx'
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { PhotoCaptureCard } from '@/components/service/PhotoCaptureCard.jsx'
+import { mockApenados } from '@/mocks/apenados.mock.js'
 
 const Service = () => {
   const [atendimento, setAtendimento] = useState({
@@ -12,6 +13,16 @@ const Service = () => {
   const isReadyToCapture = Boolean(
     atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
   )
+
+  const handleGerarComprovante = ({ apenadoAtualizado, foiAlterado, processoAtivo }) => {
+    if (foiAlterado) {
+      const index = mockApenados.apenados.findIndex((a) => a.id === apenadoAtualizado.id)
+      if (index !== -1) {
+        mockApenados.apenados[index] = apenadoAtualizado
+      }
+      setAtendimento((prev) => ({ ...prev, apenado: apenadoAtualizado }))
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6">
@@ -37,6 +48,7 @@ const Service = () => {
                 className="w-full md:flex-1"
                 atendimento={atendimento}
                 onChangeAtendimento={setAtendimento}
+                onFinalSubmit={handleGerarComprovante}
               />
               <div
                 className={`w-full transition-all duration-300 md:flex-1 ${

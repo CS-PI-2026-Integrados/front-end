@@ -12,13 +12,37 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) {
+export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, onFinalSubmit }) {
   const [canEdit, setCanEdit] = useState(false)
 
   const processos = apenado.processos || []
 
+  const handleSubmit = (e) => {
+    e.preventDefault()
+
+    const formData = new FormData(e.target)
+    const phone = formData.get('phone')
+    const address = formData.get('address')
+    const workStatus = formData.get('workStatus')
+
+    const isPhoneChanged = phone !== (apenado.phone || '')
+    const isAddressChanged = address !== (apenado.address || '')
+    const isWorkStatusChanged = workStatus !== (apenado.workStatus || 'nao-trabalha')
+
+    const foiAlterado = canEdit && (isPhoneChanged || isAddressChanged || isWorkStatusChanged)
+    const apenadoAtualizado = { ...apenado, phone, address, workStatus }
+
+    if (onFinalSubmit) {
+      onFinalSubmit({ apenadoAtualizado, foiAlterado, processoAtivo })
+    }
+  }
+
   return (
-    <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
+    <form
+      id="form-atendimento"
+      onSubmit={handleSubmit}
+      className="animate-in fade-in slide-in-from-top-4 space-y-4"
+    >
       {processos.length > 0 ? (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -89,6 +113,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) 
           <Label htmlFor="editPhone">Telefone</Label>
           <Input
             id="editPhone"
+            name="phone"
             disabled={!canEdit}
             placeholder="(00) 00000-0000"
             defaultValue={apenado.phone}
@@ -99,6 +124,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) 
           <Label htmlFor="editAddress">Endereço</Label>
           <Input
             id="editAddress"
+            name="address"
             disabled={!canEdit}
             placeholder="Rua, número..."
             defaultValue={apenado.address}
@@ -107,7 +133,11 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) 
 
         <div className="space-y-2">
           <Label>Situação Trabalhista</Label>
-          <Select disabled={!canEdit} defaultValue="nao-trabalha">
+          <Select
+            disabled={!canEdit}
+            defaultValue={apenado.workStatus || 'nao-trabalha'}
+            name="workStatus"
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
@@ -124,6 +154,6 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso }) 
           )}
         </div>
       </div>
-    </div>
+    </form>
   )
 }

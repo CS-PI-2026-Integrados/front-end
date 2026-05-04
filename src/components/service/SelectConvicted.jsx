@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
 import { ConvictedInfoCard } from '@/components/service/ConvictedInfoCard.jsx'
 
-export function SelectConvicted({ atendimento, onChangeAtendimento }) {
+export function SelectConvicted({ atendimento, onChangeAtendimento, onFinalSubmit }) {
   const { apenados } = useDistrictData()
 
   const [open, setOpen] = useState(false)
@@ -89,6 +89,7 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
           apenado={atendimento.apenado}
           processoAtivo={atendimento.processo}
           onChangeProcesso={(proc) => onChangeAtendimento({ ...atendimento, processo: proc })}
+          onFinalSubmit={onFinalSubmit}
         />
       )}
     </div>
