@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useComarca } from '../context/ComarcaContext'
 import mockApenados from '../mock/apenados.JSON'
+import ModalInative from '../components/ui/modalInative'
+import ModalEditar from '../components/ui/modalEditar'
 
 const ITEMS_PER_PAGE = 10
 const STORAGE_KEY = 'apenados_data'
@@ -63,134 +65,6 @@ function EmptyState({ query }) {
   )
 }
 
-function ModalInative({ apenado, onConfirmar, onCancelar }) {
-  if (!apenado) return null
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="text-lg font-bold text-gray-900">Inativar Apenado</h2>
-        <p className="mt-2 text-sm text-gray-600">
-          Deseja inativar <strong>{apenado.nome}</strong>? O status será alterado para{' '}
-          <span className="font-semibold text-gray-500">Inativo</span>.
-        </p>
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            onClick={onCancelar}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onConfirmar}
-            className="rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
-          >
-            Inativar
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function ModalEditar({ apenado, onSalvar, onCancelar }) {
-  const [form, setForm] = useState(apenado || {})
-
-  if (!apenado) return null
-
-  function handleChange(e) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="text-lg font-bold text-gray-900">Editar Apenado</h2>
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-gray-600">Nome</label>
-            <input
-              name="nome"
-              value={form.nome}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">CPF</label>
-            <input
-              name="cpf"
-              value={form.cpf}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">Telefone</label>
-            <input
-              name="telefone"
-              value={form.telefone}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-            />
-          </div>
-          <div className="col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-gray-600">Endereço</label>
-            <input
-              name="endereco"
-              value={form.endereco}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
-              Sit. Trabalhista
-            </label>
-            <select
-              name="sit_trabalhista"
-              value={form.sit_trabalhista}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-            >
-              <option>Trabalho Registrado</option>
-              <option>Trabalho Informal</option>
-              <option>Nao Trabalha</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">Status</label>
-            <select
-              name="status"
-              value={form.status}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-            >
-              <option>Regular</option>
-              <option>Pendente</option>
-              <option>Irregular</option>
-              <option>Inativo</option>
-            </select>
-          </div>
-        </div>
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            onClick={onCancelar}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={() => onSalvar(form)}
-            className="rounded-lg bg-green-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-900"
-          >
-            Salvar
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 const Convicteds = () => {
   const { comarca } = useComarca()
   const [search, setSearch] = useState('')
@@ -248,7 +122,6 @@ const Convicteds = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      {/* Modais */}
       <ModalInative
         apenado={apenadoInativar}
         onConfirmar={handleInativar}
@@ -261,7 +134,6 @@ const Convicteds = () => {
         onCancelar={() => setApenadoEditar(null)}
       />
 
-      {/* Header */}
       <div className="mb-7 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestão de Apenados</h1>
@@ -273,7 +145,6 @@ const Convicteds = () => {
         </button>
       </div>
 
-      {/* Filtros */}
       <div className="mb-5 rounded-xl border border-gray-200 bg-white p-5">
         <p className="mb-0.5 text-sm font-semibold text-gray-700">Filtros</p>
         <p className="mb-4 text-xs text-gray-400">Pesquise e filtre os apenados cadastrados</p>
@@ -317,7 +188,6 @@ const Convicteds = () => {
         </div>
       </div>
 
-      {/* Tabela */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div className="px-6 py-5">
           <p className="font-semibold text-gray-900">Apenados Cadastrados</p>
@@ -371,7 +241,6 @@ const Convicteds = () => {
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1">
-                          {/* Visualizar */}
                           <button
                             title="Visualizar"
                             className="rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100"
@@ -390,7 +259,6 @@ const Convicteds = () => {
                               />
                             </svg>
                           </button>
-                          {/* Editar */}
                           <button
                             title="Editar"
                             onClick={() => setApenadoEditar(a)}
@@ -410,7 +278,6 @@ const Convicteds = () => {
                               />
                             </svg>
                           </button>
-                          {/* Inativar */}
                           <button
                             title="Inativar"
                             onClick={() => setApenadoInativar(a)}
@@ -438,7 +305,6 @@ const Convicteds = () => {
               </table>
             </div>
 
-            {/* Paginação */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3.5 text-xs text-gray-500">
                 <span>
