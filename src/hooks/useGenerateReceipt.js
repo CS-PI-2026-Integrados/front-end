@@ -15,7 +15,7 @@ export function useGenerateReceipt({ setAtendimento }) {
       new Promise((resolve, reject) => {
         //apenas para o mock. futuramente, implementação pra API
         setTimeout(() => {
-          const { apenadoAtualizado, foiAlterado, processoAtivo, fotoAtendimento } = params
+          const { apenadoAtualizado, processoAtivo, fotoAtendimento } = params
           if (!apenadoAtualizado) {
             return reject(new Error('Dados do apenado não fornecidos para gerar o comprovante'))
           }
@@ -24,11 +24,9 @@ export function useGenerateReceipt({ setAtendimento }) {
           const apenadoFinal = { ...apenadoAtualizado, lastProof: now }
 
           //remover quando conectar o springboot
-          if (foiAlterado) {
-            const index = mockApenados.apenados.findIndex((a) => a.id === apenadoFinal.id)
-            if (index !== -1) {
-              mockApenados.apenados[index] = apenadoFinal
-            }
+          const index = mockApenados.apenados.findIndex((a) => a.id === apenadoFinal.id)
+          if (index !== -1) {
+            mockApenados.apenados[index] = apenadoFinal
           }
 
           //substituir com post para a API

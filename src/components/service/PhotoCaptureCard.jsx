@@ -4,7 +4,14 @@ import { Button } from '@/components/ui/button.jsx'
 import { Camera, Loader2, Upload, X } from 'lucide-react'
 import { usePhotoCaptureCard } from '@/hooks/usePhotoCaptureCard.js'
 
-export function PhotoCaptureCard({ className, isReady, isSubmitting, photo, onPhotoSelect }) {
+export function PhotoCaptureCard({
+  className,
+  isReady,
+  isSubmitting,
+  photo,
+  onPhotoSelect,
+  apenado,
+}) {
   const {
     error,
     preview,
@@ -31,25 +38,42 @@ export function PhotoCaptureCard({ className, isReady, isSubmitting, photo, onPh
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-end space-y-4 px-6">
         {preview ? (
-          <div className="relative mx-auto w-full max-w-[200px] overflow-hidden rounded-md border shadow-sm">
-            <img
-              src={preview}
-              alt="Preview do Apenado"
-              className="aspect-[3/4] h-auto w-full object-cover"
-            />
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-md"
-              onClick={clearPhoto}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+          <div className="flex flex-row justify-center gap-4">
+            {apenado && (
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-center text-xs">Foto de Referência</p>
+                <div className="relative mx-auto w-full max-w-[200px] overflow-hidden rounded-md border shadow-sm">
+                  <img
+                    src={apenado.referencePhotoUrl || ''}
+                    alt="Referência"
+                    className="aspect-[3/4] h-auto w-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
+            <div className="space-y-2">
+              <p className="text-muted-foreground text-center text-xs">Foto Atual</p>
+              <div className="ring-primary relative mx-auto w-full max-w-[200px] overflow-hidden rounded-md border shadow-sm ring-2">
+                <img
+                  src={preview}
+                  alt="Preview do Apenado"
+                  className="aspect-[3/4] h-auto w-full object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 h-6 w-6 rounded-full shadow-md"
+                  onClick={clearPhoto}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
           </div>
         ) : isStreaming ? (
           <div className="space-y-4">
-            <div className="relative mx-auto w-full max-w-[200px] overflow-hidden rounded-md border bg-black shadow-sm">
+            <div className="relative mx-auto w-full max-w-[250px] overflow-hidden rounded-md border bg-black shadow-sm">
               <video
                 ref={videoRef}
                 autoPlay
@@ -125,10 +149,10 @@ export function PhotoCaptureCard({ className, isReady, isSubmitting, photo, onPh
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Gerando...
+                Confirmando Presença...
               </>
             ) : (
-              'Gerar Comprovante'
+              'Confirmar Presença'
             )}
           </Button>
         </div>

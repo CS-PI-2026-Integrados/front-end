@@ -116,6 +116,7 @@ const Service = () => {
                     isSubmitting={isSubmitting}
                     photo={fotoAtendimento}
                     onPhotoSelect={setFotoAtendimento}
+                    apenado={atendimento.apenado}
                   />
                 </div>
               </form>

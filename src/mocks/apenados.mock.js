@@ -10,7 +10,7 @@ export const mockApenados = {
       address: 'Rua das Flores, 123 - Centro, São Paulo - SP',
       workingStatus: 'working_formal',
       observations: 'Cumprindo regularmente as obrigações',
-      referencePhotoUrl: 'https://i.pravatar.cc/150?u=joao.silva',
+      referencePhotoUrl: 'https://i.pravatar.cc/150?u=joao.santos',
       createdAt: '2024-01-15',
       lastProof: '2026-04-17T09:30:00',
     },
