@@ -10,17 +10,25 @@ const Service = () => {
     processo: null,
   })
 
+  const [fotoAtendimento, setFotoAtendimento] = useState(null)
+
   const isReadyToCapture = Boolean(
     atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
   )
 
   const handleGerarComprovante = ({ apenadoAtualizado, foiAlterado, processoAtivo }) => {
     if (foiAlterado) {
+      {
+        /*aqui vai a lógica para persistir as mudanças do apenado na API*/
+      }
       const index = mockApenados.apenados.findIndex((a) => a.id === apenadoAtualizado.id)
       if (index !== -1) {
         mockApenados.apenados[index] = apenadoAtualizado
       }
       setAtendimento((prev) => ({ ...prev, apenado: apenadoAtualizado }))
+    }
+    {
+      /*aqui vai a lógica para persistir a foto na API*/
     }
   }
 
@@ -55,7 +63,7 @@ const Service = () => {
                   !isReadyToCapture ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
                 }`}
               >
-                <PhotoCaptureCard />
+                <PhotoCaptureCard onPhotoSelect={setFotoAtendimento} />
               </div>
             </TabsContent>
           </Tabs>
