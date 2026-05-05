@@ -69,7 +69,7 @@ const Service = () => {
   }
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col p-4 md:h-[calc(100vh-4rem)] md:p-6">
+    <div className="mx-auto flex h-full max-w-7xl flex-col p-4 md:p-6">
       <Tabs defaultValue="novo" className="flex min-h-0 w-full flex-1 flex-col">
         <div className="mb-6 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
