@@ -4,6 +4,7 @@ import mockApenados from '../mock/apenados.JSON'
 import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
+import toast, { Toaster } from 'react-hot-toast'
 
 const ITEMS_PER_PAGE = 10
 const STORAGE_KEY = 'apenados_data'
@@ -125,10 +126,12 @@ const Convicteds = () => {
   function handleCadastrar(novoApenado) {
     setApenados((prev) => [...prev, novoApenado])
     setModalCadastroAberto(false)
+    toast.success('Apenado cadastrado com sucesso!')
   }
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
+      <Toaster position="top-right" />
       <ModalInative
         apenado={apenadoInativar}
         onConfirmar={handleInativar}
