@@ -68,12 +68,16 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
                       key={a.id}
                       value={String(a.id)}
                       onSelect={handleSelectApenado}
-                      className="flex flex-col items-start px-2 py-1.5"
+                      className="px-2 py-2"
                     >
-                      <span className="w-full truncate text-left font-medium">{a.fullName}</span>
-                      <span className="text-muted-foreground w-full truncate text-left text-xs">
-                        {a.cpf}
-                      </span>
+                      <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+                        <span className="w-full truncate text-left text-sm leading-none font-medium">
+                          {a.fullName}
+                        </span>
+                        <span className="text-muted-foreground w-full truncate text-left text-xs leading-none">
+                          {a.cpf}
+                        </span>
+                      </div>
                     </CommandItem>
                   ))}
                 </CommandGroup>
