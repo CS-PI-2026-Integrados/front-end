@@ -71,7 +71,7 @@ const Service = () => {
   return (
     <div className="mx-auto flex h-full max-w-7xl flex-col p-4 md:p-6">
       <Tabs defaultValue="novo" className="flex min-h-0 w-full flex-1 flex-col">
-        <div className="mb-6 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <h1 className="text-2xl font-bold md:text-3xl">Emissão de Comprovantes</h1>
             <p className="text-muted-foreground mt-2 text-sm md:text-base">

@@ -62,7 +62,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
                 }
               }}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="h-10 w-full">
                 <SelectValue placeholder="Selecione um processo" />
               </SelectTrigger>
               <SelectContent>

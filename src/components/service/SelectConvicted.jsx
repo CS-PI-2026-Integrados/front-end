@@ -47,7 +47,7 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
             <Button
               variant="outline"
               role="combobox"
-              className="w-full justify-between bg-transparent"
+              className="h-10 w-full justify-between bg-transparent"
             >
               {atendimento.apenado ? (
                 atendimento.apenado.fullName
