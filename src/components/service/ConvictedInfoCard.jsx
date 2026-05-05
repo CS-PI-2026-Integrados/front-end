@@ -26,19 +26,25 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
     }
   }
 
-  const handlePhoneInput = (e) => {
-    let value = e.target.value.replace(/\D/g, '')
+  const formatPhone = (val) => {
+    if (!val) return ''
+    let value = val.replace(/\D/g, '')
     if (value.length > 11) value = value.slice(0, 11)
 
-    let formatted = value
-    if (value.length > 2 && value.length <= 6) {
-      formatted = `(${value.slice(0, 2)}) ${value.slice(2)}`
-    } else if (value.length > 6 && value.length <= 10) {
-      formatted = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`
-    } else if (value.length > 10) {
-      formatted = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`
+    if (value.length > 10) {
+      return `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`
+    } else if (value.length > 6) {
+      return `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`
+    } else if (value.length > 2) {
+      return `(${value.slice(0, 2)}) ${value.slice(2)}`
     }
+    return value
+  }
+
+  const handlePhoneInput = (e) => {
+    const formatted = formatPhone(e.target.value)
     e.target.value = formatted
+    handleFieldChange('phone', formatted)
   }
 
   return (
@@ -117,11 +123,15 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
             type="tel"
             key={`phone-${apenado?.id}`}
             disabled={!canEdit}
+            minLength={14}
+            maxLength={15}
+            pattern="^\(\d{2}\) \d{4,5}-\d{4}$"
+            title="O telefone deve conter DDD e entre 8 a 9 números."
             placeholder="(00) 00000-0000"
-            defaultValue={apenado.phone}
+            defaultValue={formatPhone(apenado.phone)}
             onChange={handlePhoneInput}
-            onBlur={(e) => handleFieldChange('phone', e.target.value)}
           />
+          {formatPhone()}
         </div>
 
         <div className="space-y-2">
@@ -133,7 +143,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
             disabled={!canEdit}
             placeholder="Rua, número..."
             defaultValue={apenado.address || ''}
-            onBlur={(e) => handleFieldChange('address', e.target.value)}
+            onChange={(e) => handleFieldChange('address', e.target.value)}
           />
         </div>
 
