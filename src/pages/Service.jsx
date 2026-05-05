@@ -10,7 +10,6 @@ const Service = () => {
     processo: null,
   })
 
-  const [apenadoSelecionado, setApenadoSelecionado] = useState(null)
   const [fotoAtendimento, setFotoAtendimento] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -25,7 +24,6 @@ const Service = () => {
 
   const handleChangeAtendimento = (novoAtendimento) => {
     if (novoAtendimento.apenado?.id !== atendimento.apenado?.id) {
-      setApenadoSelecionado(JSON.parse(JSON.stringify(novoAtendimento.apenado)))
       setErrorMessage('')
     }
     setAtendimento(novoAtendimento)
@@ -33,7 +31,6 @@ const Service = () => {
 
   const resetForm = () => {
     setAtendimento({ apenado: null, processo: null })
-    setApenadoSelecionado(null)
     setFotoAtendimento(null)
     setErrorMessage('')
   }
@@ -57,13 +54,10 @@ const Service = () => {
 
     setIsSubmitting(true)
     try {
-      const foiAlterado = JSON.stringify(atendimento.apenado) !== JSON.stringify(apenadoSelecionado)
-
       await generateReceipt({
         apenadoAtualizado: atendimento.apenado,
         processoAtivo: atendimento.processo,
         fotoAtendimento,
-        foiAlterado,
       })
       resetForm()
     } catch (error) {
