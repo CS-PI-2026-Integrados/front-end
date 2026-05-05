@@ -26,6 +26,21 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
     }
   }
 
+  const handlePhoneInput = (e) => {
+    let value = e.target.value.replace(/\D/g, '')
+    if (value.length > 11) value = value.slice(0, 11)
+
+    let formatted = value
+    if (value.length > 2 && value.length <= 6) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2)}`
+    } else if (value.length > 6 && value.length <= 10) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`
+    } else if (value.length > 10) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`
+    }
+    e.target.value = formatted
+  }
+
   return (
     <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
       {processos.length > 0 ? (
@@ -103,7 +118,8 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
             key={`phone-${apenado?.id}`}
             disabled={!canEdit}
             placeholder="(00) 00000-0000"
-            defaultValue={apenado.phone || ''}
+            defaultValue={apenado.phone}
+            onChange={handlePhoneInput}
             onBlur={(e) => handleFieldChange('phone', e.target.value)}
           />
         </div>
