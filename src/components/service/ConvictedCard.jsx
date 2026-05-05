@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { cn } from '@/lib/utils.js'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label.jsx'
 import { SelectConvicted } from './SelectConvicted.jsx'
 
@@ -19,18 +19,14 @@ export function ConvictedCard({ className, atendimento, onChangeAtendimento }) {
   )
 
   return (
-    <Card
-      className={cn('flex flex-col gap-4 rounded-xl py-4 shadow-sm md:gap-6 md:py-6', className)}
-    >
-      <CardHeader className="grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-4 pb-0 md:px-6">
-        <CardTitle className="text-lg leading-none font-semibold md:text-xl">
+    <Card className={cn('flex flex-col overflow-hidden rounded-xl shadow-sm', className)}>
+      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-4 pb-4 md:px-6 md:pt-6">
+        <CardTitle className="items-start text-lg font-semibold md:text-xl">
           Dados do Atendimento
         </CardTitle>
-        <CardDescription className="text-muted-foreground text-sm">
-          Selecione o apenado e registre a foto
-        </CardDescription>
+        <p className="text-muted-foreground text-sm">Selecione o apenado e registre a foto</p>
       </CardHeader>
-      <CardContent className="space-y-4 px-4 pb-0 md:space-y-6 md:px-6">
+      <CardContent className="flex-1 space-y-4 overflow-y-auto px-4 pb-4 md:space-y-6 md:px-6 md:pb-6">
         <SelectConvicted atendimento={atendimento} onChangeAtendimento={onChangeAtendimento} />
         <div className="space-y-2">
           <Label>Data e Hora</Label>

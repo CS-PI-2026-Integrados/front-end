@@ -69,55 +69,65 @@ const Service = () => {
   }
 
   return (
-    <div className="mx-auto max-w-7xl p-4 md:p-6">
-      <div>
-        <div>
-          <h1 className="text-2xl font-bold md:text-3xl">Emissão de Comprovantes</h1>
-          <p className="text-muted-foreground mt-2 text-sm md:text-base">
-            Gere comprovantes de comparecimento com foto
-          </p>
+    <div className="mx-auto flex max-w-7xl flex-col p-4 md:h-[calc(100vh-4rem)] md:p-6">
+      <Tabs defaultValue="novo" className="flex min-h-0 w-full flex-1 flex-col">
+        <div className="mb-6 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div>
+            <h1 className="text-2xl font-bold md:text-3xl">Emissão de Comprovantes</h1>
+            <p className="text-muted-foreground mt-2 text-sm md:text-base">
+              Gere comprovantes de comparecimento com foto
+            </p>
+          </div>
+          <TabsList className="bg-muted text-muted-foreground inline-flex h-9 w-full shrink-0 items-center justify-center rounded-lg p-0.5 shadow-sm md:w-auto">
+            <TabsTrigger
+              value="novo"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
+              Novo comprovante
+            </TabsTrigger>
+            <TabsTrigger
+              value="historico"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
+              Histórico
+            </TabsTrigger>
+          </TabsList>
         </div>
+
         {errorMessage && (
-          <div className="bg-destructive/10 border-destructive text-destructive mt-4 rounded-lg border p-3 text-sm">
+          <div className="bg-destructive/10 border-destructive text-destructive mb-4 shrink-0 rounded-lg border p-3 text-sm">
             {errorMessage}
           </div>
         )}
-        <div className="py-3">
-          <Tabs defaultValue="novo" className="w-full">
-            <TabsList className="mb-4 grid w-full grid-cols-2 md:inline-flex md:w-auto">
-              <TabsTrigger value="novo">Novo comprovante</TabsTrigger>
-              <TabsTrigger value="historico">Histórico</TabsTrigger>
-            </TabsList>
 
-            <TabsContent
-              value="novo"
-              className="flex w-full flex-col items-start gap-6 md:flex-row"
+        <TabsContent
+          value="novo"
+          className="mt-0 flex min-h-0 w-full flex-1 flex-col gap-6 outline-none md:flex-row md:items-stretch"
+        >
+          <form id="form-atendimento" onSubmit={handleFinalSubmit} className="contents">
+            <ConvictedCard
+              className="w-full md:h-full md:flex-1"
+              atendimento={atendimento}
+              onChangeAtendimento={handleChangeAtendimento}
+              isSubmitting={isSubmitting}
+            />
+            <div
+              className={`flex min-h-0 w-full flex-col transition-all duration-300 md:flex-1 ${
+                !isReadyToCapture ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
+              }`}
             >
-              <form id="form-atendimento" onSubmit={handleFinalSubmit} className="contents">
-                <ConvictedCard
-                  className="w-full md:flex-1"
-                  atendimento={atendimento}
-                  onChangeAtendimento={handleChangeAtendimento}
-                  isSubmitting={isSubmitting}
-                />
-                <div
-                  className={`w-full transition-all duration-300 md:flex-1 ${
-                    !isReadyToCapture ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
-                  }`}
-                >
-                  <PhotoCaptureCard
-                    isReady={isReadyToCapture}
-                    isSubmitting={isSubmitting}
-                    photo={fotoAtendimento}
-                    onPhotoSelect={setFotoAtendimento}
-                    apenado={atendimento.apenado}
-                  />
-                </div>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+              <PhotoCaptureCard
+                className="flex-1 md:h-full"
+                isReady={isReadyToCapture}
+                isSubmitting={isSubmitting}
+                photo={fotoAtendimento}
+                onPhotoSelect={setFotoAtendimento}
+                apenado={atendimento.apenado}
+              />
+            </div>
+          </form>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

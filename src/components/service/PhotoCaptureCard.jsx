@@ -27,16 +27,16 @@ export function PhotoCaptureCard({
   } = usePhotoCaptureCard({ photo, onPhotoSelect })
 
   return (
-    <Card className={cn('flex flex-col shadow-sm', className)}>
-      <CardHeader className="flex-col items-start space-y-1 pb-4 md:items-center">
+    <Card className={cn('flex flex-col overflow-hidden rounded-xl shadow-sm', className)}>
+      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-4 pb-4 md:px-6 md:pt-6">
         <CardTitle className="items-start text-lg font-semibold md:text-xl">
           Captura de Foto
         </CardTitle>
-        <p className="text-muted-foreground text-left text-sm md:text-center">
+        <p className="text-muted-foreground text-sm">
           A foto é obrigatória para emissão do comprovante
         </p>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col justify-end space-y-4 px-6">
+      <CardContent className="flex flex-1 flex-col justify-end space-y-4 overflow-y-auto px-4 pb-4 md:px-6 md:pb-6">
         {preview ? (
           <div className="flex w-full flex-row justify-center gap-4">
             {apenado && (
