@@ -125,7 +125,7 @@ const Service = () => {
               {isSuccess ? (
                 <ReceiptSuccessCard
                   className="flex-1 md:h-full"
-                  apenado={atendimento.apenado}
+                  atendimento={atendimento}
                   onReset={resetForm}
                 />
               ) : (
