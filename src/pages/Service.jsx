@@ -3,6 +3,7 @@ import { ConvictedCard } from '@/components/service/ConvictedCard.jsx'
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { PhotoCaptureCard } from '@/components/service/PhotoCaptureCard.jsx'
 import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
+import { ReceiptSuccessCard } from '@/components/service/ReceiptSuccessCard.jsx'
 
 const Service = () => {
   const [atendimento, setAtendimento] = useState({
@@ -13,6 +14,7 @@ const Service = () => {
   const [fotoAtendimento, setFotoAtendimento] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [isSuccess, setIsSuccess] = useState(false)
 
   const isReadyToCapture = Boolean(
     atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
@@ -25,6 +27,7 @@ const Service = () => {
   const handleChangeAtendimento = (novoAtendimento) => {
     if (novoAtendimento.apenado?.id !== atendimento.apenado?.id) {
       setErrorMessage('')
+      setIsSuccess(false)
     }
     setAtendimento(novoAtendimento)
   }
@@ -33,6 +36,7 @@ const Service = () => {
     setAtendimento({ apenado: null, processo: null })
     setFotoAtendimento(null)
     setErrorMessage('')
+    setIsSuccess(false)
   }
 
   const handleFinalSubmit = async (e) => {
@@ -59,7 +63,7 @@ const Service = () => {
         processoAtivo: atendimento.processo,
         fotoAtendimento,
       })
-      resetForm()
+      setIsSuccess(true)
     } catch (error) {
       console.error('Falha ao gerar comprovante:', error)
       setErrorMessage(error.message || 'Falha ao gerar comprovante. Tente novamente.')
@@ -113,17 +117,27 @@ const Service = () => {
             />
             <div
               className={`flex min-h-0 w-full flex-col transition-all duration-300 md:flex-1 ${
-                !isReadyToCapture ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
+                !isReadyToCapture && !isSuccess
+                  ? 'pointer-events-none opacity-40 grayscale-[0.5]'
+                  : ''
               }`}
             >
-              <PhotoCaptureCard
-                className="flex-1 md:h-full"
-                isReady={isReadyToCapture}
-                isSubmitting={isSubmitting}
-                photo={fotoAtendimento}
-                onPhotoSelect={setFotoAtendimento}
-                apenado={atendimento.apenado}
-              />
+              {isSuccess ? (
+                <ReceiptSuccessCard
+                  className="flex-1 md:h-full"
+                  apenado={atendimento.apenado}
+                  onReset={resetForm}
+                />
+              ) : (
+                <PhotoCaptureCard
+                  className="flex-1 md:h-full"
+                  isReady={isReadyToCapture}
+                  isSubmitting={isSubmitting}
+                  photo={fotoAtendimento}
+                  onPhotoSelect={setFotoAtendimento}
+                  apenado={atendimento.apenado}
+                />
+              )}
             </div>
           </form>
         </TabsContent>
