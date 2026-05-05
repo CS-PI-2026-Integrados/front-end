@@ -110,7 +110,9 @@ const Service = () => {
         >
           <form id="form-atendimento" onSubmit={handleFinalSubmit} className="contents">
             <ConvictedCard
-              className="w-full md:h-full md:flex-1"
+              className={`w-full transition-all duration-300 md:h-full md:flex-1 ${
+                isSuccess ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
+              }`}
               atendimento={atendimento}
               onChangeAtendimento={handleChangeAtendimento}
               isSubmitting={isSubmitting}
