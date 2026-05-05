@@ -3,6 +3,8 @@ import { useComarca } from '../context/ComarcaContext'
 import mockApenados from '../mock/apenados.JSON'
 import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'
+import ModalCadastro from '../components/hooks/modalCadastro'
+import toast, { Toaster } from 'react-hot-toast'
 
 const ITEMS_PER_PAGE = 10
 const STORAGE_KEY = 'apenados_data'
@@ -82,6 +84,7 @@ const Convicteds = () => {
 
   const [apenadoInativar, setApenadoInativar] = useState(null)
   const [apenadoEditar, setApenadoEditar] = useState(null)
+  const [modalCadastroAberto, setModalCadastroAberto] = useState(false)
 
   const filtered = useMemo(() => {
     if (!comarca) return []
@@ -120,8 +123,15 @@ const Convicteds = () => {
     setApenadoEditar(null)
   }
 
+  function handleCadastrar(novoApenado) {
+    setApenados((prev) => [...prev, novoApenado])
+    setModalCadastroAberto(false)
+    toast.success('Apenado cadastrado com sucesso!')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
+      <Toaster position="top-right" />
       <ModalInative
         apenado={apenadoInativar}
         onConfirmar={handleInativar}
@@ -133,13 +143,22 @@ const Convicteds = () => {
         onSalvar={handleSalvar}
         onCancelar={() => setApenadoEditar(null)}
       />
+      {modalCadastroAberto && (
+        <ModalCadastro
+          onSalvar={handleCadastrar}
+          onCancelar={() => setModalCadastroAberto(false)}
+        />
+      )}
 
       <div className="mb-7 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestão de Apenados</h1>
           <p className="mt-1 text-sm text-gray-500">Cadastro e gerenciamento de apenados</p>
         </div>
-        <button className="flex items-center gap-2 rounded-lg bg-green-800 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-900">
+        <button
+          onClick={() => setModalCadastroAberto(true)}
+          className="flex items-center gap-2 rounded-lg bg-green-800 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-900"
+        >
           <span className="text-lg leading-none">+</span>
           Novo Apenado
         </button>
