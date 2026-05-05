@@ -20,15 +20,15 @@ export function ConvictedCard({ className, atendimento, onChangeAtendimento }) {
 
   return (
     <Card className={cn('flex flex-col overflow-hidden rounded-xl shadow-sm', className)}>
-      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-4 pb-4 md:px-6 md:pt-6">
+      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-2 pb-3 md:px-6 md:pt-3 md:pb-4">
         <CardTitle className="items-start text-lg font-semibold md:text-xl">
           Dados do Atendimento
         </CardTitle>
         <p className="text-muted-foreground text-sm">Selecione o apenado e registre a foto</p>
       </CardHeader>
-      <CardContent className="flex-1 space-y-4 overflow-y-auto px-4 pb-4 md:space-y-6 md:px-6 md:pb-6">
+      <CardContent className="flex flex-1 flex-col overflow-y-auto px-4 pb-4 md:px-6 md:pb-6">
         <SelectConvicted atendimento={atendimento} onChangeAtendimento={onChangeAtendimento} />
-        <div className="space-y-2">
+        <div className="mt-auto shrink-0 space-y-2 pt-4 md:pt-6">
           <Label>Data e Hora</Label>
           <div className="bg-muted rounded-lg p-3">
             <p className="text-sm font-medium">{currentDateTime}</p>

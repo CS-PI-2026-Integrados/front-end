@@ -28,7 +28,7 @@ export function PhotoCaptureCard({
 
   return (
     <Card className={cn('flex flex-col overflow-hidden rounded-xl shadow-sm', className)}>
-      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-4 pb-4 md:px-6 md:pt-6">
+      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-2 pb-3 md:px-6 md:pt-3 md:pb-4">
         <CardTitle className="items-start text-lg font-semibold md:text-xl">
           Captura de Foto
         </CardTitle>

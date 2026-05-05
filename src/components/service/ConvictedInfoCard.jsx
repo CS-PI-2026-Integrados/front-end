@@ -51,7 +51,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
     <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
       {processos.length > 0 ? (
         <div className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label>Processo Ativo</Label>
             <Select
               value={processoAtivo ? String(processoAtivo.id) : ''}
@@ -115,7 +115,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
       </div>
 
       <div className="bg-muted/50 space-y-4 rounded-lg border p-4">
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="editPhone">Telefone</Label>
           <Input
             id="editPhone"
@@ -134,7 +134,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
           {formatPhone()}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="editAddress">Endereço</Label>
           <Input
             id="editAddress"
@@ -147,7 +147,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label>Situação Trabalhista</Label>
           <Select
             disabled={!canEdit}

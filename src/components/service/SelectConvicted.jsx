@@ -38,7 +38,7 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
 
   return (
     <div className="w-full space-y-4 md:space-y-6">
-      <div className="space-y-2">
+      <div className="space-y-1">
         <Label>
           Apenado <span className="text-destructive font-light">*</span>
         </Label>
@@ -83,7 +83,7 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
         </Popover>
       </div>
 
-      {atendimento.apenado && (
+      {atendimento.apenado ? (
         <ConvictedInfoCard
           key={atendimento.apenado.id}
           apenado={atendimento.apenado}
@@ -93,6 +93,12 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
             onChangeAtendimento({ ...atendimento, apenado: novoApenado })
           }
         />
+      ) : (
+        <div className="bg-muted/30 flex min-h-[140px] flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
+          <p className="text-muted-foreground text-sm">
+            Selecione o apenado para iniciar um atendimento
+          </p>
+        </div>
       )}
     </div>
   )
