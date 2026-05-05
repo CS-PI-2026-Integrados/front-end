@@ -38,9 +38,9 @@ export function PhotoCaptureCard({
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-end space-y-4 px-6">
         {preview ? (
-          <div className="flex flex-row justify-center gap-4">
+          <div className="flex w-full flex-row justify-center gap-4">
             {apenado && (
-              <div className="space-y-2">
+              <div className="flex-1 space-y-2">
                 <p className="text-muted-foreground text-center text-xs">Foto de Referência</p>
                 <div className="relative mx-auto w-full max-w-[200px] overflow-hidden rounded-md border shadow-sm">
                   <img
@@ -51,7 +51,7 @@ export function PhotoCaptureCard({
                 </div>
               </div>
             )}
-            <div className="space-y-2">
+            <div className="flex-1 space-y-2">
               <p className="text-muted-foreground text-center text-xs">Foto Atual</p>
               <div className="ring-primary relative mx-auto w-full max-w-[200px] overflow-hidden rounded-md border shadow-sm ring-2">
                 <img
@@ -152,7 +152,7 @@ export function PhotoCaptureCard({
                 Confirmando Presença...
               </>
             ) : (
-              'Confirmar Presença'
+              'Gerar Comprovante'
             )}
           </Button>
         </div>
