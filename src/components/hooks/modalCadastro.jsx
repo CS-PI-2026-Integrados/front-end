@@ -43,7 +43,8 @@ function generateUUID() {
 }
 
 function ModalCadastro({ onSalvar, onCancelar }) {
-  const { comarca } = useSession()
+  const { session } = useSession()
+  const comarcaId = session?.tenant?.id
   const [form, setForm] = useState(INITIAL_FORM)
   const [errors, setErrors] = useState({})
   const [preview, setPreview] = useState(null)
@@ -94,7 +95,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
     }
     const novoApenado = {
       id: generateUUID(),
-      tenant_id: comarca,
+      tenant_id: comarcaId,
       nome: form.nome,
       cpf: form.cpf,
       data_nascimento: form.dataNascimento,
