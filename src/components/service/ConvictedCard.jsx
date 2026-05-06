@@ -33,8 +33,8 @@ export function ConvictedCard({
       </CardHeader>
       <CardContent
         className={cn(
-          'flex min-h-0 flex-1 flex-col px-4 pb-4 md:px-6 md:pb-6',
-          atendimento.apenado ? 'overflow-y-auto' : 'overflow-hidden'
+          'flex flex-col px-4 pb-4 md:min-h-0 md:flex-1 md:px-6 md:pb-6',
+          atendimento.apenado ? 'md:overflow-y-auto' : 'md:overflow-hidden'
         )}
       >
         <SelectConvicted

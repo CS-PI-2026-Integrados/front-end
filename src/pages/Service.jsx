@@ -71,6 +71,7 @@ const Service = () => {
         mudancasDetectadas,
       })
       setIsSuccess(true)
+      console.log(atendimento.apenado)
     } catch (error) {
       console.error('Falha ao gerar comprovante:', error)
       setErrorMessage(error.message || 'Falha ao gerar comprovante. Tente novamente.')
@@ -80,7 +81,7 @@ const Service = () => {
   }
 
   return (
-    <div className="mx-auto flex h-full max-w-7xl flex-col p-4 md:p-6">
+    <div className="mx-auto flex min-h-full max-w-7xl flex-col p-4 md:h-full md:p-6">
       <Tabs defaultValue="novo" className="flex min-h-0 w-full flex-1 flex-col">
         <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -113,7 +114,7 @@ const Service = () => {
 
         <TabsContent
           value="novo"
-          className="mt-0 flex min-h-0 w-full flex-1 flex-col gap-6 outline-none md:flex-row md:items-stretch"
+          className="mt-0 flex w-full flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:flex-row md:items-stretch"
         >
           <form id="form-atendimento" onSubmit={handleFinalSubmit} className="contents">
             <ConvictedCard
@@ -126,7 +127,7 @@ const Service = () => {
               isSubmitting={isSubmitting}
             />
             <div
-              className={`flex min-h-0 w-full flex-col transition-all duration-300 md:flex-1 ${
+              className={`flex w-full flex-col transition-all duration-300 md:min-h-0 md:flex-1 ${
                 !isReadyToCapture && !isSuccess
                   ? 'pointer-events-none opacity-40 grayscale-[0.5]'
                   : ''
