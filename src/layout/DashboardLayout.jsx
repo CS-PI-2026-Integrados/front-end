@@ -80,7 +80,7 @@ export default function DashboardLayout() {
                 <Link to="/relatorios" className="flex items-center gap-2 w-full">
                   <ChartBar /> Relatorios
                 </Link>
-              </Button> */}
+              </Button>
               <Button
                 asChild
                 variant={isActive('/configuracoes') ? 'default' : 'ghost'}
@@ -89,7 +89,7 @@ export default function DashboardLayout() {
                 <Link to="/configuracoes" className="flex w-full items-center gap-2">
                   <Settings /> Configuracões
                 </Link>
-              </Button>
+              </Button> */}
             </aside>
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function DashboardLayout() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Perfil</DropdownMenuItem>
+                    {/* <DropdownMenuItem>Perfil</DropdownMenuItem> */}
                     <DropdownMenuItem asChild>
                       <Link to="/login" className="cursor-pointer">
                         Sair
