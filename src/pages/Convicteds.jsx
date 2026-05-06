@@ -16,6 +16,7 @@ function maskCPF(cpf) {
 function StatusBadge({ status }) {
   const variants = {
     Regular: 'bg-green-100 text-green-700 border border-green-200',
+    Ativo: 'bg-green-100 text-green-700 border border-green-200',
     Pendente: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
     Irregular: 'bg-red-100 text-red-600 border border-red-200',
     Inativo: 'bg-gray-100 text-gray-500 border border-gray-200',
@@ -116,6 +117,7 @@ const Convicteds = () => {
       prev.map((a) => (a.id === apenadoInativar.id ? { ...a, status: 'Inativo' } : a))
     )
     setApenadoInativar(null)
+    toast.success('Apenado inativado com sucesso!')
   }
 
   function handleSalvar(form) {
