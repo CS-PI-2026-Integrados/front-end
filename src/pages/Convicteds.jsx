@@ -7,7 +7,7 @@ import ModalCadastro from '../components/hooks/modalCadastro'
 import toast, { Toaster } from 'react-hot-toast'
 
 const ITEMS_PER_PAGE = 10
-const STORAGE_KEY = 'apenados_data'
+const STORAGE_KEY = 'apenados_data_v3'
 
 function maskCPF(cpf) {
   return cpf.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**')
@@ -71,14 +71,27 @@ function EmptyState({ query }) {
 const Convicteds = () => {
   const { session } = useSession()
   const comarca = session?.tenant?.id
+
+  const apenadosIniciais = useMemo(() => {
+    if (!comarca) return []
+    return mockApenados.filter((a) => a.tenant_id === comarca)
+  }, [comarca])
+
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Todos')
   const [currentPage, setCurrentPage] = useState(1)
 
   const [apenados, setApenados] = useState(() => {
     const salvo = localStorage.getItem(STORAGE_KEY)
-    return salvo ? JSON.parse(salvo) : mockApenados
+    return salvo ? JSON.parse(salvo) : apenadosIniciais
   })
+
+  const [foiInicializado, setFoiInicializado] = useState(() => !!localStorage.getItem(STORAGE_KEY))
+
+  if (!foiInicializado && apenadosIniciais.length > 0) {
+    setApenados(apenadosIniciais)
+    setFoiInicializado(true)
+  }
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(apenados))
