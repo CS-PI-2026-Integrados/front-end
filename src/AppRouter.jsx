@@ -21,7 +21,7 @@ const AppRouter = () => {
   return (
     <Routes>
       <Route path="login" element={<Login />} />
-      <Route path='/dashboard' element={<DashboardLayout />}>
+      <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="apenados" element={<Convicteds />} />
         <Route path="instituicoes" element={<Institutions />} />
