@@ -52,7 +52,7 @@ export default function DashboardLayout() {
                 </Link>
               </Button>
               <Button asChild variant="ghost" className="justify-start">
-                <Link to="/comprovantes" className="flex w-full items-center gap-2">
+                <Link to="/atendimento" className="flex w-full items-center gap-2">
                   <FileText /> Comprovantes
                 </Link>
               </Button>

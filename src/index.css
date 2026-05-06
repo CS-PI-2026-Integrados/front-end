@@ -6,6 +6,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: 'Instrument Sans Variable', sans-serif;
@@ -74,7 +80,7 @@
   --chart-3: oklch(0.466 0.025 107.3);
   --chart-4: oklch(0.394 0.023 107.4);
   --chart-5: oklch(0.286 0.016 107.4);
-  --radius: 0.5rem;
+  --radius: 0.3rem;
   --sidebar: oklch(0.988 0.003 106.5);
   --sidebar-foreground: oklch(0.153 0.006 107.1);
   --sidebar-primary: oklch(0.627 0.194 149.214);

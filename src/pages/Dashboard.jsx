@@ -1,33 +1,20 @@
-import { useMemo } from 'react'
 import { Users, FileText, CheckCircle, TriangleAlert } from 'lucide-react'
 import { MetricCard } from '../components/dashboard/MetricCard.jsx'
 import { ProofData } from '@/components/dashboard/ProofData.jsx'
 import { RecentActivities } from '@/components/dashboard/RecentActivities.jsx'
-import { useSession } from '@/context/SessionContext.jsx'
-import { mockApenados } from '@/mocks/apenados.mock.js'
-import { mockPresenca } from '@/mocks/presenca.mock.js'
-import { mockTenants } from '@/mocks/tenants.mock.js'
-import { useDashboardMetrics } from '@/lib/useDashboardMetrics.js'
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics.js'
+import { useDistrictData } from '@/hooks/useDistrictData.js'
 
 const Dashboard = () => {
-  const { session } = useSession()
+  const { apenados, presencas } = useDistrictData()
 
-  const tenantAtual = useMemo(
-    () => mockTenants.tenants.find((t) => t.uuid === session) || {},
-    [session]
-  )
-
-  const apenados = useMemo(
-    () => (mockApenados.apenados || []).filter((a) => a.tenantId === tenantAtual.id),
-    [tenantAtual.id]
-  )
-
-  const presencas = useMemo(
-    () => (mockPresenca.presencas || []).filter((p) => p.tenantId === tenantAtual.id),
-    [tenantAtual.id]
-  )
-
-  const dashboardData = useDashboardMetrics(presencas, apenados)
+  const {
+    comprovantesRecentes,
+    ultimosMesesGrafico,
+    contagemMeses,
+    apenadosRegulares,
+    atividadesRecentes,
+  } = useDashboardMetrics(presencas, apenados)
 
   return (
     <div className="max-w-7x1 mx-auto p-6">
@@ -47,32 +34,29 @@ const Dashboard = () => {
           <MetricCard
             title="Comprovantes emitidos"
             description="Nos últimos 7 dias"
-            data={dashboardData.comprovantesRecentes}
+            data={comprovantesRecentes}
             icon={<FileText className="text-muted-foreground h-4 w-4" />}
           />
           <MetricCard
             title="Em Conformidade"
             description="Situacão regular"
-            data={dashboardData.apenadosRegulares}
+            data={apenadosRegulares}
             icon={<CheckCircle className="text-muted-foreground h-4 w-4" />}
           />
           <MetricCard
             title="Irregulares"
             description="Situação irregular"
-            data={apenados.length - dashboardData.apenadosRegulares}
+            data={apenados.length - apenadosRegulares}
             icon={<TriangleAlert className="text-muted-foreground h-4 w-4" />}
           />
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-4">
           <div className="lg:col-span-2">
-            <ProofData
-              ultimosMesesGrafico={dashboardData.ultimosMesesGrafico}
-              contagemMeses={dashboardData.contagemMeses}
-            />
+            <ProofData ultimosMesesGrafico={ultimosMesesGrafico} contagemMeses={contagemMeses} />
           </div>
           <div className="lg:col-span-2">
-            <RecentActivities atividadesRecentes={dashboardData.atividadesRecentes} />
+            <RecentActivities atividadesRecentes={atividadesRecentes} />
           </div>
         </div>
       </div>
