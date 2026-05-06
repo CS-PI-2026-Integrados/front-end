@@ -120,7 +120,11 @@ export default function DashboardLayout() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>Perfil</DropdownMenuItem>
-                    <DropdownMenuItem>Sair</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/login" className="cursor-pointer">
+                        Sair
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
