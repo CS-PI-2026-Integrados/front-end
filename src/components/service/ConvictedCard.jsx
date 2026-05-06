@@ -31,7 +31,12 @@ export function ConvictedCard({
         </CardTitle>
         <p className="text-muted-foreground text-sm">Selecione o apenado e registre a foto</p>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col overflow-y-auto px-4 pb-4 md:px-6 md:pb-6">
+      <CardContent
+        className={cn(
+          'flex min-h-0 flex-1 flex-col px-4 pb-4 md:px-6 md:pb-6',
+          atendimento.apenado ? 'overflow-y-auto' : 'overflow-hidden'
+        )}
+      >
         <SelectConvicted
           atendimento={atendimento}
           onChangeAtendimento={onChangeAtendimento}
