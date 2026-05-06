@@ -21,6 +21,7 @@ export function PhotoCaptureCard({
     fileInputRef,
     handleFileChange,
     clearPhoto,
+    discardPhoto,
     startCamera,
     stopCamera,
     takePhoto,
@@ -37,71 +38,69 @@ export function PhotoCaptureCard({
           A foto é obrigatória para emissão do comprovante
         </p>
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col space-y-4 overflow-y-auto px-4 pb-4 md:px-6 md:pb-6">
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-4 pb-4 md:px-6 md:pb-6">
         {preview ? (
-          <div className="flex w-full flex-row justify-center gap-4">
+          <div className="flex min-h-0 w-full flex-1 flex-row justify-center gap-4">
             {apenado && (
-              <div className="flex-1 space-y-2">
-                <p className="text-muted-foreground text-center text-xs">Foto de Referência</p>
-                <div className="relative mx-auto w-full max-w-[200px] overflow-hidden rounded-md border shadow-sm">
+              <div className="flex min-h-0 flex-1 flex-col space-y-2">
+                <p className="text-muted-foreground shrink-0 text-center text-xs font-medium">
+                  Foto de Referência
+                </p>
+                <div className="relative mx-auto flex min-h-0 w-full max-w-[200px] flex-1 overflow-hidden rounded-xl border shadow-2xl">
                   <img
                     src={apenado.referencePhotoUrl || ''}
                     alt="Referência"
-                    className="aspect-[3/4] h-auto w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
                 </div>
               </div>
             )}
-            <div className="flex-1 space-y-2">
-              <p className="text-muted-foreground text-center text-xs">Foto Atual</p>
-              <div className="ring-primary relative mx-auto w-full max-w-[200px] overflow-hidden rounded-md border shadow-sm ring-2">
+            <div className="flex min-h-0 flex-1 flex-col space-y-2">
+              <p className="text-primary shrink-0 text-center text-xs font-medium">Foto Atual</p>
+              <div className="ring-primary/30 relative mx-auto flex min-h-0 w-full max-w-[200px] flex-1 overflow-hidden rounded-xl border shadow-2xl ring-4">
                 <img
                   src={preview}
                   alt="Preview do Apenado"
-                  className="aspect-[3/4] h-auto w-full object-cover"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 h-6 w-6 rounded-full shadow-md"
-                  onClick={clearPhoto}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
               </div>
             </div>
           </div>
         ) : isStreaming ? (
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <Label className="pointer-events-none invisible opacity-0 select-none">Câmera</Label>
-              <div className="relative mx-auto w-full max-w-[250px] overflow-hidden rounded-md border bg-black shadow-sm">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="aspect-[3/4] h-auto w-full scale-x-[-1] object-cover"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-md"
-                  onClick={stopCamera}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center space-y-4">
+            <div className="relative mx-auto flex min-h-0 w-full max-w-[280px] flex-1 items-center justify-center overflow-hidden rounded-xl border bg-black shadow-2xl">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-md"
+                onClick={stopCamera}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <Button type="button" className="h-10 w-full" onClick={takePhoto}>
-              <Camera className="mr-2 h-4 w-4 shrink-0" />
-              Tirar Foto
-            </Button>
+            <div className="flex shrink-0 items-center justify-center">
+              <button
+                type="button"
+                onClick={takePhoto}
+                className="group border-muted-foreground/30 bg-muted/50 relative flex h-16 w-16 items-center justify-center rounded-full border-[3px] transition-transform hover:scale-105 active:scale-95"
+                title="Tirar Foto"
+              >
+                <div className="bg-primary text-primary-foreground group-active:bg-primary/80 flex h-12 w-12 items-center justify-center rounded-full shadow-md transition-colors">
+                  <Camera className="h-6 w-6" />
+                </div>
+              </button>
+            </div>
           </div>
         ) : (
-          <>
-            <div className="w-full space-y-3">
+          <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center">
+            <div className="w-full max-w-sm space-y-3">
               <div className="space-y-1">
                 <Label className="pointer-events-none invisible opacity-0 select-none">Ação</Label>
                 <Button
@@ -138,10 +137,10 @@ export function PhotoCaptureCard({
               </p>
               {error && <p className="text-destructive text-center text-sm">{error}</p>}
             </div>
-          </>
+          </div>
         )}
 
-        <div className="mt-auto space-y-2 pt-4">
+        <div className="mt-auto shrink-0 space-y-2 pt-4">
           {!preview && !isSubmitting && isReady && (
             <p className="text-muted-foreground text-center text-xs">
               Tire ou envie uma foto para continuar
@@ -152,16 +151,34 @@ export function PhotoCaptureCard({
               Selecione um apenado e processo (se houver) para gerar
             </p>
           )}
-          <Button type="submit" className="w-full" disabled={!preview || !isReady || isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Confirmando Presença...
-              </>
-            ) : (
-              'Gerar Comprovante'
-            )}
-          </Button>
+
+          {preview ? (
+            <div className="flex flex-col gap-2">
+              <Button type="submit" className="w-full" disabled={!isReady || isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Confirmando Presença...
+                  </>
+                ) : (
+                  'Confirmar Presença e Imprimir'
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={discardPhoto}
+                disabled={isSubmitting}
+              >
+                Descartar Foto
+              </Button>
+            </div>
+          ) : (
+            <Button type="submit" className="w-full" disabled={true}>
+              Gerar Comprovante
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

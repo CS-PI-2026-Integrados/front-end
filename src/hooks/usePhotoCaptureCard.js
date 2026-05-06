@@ -67,6 +67,12 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
     }
   }, [stopCamera])
 
+  const discardPhoto = useCallback(() => {
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    onPhotoSelect?.(null)
+    startCamera()
+  }, [onPhotoSelect, startCamera])
+
   const takePhoto = useCallback(() => {
     if (!videoRef.current) return
 
@@ -103,6 +109,7 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
     fileInputRef,
     handleFileChange,
     clearPhoto,
+    discardPhoto,
     startCamera,
     stopCamera,
     takePhoto,
