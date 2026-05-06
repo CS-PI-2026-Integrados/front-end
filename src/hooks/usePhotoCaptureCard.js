@@ -29,6 +29,12 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
     }
   }, [preview])
 
+  useEffect(() => {
+    if (isStreaming && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current
+    }
+  }, [isStreaming])
+
   const handleFileChange = useCallback(
     (e) => {
       const file = e.target.files?.[0]
@@ -51,17 +57,15 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
 
   const startCamera = useCallback(async () => {
     setError(null)
+    stopCamera()
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
       setIsStreaming(true)
     } catch (err) {
       setError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
     }
-  }, [])
+  }, [stopCamera])
 
   const takePhoto = useCallback(() => {
     if (!videoRef.current) return
