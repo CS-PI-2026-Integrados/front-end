@@ -1,6 +1,6 @@
+import { useSession } from '@/context/SessionContext'
 import { useState, useRef } from 'react'
 import { IMaskInput } from 'react-imask'
-import { useComarca } from '../../context/ComarcaContext'
 
 const VARAS = ['Vara criminal', 'Juizado criminal', 'Execução meio aberto', 'Execução meio fechado']
 const SITUACOES = ['Trabalho Registrado', 'Trabalho Informal', 'Nao Trabalha']
@@ -43,7 +43,7 @@ function generateUUID() {
 }
 
 function ModalCadastro({ onSalvar, onCancelar }) {
-  const { comarca } = useComarca()
+  const { comarca } = useSession()
   const [form, setForm] = useState(INITIAL_FORM)
   const [errors, setErrors] = useState({})
   const [preview, setPreview] = useState(null)

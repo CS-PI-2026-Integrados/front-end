@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { useComarca } from '../context/ComarcaContext'
-import mockApenados from '../mock/apenados.json'
+import { useSession } from '../context/SessionContext'
+import mockApenados from '../mock/apenadoss.json'
 import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
@@ -69,7 +69,7 @@ function EmptyState({ query }) {
 }
 
 const Convicteds = () => {
-  const { comarca } = useComarca()
+  const { comarca } = useSession()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Todos')
   const [currentPage, setCurrentPage] = useState(1)
