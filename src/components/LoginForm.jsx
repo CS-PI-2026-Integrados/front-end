@@ -46,7 +46,7 @@ export function LoginForm() {
               onCpfChange(e)
             }}
             disabled={isSubmitting}
-            className={`${inputBaseStyles} ${errors.cpf || authError ? inputErrorStyles : inputDefaultStyles} ${isSubmitting ? 'bg-gray-100 opacity-70' : 'bg-white'} `}
+            className={`${inputBaseStyles} ${errors.cpf || authError ? inputErrorStyles : inputDefaultStyles} `}
           />
           <span className="mt-1 block min-h-5 text-sm text-red-500">
             {errors.cpf?.message || authError || ''}
@@ -70,7 +70,7 @@ export function LoginForm() {
               placeholder="Digite sua senha"
               disabled={isSubmitting}
               {...register('password')}
-              className={`${inputBaseStyles} ${errors.cpf || authError ? inputErrorStyles : inputDefaultStyles} ${isSubmitting ? 'bg-gray-100 opacity-70' : 'bg-white'} `}
+              className={`${inputBaseStyles} ${errors.password || authError ? inputErrorStyles : inputDefaultStyles} `}
             />
             <button
               type="button"
