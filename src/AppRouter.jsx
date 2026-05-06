@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import { Routes, Route, useParams } from 'react-router-dom'
-import { useComarca } from './context/ComarcaContext'
+import { Routes, Route } from 'react-router-dom'
+import { useSession } from './context/SessionContext'
 import Service from './pages/Service'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -10,13 +10,14 @@ import Certificate from './pages/Certificate'
 import NotFound from './pages/NotFound'
 import DashboardLayout from './layout/DashboardLayout'
 
-const ComarcaRoutes = () => {
-  const { tenantId } = useParams()
-  const { setComarca } = useComarca()
+const AppRouter = () => {
+  const { session } = useSession()
 
   useEffect(() => {
-    setComarca(tenantId)
-  }, [tenantId, setComarca])
+    if (session !== null) {
+      console.log('Usuário logado/Sessão ativa:', session)
+    }
+  }, [session])
 
   return (
     <Routes>
@@ -30,15 +31,6 @@ const ComarcaRoutes = () => {
         <Route path="comprovante" element={<Certificate />} />
       </Route>
 
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  )
-}
-
-const AppRouter = () => {
-  return (
-    <Routes>
-      <Route path="/:tenantId/*" element={<ComarcaRoutes />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

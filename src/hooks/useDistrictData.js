@@ -1,19 +1,17 @@
 import { useMemo } from 'react'
-import { mockTenants } from '@/mocks/tenants.mock.js'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { mockPresenca } from '@/mocks/presenca.mock.js'
 import { mockProcessos } from '@/mocks/processos.mock.js'
-import { useComarca } from '@/context/ComarcaContext.jsx'
+import { useSession } from '@/context/SessionContext.jsx'
 
 export const useDistrictData = () => {
-  const { comarca } = useComarca()
-  const tenantAtual = useMemo(
-    () => mockTenants.tenants.find((t) => t.uuid === comarca) || {},
-    [comarca]
-  )
+  const { session } = useSession()
+  const tenantId = session?.tenant?.id
 
   const apenados = useMemo(() => {
-    const baseApenados = (mockApenados.apenados || []).filter((a) => a.tenantId === tenantAtual.id)
+    if (!tenantId) return []
+
+    const baseApenados = (mockApenados.apenados || []).filter((a) => a.tenantId === tenantId)
     const processosAtuais = mockProcessos.processos || []
 
     const processosPorApenado = processosAtuais.reduce((acc, processo) => {
@@ -30,11 +28,12 @@ export const useDistrictData = () => {
         processos: processosPorApenado[apenado.id] || [],
       }
     })
-  }, [tenantAtual.id])
+  }, [tenantId])
 
-  const presencas = useMemo(
-    () => (mockPresenca.presencas || []).filter((p) => p.tenantId === tenantAtual.id),
-    [tenantAtual.id]
-  )
-  return { tenantAtual, apenados, presencas }
+  const presencas = useMemo(() => {
+    if (!tenantId) return []
+    return (mockPresenca.presencas || []).filter((p) => p.tenantId === tenantId)
+  }, [tenantId])
+
+  return { apenados, presencas }
 }

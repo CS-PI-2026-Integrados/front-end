@@ -85,7 +85,6 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
   const openFileDialog = () => {
     fileInputRef.current?.click()
   }
-
   useEffect(() => {
     return () => {
       stopCamera()
