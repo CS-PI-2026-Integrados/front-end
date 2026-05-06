@@ -15,6 +15,7 @@ const Service = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
+  const [mudancasDetectadas, setMudancasDetectadas] = useState({})
 
   const isReadyToCapture = Boolean(
     atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
@@ -28,8 +29,13 @@ const Service = () => {
     if (novoAtendimento.apenado?.id !== atendimento.apenado?.id) {
       setErrorMessage('')
       setIsSuccess(false)
+      setMudancasDetectadas({})
     }
     setAtendimento(novoAtendimento)
+  }
+
+  const handleMudancasDetectadas = (mudancas) => {
+    setMudancasDetectadas(mudancas)
   }
 
   const resetForm = () => {
@@ -62,6 +68,7 @@ const Service = () => {
         apenadoAtualizado: atendimento.apenado,
         processoAtivo: atendimento.processo,
         fotoAtendimento,
+        mudancasDetectadas,
       })
       setIsSuccess(true)
     } catch (error) {
@@ -115,6 +122,7 @@ const Service = () => {
               }`}
               atendimento={atendimento}
               onChangeAtendimento={handleChangeAtendimento}
+              onMudancasDetectadas={handleMudancasDetectadas}
               isSubmitting={isSubmitting}
             />
             <div

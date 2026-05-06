@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { mockPresenca } from '@/mocks/presenca.mock.js'
+import { useSession } from '@/context/SessionContext.jsx'
 
 const generateRandomCode = (length = 9) => {
   return Math.random()
@@ -10,12 +11,19 @@ const generateRandomCode = (length = 9) => {
 }
 
 export function useGenerateReceipt({ setAtendimento }) {
+  const { session } = useSession()
+  const comarca = session.tenant.id
   const generateReceipt = useCallback(
     (params = {}) =>
       new Promise((resolve, reject) => {
         //apenas para o mock. futuramente, implementação pra API
         setTimeout(() => {
-          const { apenadoAtualizado, processoAtivo, fotoAtendimento } = params
+          const {
+            apenadoAtualizado,
+            processoAtivo,
+            fotoAtendimento,
+            mudancasDetectadas = {},
+          } = params
           if (!apenadoAtualizado) {
             return reject(new Error('Dados do apenado não fornecidos para gerar o comprovante'))
           }
@@ -46,21 +54,17 @@ export function useGenerateReceipt({ setAtendimento }) {
             timestamp: now,
             operatorName: 'Admin',
             proofCode: `COMP-${new Date(now).getTime()}-${generateRandomCode()}`,
+            mudancasRastreadas: Object.entries(mudancasDetectadas)
+              .filter(([, m]) => m.mudou)
+              .reduce(
+                (acc, [field, data]) => ({
+                  ...acc,
+                  [field]: data,
+                }),
+                {}
+              ),
           }
 
-          const novaPresenca = {
-            id: Date.now().toString(),
-            apenadoId: snapshot.idApenado,
-            tenantId: snapshot.idTenant,
-            processoId: snapshot.idProcesso,
-            apenadoName: snapshot.name,
-            cpf: snapshot.cpf,
-            dateTime: snapshot.timestamp,
-            operatorName: snapshot.operatorName,
-            verificationCode: snapshot.proofCode,
-            photoUrl: snapshot.photo64,
-            pdfUrl: null,
-          }
           //persiste o comprovante, futuramente rota /presencas ou comprovantes
           mockPresenca.presencas.push(novaPresenca)
           resolve(novaPresenca)

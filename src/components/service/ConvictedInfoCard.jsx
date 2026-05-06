@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Pencil } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Pencil, AlertCircle } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -12,19 +12,51 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, onChangeApenado }) {
+export function ConvictedInfoCard({
+  apenado,
+  processoAtivo,
+  onChangeProcesso,
+  onChangeApenado,
+  onMudancasDetectadas,
+}) {
   const [canEdit, setCanEdit] = useState(false)
+
+  // Como o componente recria quando a key muda, podemos iniciar o estado diretamente
+  const [apenadoOriginal] = useState(() => ({
+    phone: apenado?.phone,
+    address: apenado?.address,
+    workingStatus: apenado?.workingStatus,
+  }))
+
+  const [mudancasRastreadas, setMudancasRastreadas] = useState({})
+
+  useEffect(() => {
+    if (onMudancasDetectadas) {
+      onMudancasDetectadas(mudancasRastreadas)
+    }
+  }, [mudancasRastreadas, onMudancasDetectadas])
 
   const processos = apenado.processos || []
 
   const handleFieldChange = (field, newValue) => {
     if (!canEdit) return
 
-    const currentValue = apenado[field] || ''
-    if (newValue !== currentValue) {
-      onChangeApenado?.({ ...apenado, [field]: newValue })
-    }
+    const original = apenadoOriginal?.[field]
+    const isChanged = original !== newValue
+
+    setMudancasRastreadas((prev) => ({
+      ...prev,
+      [field]: {
+        original,
+        novo: newValue,
+        mudou: isChanged,
+      },
+    }))
+
+    onChangeApenado?.({ ...apenado, [field]: newValue })
   }
+
+  const temMudancas = Object.values(mudancasRastreadas).some((m) => m.mudou)
 
   const formatPhone = (val) => {
     if (!val) return ''
@@ -115,6 +147,27 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
       </div>
 
       <div className="bg-muted/50 space-y-4 rounded-lg border p-4">
+        {temMudancas && (
+          <div className="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <p className="font-medium">Dados modificados</p>
+              <p className="mt-1 text-xs">
+                {Object.entries(mudancasRastreadas)
+                  .filter(([, m]) => m.mudou)
+                  .map(([field]) => {
+                    const labels = {
+                      phone: 'Telefone',
+                      address: 'Endereço',
+                      workingStatus: 'Situação Trabalhista',
+                    }
+                    return labels[field]
+                  })
+                  .join(', ')}
+              </p>
+            </div>
+          </div>
+        )}
         <div className="space-y-1">
           <Label htmlFor="editPhone">Telefone</Label>
           <Input
@@ -131,7 +184,6 @@ export function ConvictedInfoCard({ apenado, processoAtivo, onChangeProcesso, on
             defaultValue={formatPhone(apenado.phone)}
             onChange={handlePhoneInput}
           />
-          {formatPhone()}
         </div>
 
         <div className="space-y-1">

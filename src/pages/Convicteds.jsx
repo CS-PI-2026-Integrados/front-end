@@ -69,7 +69,8 @@ function EmptyState({ query }) {
 }
 
 const Convicteds = () => {
-  const { comarca } = useSession()
+  const { session } = useSession()
+  const comarca = session?.tenant?.id
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Todos')
   const [currentPage, setCurrentPage] = useState(1)

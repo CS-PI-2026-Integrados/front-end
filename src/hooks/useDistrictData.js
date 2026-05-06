@@ -6,12 +6,12 @@ import { useSession } from '@/context/SessionContext.jsx'
 
 export const useDistrictData = () => {
   const { session } = useSession()
-  const tenantId = session?.tenant?.id
+  const comarca = session?.tenant?.id
 
   const apenados = useMemo(() => {
-    if (!tenantId) return []
+    if (!comarca) return []
 
-    const baseApenados = (mockApenados.apenados || []).filter((a) => a.tenantId === tenantId)
+    const baseApenados = (mockApenados.apenados || []).filter((a) => a.tenantId === comarca)
     const processosAtuais = mockProcessos.processos || []
 
     const processosPorApenado = processosAtuais.reduce((acc, processo) => {
@@ -28,12 +28,12 @@ export const useDistrictData = () => {
         processos: processosPorApenado[apenado.id] || [],
       }
     })
-  }, [tenantId])
+  }, [comarca])
 
   const presencas = useMemo(() => {
-    if (!tenantId) return []
-    return (mockPresenca.presencas || []).filter((p) => p.tenantId === tenantId)
-  }, [tenantId])
+    if (!comarca) return []
+    return (mockPresenca.presencas || []).filter((p) => p.tenantId === comarca)
+  }, [comarca])
 
   return { apenados, presencas }
 }

@@ -13,7 +13,7 @@ export const SessionProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession({
       tenant: {
-        id: 'tenant-fake-uuid',
+        id: '1',
         name: 'Minha Comarca',
         logo: 'base64...',
       },
