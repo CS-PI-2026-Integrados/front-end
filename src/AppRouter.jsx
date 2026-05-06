@@ -9,6 +9,7 @@ import Institutions from './pages/Institutions'
 import Certificate from './pages/Certificate'
 import NotFound from './pages/NotFound'
 import DashboardLayout from './layout/DashboardLayout'
+import ApenadoProfile from './pages/ApenadoProfile'
 
 const AppRouter = () => {
   const { session } = useSession()
@@ -29,6 +30,7 @@ const AppRouter = () => {
         <Route path="atendimento" element={<Service />} />
         <Route path="instituicoes" element={<Institutions />} />
         <Route path="comprovante" element={<Certificate />} />
+        <Route path="/apenados/:id" element={<ApenadoProfile />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

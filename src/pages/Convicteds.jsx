@@ -5,6 +5,7 @@ import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
 import toast, { Toaster } from 'react-hot-toast'
+import { useNavigate } from 'react-router-dom'
 
 const ITEMS_PER_PAGE = 10
 const STORAGE_KEY = 'apenados_data_v3'
@@ -70,6 +71,7 @@ function EmptyState({ query }) {
 
 const Convicteds = () => {
   const { session } = useSession()
+  const navigate = useNavigate()
   const comarca = session?.tenant?.id
 
   const apenadosIniciais = useMemo(() => {
@@ -281,6 +283,7 @@ const Convicteds = () => {
                         <div className="flex items-center gap-1">
                           <button
                             title="Visualizar"
+                            onClick={() => navigate(`/apenados/${a.id}`)}
                             className="rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100"
                           >
                             <svg
