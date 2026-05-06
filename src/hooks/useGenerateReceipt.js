@@ -12,7 +12,8 @@ const generateRandomCode = (length = 9) => {
 
 export function useGenerateReceipt({ setAtendimento }) {
   const { session } = useSession()
-  const comarca = session.tenant.id
+  const usuario = session?.tenant?.user?.name
+
   const generateReceipt = useCallback(
     (params = {}) =>
       new Promise((resolve, reject) => {
@@ -44,7 +45,7 @@ export function useGenerateReceipt({ setAtendimento }) {
             processo: processoAtivo || prev.processo,
           }))
 
-          const snapshot = {
+          const novaPresenca = {
             idApenado: apenadoFinal?.id,
             idTenant: apenadoFinal?.tenantId,
             idProcesso: processoAtivo?.id,
@@ -52,7 +53,7 @@ export function useGenerateReceipt({ setAtendimento }) {
             photo64: fotoAtendimento,
             cpf: apenadoFinal.cpf,
             timestamp: now,
-            operatorName: 'Admin',
+            operatorName: usuario,
             proofCode: `COMP-${new Date(now).getTime()}-${generateRandomCode()}`,
             mudancasRastreadas: Object.entries(mudancasDetectadas)
               .filter(([, m]) => m.mudou)
@@ -70,7 +71,7 @@ export function useGenerateReceipt({ setAtendimento }) {
           resolve(novaPresenca)
         }, 500)
       }),
-    [setAtendimento]
+    [setAtendimento, usuario]
   )
 
   return { generateReceipt }
