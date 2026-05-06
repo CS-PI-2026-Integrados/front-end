@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useComarca } from '../context/ComarcaContext'
-import mockApenados from '../mock/apenados.JSON'
+import mockApenados from '../mock/apenados.json'
 import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
