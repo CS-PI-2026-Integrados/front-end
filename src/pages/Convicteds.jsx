@@ -146,7 +146,7 @@ const Convicteds = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-white p-6">
       <Toaster position="top-right" />
       <ModalInative
         apenado={apenadoInativar}
@@ -166,16 +166,19 @@ const Convicteds = () => {
         />
       )}
 
-      <div className="mb-7 flex items-start justify-between">
+      <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestão de Apenados</h1>
-          <p className="mt-1 text-sm text-gray-500">Cadastro e gerenciamento de apenados</p>
+          <h1 className="text-[32px] leading-tight font-bold tracking-tight text-gray-900">
+            Gestão de Apenados
+          </h1>
+          <p className="mt-2 text-base text-gray-400">Cadastro e gerenciamento de apenados</p>
         </div>
+
         <button
           onClick={() => setModalCadastroAberto(true)}
-          className="flex items-center gap-2 rounded-lg bg-green-800 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-900"
+          className="flex items-center gap-2 rounded-lg bg-[#065F46] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#047857]"
         >
-          <span className="text-lg leading-none">+</span>
+          <span className="text-xl leading-none">+</span>
           Novo Apenado
         </button>
       </div>
