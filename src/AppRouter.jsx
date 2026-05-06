@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Routes, Route, useParams } from 'react-router-dom'
-import { useComarca } from './context/ComarcaContext'
+import { useSession } from './context/SessionContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Convicteds from './pages/Convicteds'
@@ -9,34 +9,24 @@ import Certificate from './pages/Certificate'
 import NotFound from './pages/NotFound'
 import DashboardLayout from './layout/DashboardLayout'
 
-const ComarcaRoutes = () => {
-  const { tenantId } = useParams()
-  const { setComarca } = useComarca()
+const AppRouter = () => {
+  const { session } = useSession()
 
   useEffect(() => {
-    setComarca(tenantId)
-  }, [tenantId, setComarca])
+    if (session !== null) {
+      console.log('session:', session)
+    }
+  }, [session])
 
   return (
     <Routes>
       <Route path="login" element={<Login />} />
-
-      <Route path="dashboard" element={<DashboardLayout />}>
+      <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="apenados" element={<Convicteds />} />
         <Route path="instituicoes" element={<Institutions />} />
         <Route path="comprovante" element={<Certificate />} />
       </Route>
-
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  )
-}
-
-const AppRouter = () => {
-  return (
-    <Routes>
-      <Route path="/:tenantId/*" element={<ComarcaRoutes />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

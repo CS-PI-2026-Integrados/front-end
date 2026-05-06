@@ -3,18 +3,18 @@ import { Users, FileText, CheckCircle, TriangleAlert } from 'lucide-react'
 import { MetricCard } from '../components/dashboard/MetricCard.jsx'
 import { ProofData } from '@/components/dashboard/ProofData.jsx'
 import { RecentActivities } from '@/components/dashboard/RecentActivities.jsx'
-import { useComarca } from '@/context/ComarcaContext.jsx'
+import { useSession } from '@/context/SessionContext.jsx'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { mockPresenca } from '@/mocks/presenca.mock.js'
 import { mockTenants } from '@/mocks/tenants.mock.js'
 import { useDashboardMetrics } from '@/lib/useDashboardMetrics.js'
 
 const Dashboard = () => {
-  const { comarca } = useComarca()
+  const { session } = useSession()
 
   const tenantAtual = useMemo(
-    () => mockTenants.tenants.find((t) => t.uuid === comarca) || {},
-    [comarca]
+    () => mockTenants.tenants.find((t) => t.uuid === session) || {},
+    [session]
   )
 
   const apenados = useMemo(
