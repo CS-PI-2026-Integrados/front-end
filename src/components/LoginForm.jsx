@@ -97,7 +97,7 @@ export function LoginForm() {
           className={`mt-3 flex h-13 w-full items-center justify-center rounded-[8px] px-3 py-4 text-lg font-medium text-white transition-all ${
             !isValid || isSubmitting
               ? 'cursor-not-allowed bg-gray-400 opacity-70'
-              : 'cursor-pointer bg-green-600/90 hover:ring-2 hover:ring-emerald-700'
+              : 'bg-primary cursor-pointer hover:ring-2 hover:ring-emerald-700'
           } `}
         >
           {isSubmitting ? <Loader2 className="animate-spin text-white" size={24} /> : 'Entrar'}
