@@ -120,10 +120,10 @@ function ModalCadastro({ onSalvar, onCancelar }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
-        <div className="flex items-start justify-between bg-green-800 px-6 py-4">
+        <div className="bg-primary flex items-start justify-between px-6 py-4">
           <div>
             <h2 className="text-lg font-bold text-white">Cadastrar Novo Apenado</h2>
-            <p className="text-sm text-green-200">
+            <p className="text-primary-foreground text-sm">
               Preencha os dados do apenado no formulário abaixo
             </p>
           </div>
@@ -362,7 +362,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
                   onClick={() => setForm((prev) => ({ ...prev, status: s }))}
                   className={`px-5 py-2 text-sm font-semibold transition-colors ${
                     form.status === s
-                      ? 'bg-green-800 text-white'
+                      ? 'bg-primary text-white'
                       : 'bg-white text-gray-600 hover:bg-gray-50'
                   }`}
                 >
