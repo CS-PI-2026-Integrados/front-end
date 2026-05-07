@@ -7,7 +7,7 @@
     "telefone": "(11) 98765-4321",
     "endereco": "Rua das Flores, 123 - Centro, São Paulo - SP",
     "sit_trabalhista": "Trabalho Registrado",
-    "status": "Regular"
+    "status": "Ativo"
   },
   {
     "id": 2,
@@ -17,7 +17,7 @@
     "telefone": "(11) 91234-5678",
     "endereco": "Av. Brasil, 456 - Vila Nova, São Paulo - SP",
     "sit_trabalhista": "Trabalho Informal",
-    "status": "Pendente"
+    "status": "Ativo"
   },
   {
     "id": 3,
@@ -27,7 +27,7 @@
     "telefone": "(11) 99876-5432",
     "endereco": "Rua XV de Novembro, 789 - Jardim Europa, São Paulo - SP",
     "sit_trabalhista": "Nao Trabalha",
-    "status": "Regular"
+    "status": "Ativo"
   },
   {
     "id": 4,
@@ -37,7 +37,7 @@
     "telefone": "(11) 94567-8901",
     "endereco": "Rua Sete de Setembro, 321 - Centro, São Paulo - SP",
     "sit_trabalhista": "Trabalho Registrado",
-    "status": "Irregular"
+    "status": "Ativo"
   },
   {
     "id": 5,
@@ -47,7 +47,7 @@
     "telefone": "(11) 92345-6789",
     "endereco": "Av. Paulista, 1500 - Bela Vista, São Paulo - SP",
     "sit_trabalhista": "Trabalho Informal",
-    "status": "Regular"
+    "status": "Ativo"
   },
   {
     "id": 6,
@@ -57,6 +57,6 @@
     "telefone": "(21) 91111-2222",
     "endereco": "Rua das Laranjeiras, 10 - Laranjeiras, Rio de Janeiro - RJ",
     "sit_trabalhista": "Trabalho Registrado",
-    "status": "Regular"
+    "status": "Ativo"
   }
 ]

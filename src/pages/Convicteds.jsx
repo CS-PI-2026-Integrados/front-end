@@ -16,10 +16,7 @@ function maskCPF(cpf) {
 
 function StatusBadge({ status }) {
   const variants = {
-    Regular: 'bg-green-100 text-green-700 border border-green-200',
     Ativo: 'bg-green-100 text-green-700 border border-green-200',
-    Pendente: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
-    Irregular: 'bg-red-100 text-red-600 border border-red-200',
     Inativo: 'bg-gray-100 text-gray-500 border border-gray-200',
   }
   return (
@@ -148,7 +145,7 @@ const Convicteds = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white">
       <Toaster position="top-right" />
       <ModalInative
         apenado={apenadoInativar}
@@ -220,9 +217,7 @@ const Convicteds = () => {
             className="min-w-40 cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-green-700 focus:outline-none"
           >
             <option value="Todos">Todos os Status</option>
-            <option value="Regular">Regular</option>
-            <option value="Pendente">Pendente</option>
-            <option value="Irregular">Irregular</option>
+            <option value="Ativo">Ativo</option>
             <option value="Inativo">Inativo</option>
           </select>
         </div>
