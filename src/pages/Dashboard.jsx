@@ -17,7 +17,7 @@ const Dashboard = () => {
   } = useDashboardMetrics(presencas, apenados)
 
   return (
-    <div className="max-w-7x1 mx-auto p-6">
+    <div className="max-w-7x1 mx-auto">
       <div className="space-y-6">
         <div>
           <h1 className="mb-2 text-3xl font-bold">Dashboard</h1>

@@ -13,7 +13,7 @@ export function useLogin() {
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
-    mode: 'onBlur',
+    mode: 'onTouched',
   })
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev)
@@ -27,7 +27,7 @@ export function useLogin() {
       localStorage.setItem('@sicape:user', JSON.stringify(response.user))
       localStorage.setItem('@sicape:token', response.token)
 
-      navigate(`/${response.tenant}/dashboard`)
+      navigate(`/dashboard`)
     } catch (error) {
       setAuthError(error.message || 'Ocorreu um erro inesperado.')
     } finally {

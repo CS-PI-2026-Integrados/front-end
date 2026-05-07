@@ -18,13 +18,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useSession } from '@/context/SessionContext'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
   const { session } = useSession()
+
+  const location = useLocation()
+  const isActive = (path) => location.pathname === path
 
   return (
     <>
@@ -41,36 +44,52 @@ export default function DashboardLayout() {
               <img src={Logo} alt="Logo marca" className="w-14" />
             </div>
             <aside className="flex flex-col gap-1 p-4">
-              <Button asChild className="justify-start">
+              <Button
+                asChild
+                variant={isActive('/dashboard') ? 'default' : 'ghost'}
+                className="justify-start"
+              >
                 <Link to="/dashboard" className="flex w-full items-center gap-2">
                   <LayoutDashboard /> Dashboard
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="justify-start">
+              <Button
+                asChild
+                variant={isActive('/apenados') ? 'default' : 'ghost'}
+                className="justify-start"
+              >
                 <Link to="/apenados" className="flex w-full items-center gap-2">
                   <Users /> Apenados
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="justify-start">
+              <Button
+                asChild
+                variant={isActive('/atendimento') ? 'default' : 'ghost'}
+                className="justify-start"
+              >
                 <Link to="/atendimento" className="flex w-full items-center gap-2">
                   <FileText /> Comprovantes
                 </Link>
               </Button>
-              {/* <Button asChild variant="ghost" className="justify-start">
+              {/* <Button asChild variant={isActive('/documentos') ? 'default' : 'ghost'} className="justify-start">
                 <Link to="/documentos" className="flex items-center gap-2 w-full">
                   <FolderArchive /> Documentos
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="justify-start">
+              <Button asChildvariant={isActive('/relatorios') ? 'default' : 'ghost'} className="justify-start">
                 <Link to="/relatorios" className="flex items-center gap-2 w-full">
                   <ChartBar /> Relatorios
                 </Link>
-              </Button> */}
-              <Button asChild variant="ghost" className="justify-start">
+              </Button>
+              <Button
+                asChild
+                variant={isActive('/configuracoes') ? 'default' : 'ghost'}
+                className="justify-start"
+              >
                 <Link to="/configuracoes" className="flex w-full items-center gap-2">
                   <Settings /> Configuracões
                 </Link>
-              </Button>
+              </Button> */}
             </aside>
           </div>
         </div>
@@ -100,8 +119,12 @@ export default function DashboardLayout() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Perfil</DropdownMenuItem>
-                    <DropdownMenuItem>Sair</DropdownMenuItem>
+                    {/* <DropdownMenuItem>Perfil</DropdownMenuItem> */}
+                    <DropdownMenuItem asChild>
+                      <Link to="/login" className="cursor-pointer">
+                        Sair
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
