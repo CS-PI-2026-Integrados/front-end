@@ -3,13 +3,10 @@ import { cn } from '@/lib/utils.js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label.jsx'
 import { SelectConvicted } from './SelectConvicted.jsx'
+import { useService } from '@/context/ServiceContext'
 
-export function ConvictedCard({
-  className,
-  atendimento,
-  onChangeAtendimento,
-  onMudancasDetectadas,
-}) {
+export function ConvictedCard(className) {
+  const { atendimento } = useService()
   const currentDateTime = useMemo(
     () =>
       new Date().toLocaleString('pt-BR', {
@@ -37,11 +34,11 @@ export function ConvictedCard({
           atendimento.apenado ? 'md:overflow-y-auto' : 'md:overflow-hidden'
         )}
       >
-        <SelectConvicted
+        {/* <SelectConvicted
           atendimento={atendimento}
           onChangeAtendimento={onChangeAtendimento}
           onMudancasDetectadas={onMudancasDetectadas}
-        />
+        /> */}
         <div className="mt-auto shrink-0 space-y-2 pt-4 md:pt-6">
           <Label>Data e Hora</Label>
           <div className="bg-muted rounded-lg p-3">

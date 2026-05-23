@@ -1,49 +1,51 @@
 import { useState } from 'react'
 import { ConvictedCard } from '@/components/service/ConvictedCard.jsx'
+import { useService } from '@/context/ServiceContext'
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { PhotoCaptureCard } from '@/components/service/PhotoCaptureCard.jsx'
 import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
 import { ReceiptSuccessCard } from '@/components/service/ReceiptSuccessCard.jsx'
 
 const Service = () => {
-  const [atendimento, setAtendimento] = useState({
-    apenado: null,
-    processo: null,
-  })
-
-  const [fotoAtendimento, setFotoAtendimento] = useState(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [mudancasDetectadas, setMudancasDetectadas] = useState({})
+  const {
+    atendimento,
+    fotoAtendimento,
+    isSuccess,
+    isSubmitting,
+    setAtendimento,
+    setFotoAtendimento,
+    setErrorMessage,
+    setIsSuccess,
+    setMudancasDetectadas,
+  } = useService()
 
   const isReadyToCapture = Boolean(
     atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
   )
 
-  const { generateReceipt } = useGenerateReceipt({
-    setAtendimento,
-  })
+  // const { generateReceipt } = useGenerateReceipt({
+  //   setAtendimento,
+  // })
 
-  const handleChangeAtendimento = (novoAtendimento) => {
-    if (novoAtendimento.apenado?.id !== atendimento.apenado?.id) {
-      setErrorMessage('')
-      setIsSuccess(false)
-      setMudancasDetectadas({})
-    }
-    setAtendimento(novoAtendimento)
-  }
+  // const handleChangeAtendimento = (novoAtendimento) => {
+  //   if (novoAtendimento.apenado?.id !== atendimento.apenado?.id) {
+  //     setErrorMessage('')
+  //     setIsSuccess(false)
+  //     setMudancasDetectadas({})
+  //   }
+  //   setAtendimento(novoAtendimento)
+  // }
 
-  const handleMudancasDetectadas = (mudancas) => {
-    setMudancasDetectadas(mudancas)
-  }
+  // const handleMudancasDetectadas = (mudancas) => {
+  //   setMudancasDetectadas(mudancas)
+  // }
 
-  const resetForm = () => {
-    setAtendimento({ apenado: null, processo: null })
-    setFotoAtendimento(null)
-    setErrorMessage('')
-    setIsSuccess(false)
-  }
+  // const resetForm = () => {
+  //   setAtendimento({ apenado: null, processo: null })
+  //   setFotoAtendimento(null)
+  //   setErrorMessage('')
+  //   setIsSuccess(false)
+  // }
 
   const handleFinalSubmit = async (e) => {
     e.preventDefault()
@@ -105,12 +107,12 @@ const Service = () => {
             </TabsTrigger>
           </TabsList>
         </div>
-
+        {/* 
         {errorMessage && (
           <div className="bg-destructive/10 border-destructive text-destructive mb-4 shrink-0 rounded-lg border p-3 text-sm">
             {errorMessage}
           </div>
-        )}
+        )} */}
 
         <TabsContent
           value="novo"
@@ -121,17 +123,12 @@ const Service = () => {
               className={`w-full transition-all duration-300 md:h-full md:flex-1 ${
                 isSuccess ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
               }`}
-              atendimento={atendimento}
-              onChangeAtendimento={handleChangeAtendimento}
-              onMudancasDetectadas={handleMudancasDetectadas}
-              isSubmitting={isSubmitting}
             />
-            <div
-              className={`flex w-full flex-col transition-all duration-300 md:min-h-0 md:flex-1 ${
-                !isReadyToCapture && !isSuccess
-                  ? 'pointer-events-none opacity-40 grayscale-[0.5]'
-                  : ''
-              }`}
+            {/* <div
+              className={`flex w-full flex-col transition-all duration-300 md:min-h-0 md:flex-1 ${!isReadyToCapture && !isSuccess
+                ? 'pointer-events-none opacity-40 grayscale-[0.5]'
+                : ''
+                }`}
             >
               {isSuccess ? (
                 <ReceiptSuccessCard
@@ -149,7 +146,7 @@ const Service = () => {
                   apenado={atendimento.apenado}
                 />
               )}
-            </div>
+            </div> */}
           </form>
         </TabsContent>
       </Tabs>
