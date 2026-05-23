@@ -1,29 +1,48 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { validateToken } from '@/lib/jwtUtils'
 
 const SessionContext = createContext()
 
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  const handleLogout = () => {
+    localStorage.removeItem('@sicape:token')
+    localStorage.removeItem('@sicape:user')
+    setSession(null)
+  }
 
   useEffect(() => {
-    // Deverá consumir as informações da session
-    // que ficarão armazenadas no accessToken e
-    // disponibilizar elas no context
+    const checkSession = () => {
+      const token = localStorage.getItem('@sicape:token')
+      const userStr = localStorage.getItem('@sicape:user')
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSession({
-      tenant: {
-        id: '1',
-        name: 'Minha Comarca',
-        logo: 'base64...',
-      },
-      user: {
-        name: 'Marina da Silva',
-      },
-    })
-  }, [setSession])
+      const decodedToken = validateToken(token)
 
-  return <SessionContext.Provider value={{ session }}>{children}</SessionContext.Provider>
+      if (decodedToken && userStr) {
+        try {
+          const user = JSON.parse(userStr)
+          setSession({
+            user,
+            tenant: { id: user.tenant, name: 'Comarca Sicape' },
+          })
+        } catch {
+          handleLogout()
+        }
+      } else {
+        handleLogout()
+      }
+      setIsLoading(false)
+    }
+    checkSession()
+  }, [])
+
+  return (
+    <SessionContext.Provider value={{ session, setSession, handleLogout, isLoading }}>
+      {children}
+    </SessionContext.Provider>
+  )
 }
 
 export const useSession = () => {

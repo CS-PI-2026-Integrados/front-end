@@ -11,7 +11,7 @@ export const generateMockJWT = (userData, expireInMinutes = 60) => {
   return `${header}.${payload}.${signature}`
 }
 
-export const validadeToken = (token) => {
+export const validateToken = (token) => {
   if (!token) return false
 
   try {
