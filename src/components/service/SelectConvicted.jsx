@@ -14,8 +14,11 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
 import { ConvictedInfoCard } from '@/components/service/ConvictedInfoCard.jsx'
+import { useService } from '@/context/ServiceContext'
 
-export function SelectConvicted({ atendimento, onChangeAtendimento }) {
+export function SelectConvicted() {
+  const { atendimento, setAtendimento } = useService()
+
   const { apenados } = useDistrictData()
 
   const [open, setOpen] = useState(false)
@@ -23,16 +26,14 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
 
   const apenadosFiltrados = useFilteredConvicted(apenados, search)
 
-  const handleSelectApenado = (currentValue) => {
+  const handleSelectApenado = (idSelecionado) => {
     setOpen(false)
-    const apenado = apenados?.find((a) => String(a.id) === currentValue)
+    const apenado = apenados?.find((a) => String(a.id) === idSelecionado)
 
     if (apenado) {
       const processoPadrao =
         apenado.processos && apenado.processos.length > 0 ? apenado.processos[0] : null
-      onChangeAtendimento({ apenado, processo: processoPadrao })
-    } else {
-      onChangeAtendimento({ apenado: null, processo: null })
+      setAtendimento({ apenado, processo: processoPadrao })
     }
   }
 
@@ -92,10 +93,6 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
           key={atendimento.apenado.id}
           apenado={atendimento.apenado}
           processoAtivo={atendimento.processo}
-          onChangeProcesso={(proc) => onChangeAtendimento({ ...atendimento, processo: proc })}
-          onChangeApenado={(novoApenado) =>
-            onChangeAtendimento({ ...atendimento, apenado: novoApenado })
-          }
         />
       ) : (
         <div className="bg-muted/30 flex min-h-[140px] flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">

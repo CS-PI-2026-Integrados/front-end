@@ -12,13 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export function ConvictedInfoCard({
-  apenado,
-  processoAtivo,
-  onChangeProcesso,
-  onChangeApenado,
-  onMudancasDetectadas,
-}) {
+import { useService } from '@/context/ServiceContext'
+
+export function ConvictedInfoCard({ apenado, processoAtivo }) {
+  const { atendimento, setAtendimento, setAlteracoes } = useService()
   const [canEdit, setCanEdit] = useState(false)
 
   // Como o componente recria quando a key muda, podemos iniciar o estado diretamente
@@ -31,10 +28,9 @@ export function ConvictedInfoCard({
   const [mudancasRastreadas, setMudancasRastreadas] = useState({})
 
   useEffect(() => {
-    if (onMudancasDetectadas) {
-      onMudancasDetectadas(mudancasRastreadas)
-    }
-  }, [mudancasRastreadas, onMudancasDetectadas])
+    // atualiza as alterações rastreadas no contexto
+    setAlteracoes(mudancasRastreadas)
+  }, [mudancasRastreadas, setAlteracoes])
 
   const processos = apenado.processos || []
 
@@ -53,7 +49,11 @@ export function ConvictedInfoCard({
       },
     }))
 
-    onChangeApenado?.({ ...apenado, [field]: newValue })
+    // atualiza o apenado dentro do atendimento no contexto
+    setAtendimento((prev) => ({
+      ...prev,
+      apenado: { ...prev.apenado, [field]: newValue },
+    }))
   }
 
   const temMudancas = Object.values(mudancasRastreadas).some((m) => m.mudou)
@@ -90,7 +90,7 @@ export function ConvictedInfoCard({
               onValueChange={(id) => {
                 const proc = processos.find((p) => String(p.id) === id)
                 if (proc) {
-                  onChangeProcesso(proc)
+                  setAtendimento((prev) => ({ ...prev, processo: proc }))
                 }
               }}
             >

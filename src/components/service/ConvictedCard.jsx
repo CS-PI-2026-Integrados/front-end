@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label.jsx'
 import { SelectConvicted } from './SelectConvicted.jsx'
 import { useService } from '@/context/ServiceContext'
 
-export function ConvictedCard(className) {
+export function ConvictedCard({ className }) {
   const { atendimento } = useService()
   const currentDateTime = useMemo(
     () =>
@@ -34,11 +34,7 @@ export function ConvictedCard(className) {
           atendimento.apenado ? 'md:overflow-y-auto' : 'md:overflow-hidden'
         )}
       >
-        {/* <SelectConvicted
-          atendimento={atendimento}
-          onChangeAtendimento={onChangeAtendimento}
-          onMudancasDetectadas={onMudancasDetectadas}
-        /> */}
+        <SelectConvicted />
         <div className="mt-auto shrink-0 space-y-2 pt-4 md:pt-6">
           <Label>Data e Hora</Label>
           <div className="bg-muted rounded-lg p-3">
