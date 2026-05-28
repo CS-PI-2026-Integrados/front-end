@@ -2,8 +2,8 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSession } from '@/context/SessionContext'
 import { Loader2 } from 'lucide-react'
 
-export function AuthGuard() {
-  const { session, isLoading } = useSession
+export default function AuthGuard() {
+  const { session, isLoading } = useSession()
   const location = useLocation()
 
   if (isLoading) {

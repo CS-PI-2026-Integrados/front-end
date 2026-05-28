@@ -1,3 +1,4 @@
+import { generateMockJWT } from '@/lib/jwtUtils'
 import { mockUsers } from '@/mocks/users.mock'
 
 export const authenticateUser = async (cpf, password) => {
@@ -8,9 +9,9 @@ export const authenticateUser = async (cpf, password) => {
       )
 
       if (userFound) {
-        const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockToken_' + Date.now()
         // eslint-disable-next-line no-unused-vars
         const { password: _, ...userData } = userFound
+        const fakeToken = generateMockJWT(userData, 60)
 
         resolve({
           user: userData,

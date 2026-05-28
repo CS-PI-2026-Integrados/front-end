@@ -10,6 +10,7 @@ export const SessionProvider = ({ children }) => {
   const handleLogout = () => {
     localStorage.removeItem('@sicape:token')
     localStorage.removeItem('@sicape:user')
+
     setSession(null)
   }
 
@@ -19,7 +20,6 @@ export const SessionProvider = ({ children }) => {
       const userStr = localStorage.getItem('@sicape:user')
 
       const decodedToken = validateToken(token)
-
       if (decodedToken && userStr) {
         try {
           const user = JSON.parse(userStr)
@@ -47,8 +47,5 @@ export const SessionProvider = ({ children }) => {
 
 export const useSession = () => {
   const context = useContext(SessionContext)
-  if (!context) {
-    throw new Error('useSession deve ser usado dentro de SessionProvider')
-  }
   return context
 }

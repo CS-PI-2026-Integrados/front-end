@@ -1,4 +1,4 @@
-import { LoginForm } from '@/components/LoginForm'
+import { LoginForm } from '@/components/login/LoginForm'
 import loginBg from '../../public/assets/logo/login-bg.jpg'
 import logoWhite from '../../public/assets/logo/to-dark-background.svg'
 import React from 'react'
