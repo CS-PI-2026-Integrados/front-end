@@ -10,3 +10,22 @@ export const generateMockJWT = (userData, expireInMinutes = 60) => {
 
   return `${header}.${payload}.${signature}`
 }
+// fix: corrigindo simulacao de validacao de token
+export const validateToken = (token) => {
+  if (!token) return false
+
+  try {
+    const parts = token.split('.')
+
+    if (parts.length !== 3) return false
+
+    const payload = JSON.parse(atob(parts[1]))
+    const currentTime = Math.floor(Date.now() / 1000)
+
+    if (payload.exp < currentTime) return false
+
+    return payload
+  } catch (error) {
+    return false
+  }
+}
