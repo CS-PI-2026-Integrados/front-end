@@ -6,6 +6,7 @@ import {
   Settings,
   Users,
   User,
+  Boxes,
   Menu,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -69,6 +70,15 @@ export default function DashboardLayout() {
               >
                 <Link to="/atendimento" className="flex w-full items-center gap-2">
                   <FileText /> Comprovantes
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant={isActive('/atendimento') ? 'default' : 'ghost'}
+                className="justify-start"
+              >
+                <Link to="/grupos" className="flex w-full items-center gap-2">
+                  <Boxes /> Grupos Reflexivos
                 </Link>
               </Button>
               {/* <Button asChild variant={isActive('/documentos') ? 'default' : 'ghost'} className="justify-start">
