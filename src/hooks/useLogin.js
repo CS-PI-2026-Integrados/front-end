@@ -5,10 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from '@/schemas/loginSchema'
 import { authenticateUser } from '@/services/loginAuth'
 import { formatCpf } from '@/lib/validadorCpf'
+import { useSession } from '@/hooks/useSession'
 
 export function useLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [authError, setAuthError] = useState('')
+  const { handleLogin } = useSession()
   const navigate = useNavigate()
 
   const form = useForm({
@@ -18,15 +20,12 @@ export function useLogin() {
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev)
 
-  const handleLogin = async (data) => {
+  const signIn = async (data) => {
     setAuthError(null)
 
     try {
       const response = await authenticateUser(data.cpf, data.password)
-
-      localStorage.setItem('@sicape:user', JSON.stringify(response.user))
-      localStorage.setItem('@sicape:token', response.token)
-
+      handleLogin(response.user, response.token)
       navigate(`/dashboard`)
     } catch (error) {
       setAuthError(error.message || 'Ocorreu um erro inesperado.')
@@ -40,6 +39,6 @@ export function useLogin() {
     showPassword,
     togglePasswordVisibility,
     authError,
-    handleLogin,
+    signIn,
   }
 }

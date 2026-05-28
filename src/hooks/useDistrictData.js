@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { mockPresenca } from '@/mocks/presenca.mock.js'
 import { mockProcessos } from '@/mocks/processos.mock.js'
-import { useSession } from '@/context/SessionContext.jsx'
+import { useSession } from '@/hooks/useSession'
 
 export const useDistrictData = () => {
   const { session } = useSession()

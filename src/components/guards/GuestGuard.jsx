@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useSession } from '@/context/SessionContext'
+import { useSession } from '@/hooks/useSession'
 import { Loader2 } from 'lucide-react'
 
 export default function GuestGuard() {

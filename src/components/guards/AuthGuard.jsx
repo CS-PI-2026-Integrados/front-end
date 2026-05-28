@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useSession } from '@/context/SessionContext'
+import { useSession } from '@/hooks/useSession'
 import { Loader2 } from 'lucide-react'
 
 export default function AuthGuard() {
@@ -14,6 +14,7 @@ export default function AuthGuard() {
     )
   }
 
+  console.log('SESSAO: ' + session)
   if (!session) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />
   }

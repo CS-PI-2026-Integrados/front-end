@@ -16,7 +16,7 @@ export function LoginForm() {
     showPassword,
     togglePasswordVisibility,
     authError,
-    handleLogin,
+    signIn,
   } = useLogin()
 
   const inputBaseStyles =
@@ -29,7 +29,7 @@ export function LoginForm() {
   const { onChange: onCpfChange, ...restCpfRegister } = register('cpf')
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit(handleLogin)}>
+    <form className="space-y-6" onSubmit={handleSubmit(signIn)}>
       <FieldGroup className="gap-1 p-0">
         <Field className="gap-1">
           <FieldLabel htmlFor="cpf" className="text-lg font-normal text-gray-600">

@@ -1,11 +1,23 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { validateToken } from '@/lib/jwtUtils'
-
-const SessionContext = createContext()
+import { SessionContext } from './sessionContext'
 
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const handleLogin = (user, token) => {
+    localStorage.setItem('@sicape:token', token)
+    localStorage.setItem('@sicape:user', JSON.stringify(user))
+
+    setSession({
+      user,
+      tenant: {
+        id: user.tenant,
+        name: 'Comarca Sicape',
+      },
+    })
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('@sicape:token')
@@ -18,15 +30,12 @@ export const SessionProvider = ({ children }) => {
     const checkSession = () => {
       const token = localStorage.getItem('@sicape:token')
       const userStr = localStorage.getItem('@sicape:user')
-
       const decodedToken = validateToken(token)
+
       if (decodedToken && userStr) {
         try {
           const user = JSON.parse(userStr)
-          setSession({
-            user,
-            tenant: { id: user.tenant, name: 'Comarca Sicape' },
-          })
+          handleLogin(user, token)
         } catch {
           handleLogout()
         }
@@ -39,13 +48,16 @@ export const SessionProvider = ({ children }) => {
   }, [])
 
   return (
-    <SessionContext.Provider value={{ session, setSession, handleLogout, isLoading }}>
+    <SessionContext.Provider
+      value={{
+        session,
+        setSession,
+        handleLogin,
+        handleLogout,
+        isLoading,
+      }}
+    >
       {children}
     </SessionContext.Provider>
   )
-}
-
-export const useSession = () => {
-  const context = useContext(SessionContext)
-  return context
 }

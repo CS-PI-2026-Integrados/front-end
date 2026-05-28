@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { useSession } from '@/context/SessionContext'
+import { useSession } from '@/hooks/useSession'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
