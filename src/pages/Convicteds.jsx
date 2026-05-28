@@ -21,9 +21,9 @@ function StatusBadge({ status }) {
   }
   return (
     <span
-      className={`inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${variants[status] || variants.Inativo}`}
+      className={`inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${variants[status] || variants.Ativo}`}
     >
-      {status}
+      {status === 'Inativo' ? 'Inativo' : 'Ativo'}
     </span>
   )
 }
