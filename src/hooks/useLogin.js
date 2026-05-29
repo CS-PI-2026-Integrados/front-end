@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,12 +12,13 @@ export function useLogin() {
   const [authError, setAuthError] = useState('')
   const { handleLogin } = useSession()
   const navigate = useNavigate()
-
+  const location = useLocation()
   const form = useForm({
     resolver: zodResolver(loginSchema),
     mode: 'onTouched',
   })
 
+  console.log('Query atual:', location.search)
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev)
 
   const signIn = async (data) => {
@@ -25,11 +26,14 @@ export function useLogin() {
 
     try {
       const response = await authenticateUser(data.cpf, data.password)
-      handleLogin(response.user, response.token)
-      navigate(`/dashboard`)
+
+      handleLogin(response.user, response.tenant, response.token)
+
+      const redirectTo = new URLSearchParams(location.search).get('redirect') || '/dashboard'
+      console.log('Redirect encontrado:', redirectTo)
+      navigate(redirectTo, { replace: true })
     } catch (error) {
       setAuthError(error.message || 'Ocorreu um erro inesperado.')
-    } finally {
     }
   }
 

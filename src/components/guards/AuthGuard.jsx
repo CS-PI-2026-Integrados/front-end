@@ -15,7 +15,8 @@ export default function AuthGuard() {
   }
 
   if (!session) {
-    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />
+    const redirect = location.pathname + location.search
+    return <Navigate to={`/login?redirect=${encodeURIComponent(redirect)}`} replace />
   }
 
   return <Outlet />

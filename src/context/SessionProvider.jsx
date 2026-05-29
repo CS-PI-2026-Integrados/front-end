@@ -1,47 +1,40 @@
 import React, { useEffect, useState } from 'react'
-import { validateToken } from '@/lib/jwtUtils'
 import { SessionContext } from '@/context/sessionContext'
+import { validateToken } from '@/mocks/requests/token.requests.mock'
+import { getUserByPayload } from '@/mocks/requests/users.requests.mock'
 
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const handleLogin = (user, token) => {
+  const handleLogin = (user, tenant, token) => {
     localStorage.setItem('@sicape:token', token)
-    localStorage.setItem('@sicape:user', JSON.stringify(user))
-
-    setSession({
-      user,
-      tenant: {
-        id: user.tenant,
-        name: 'Comarca Sicape',
-      },
-    })
+    setSession({ user, tenant })
   }
 
   const handleLogout = () => {
     localStorage.removeItem('@sicape:token')
-    localStorage.removeItem('@sicape:user')
-
     setSession(null)
   }
 
   useEffect(() => {
     const checkSession = () => {
       const token = localStorage.getItem('@sicape:token')
-      const userStr = localStorage.getItem('@sicape:user')
-      const decodedToken = validateToken(token)
+      const payload = validateToken(token)
 
-      if (decodedToken && userStr) {
-        try {
-          const user = JSON.parse(userStr)
-          handleLogin(user, token)
-        } catch {
-          handleLogout()
-        }
-      } else {
+      if (!payload) {
+        handleLogout()
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        const { userData, tenantData } = getUserByPayload(payload)
+        handleLogin(userData, tenantData, token)
+      } catch {
         handleLogout()
       }
+
       setIsLoading(false)
     }
     checkSession()
