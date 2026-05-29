@@ -8,30 +8,23 @@ import {
 
 const ServiceContext = createContext()
 
-/**
- * Estado inicial do atendimento
- * Estrutura unificada com todas as ações relacionadas
- */
 const initialState = {
-  // Dados do atendimento
   apenado: null,
   processo: null,
   canEdit: false,
   mudancas: {},
 
-  // Foto
-  fotoAtendimento: null,
+  fotoAtendimento: {
+    data: null,
+    isStreaming: false,
+    error: null,
+  },
 
-  // Estados de submissão
   isSubmitting: false,
   isSuccess: false,
   errorMessage: '',
 }
 
-/**
- * Reducer que orquestra todas as ações de atendimento
- * Cada action garante consistência do estado
- */
 function atendimentoReducer(state, action) {
   switch (action.type) {
     case 'SELECT_APENADO': {
@@ -42,16 +35,15 @@ function atendimentoReducer(state, action) {
         ...state,
         apenado,
         processo,
-        canEdit: false, // Reseta edição ao trocar apenado
-        mudancas: resetMudancas(), // Limpa mudanças anteriores
-        errorMessage: '', // Limpa erro anterior
+        canEdit: false,
+        mudancas: resetMudancas(),
+        errorMessage: '',
       }
     }
 
     case 'SELECT_PROCESSO': {
       const processo = action.payload
 
-      // Validação: só seleciona processo se houver apenado
       if (!state.apenado) {
         console.warn('Tentativa de selecionar processo sem apenado')
         return state
@@ -66,7 +58,6 @@ function atendimentoReducer(state, action) {
     case 'UPDATE_FIELD': {
       const { field, value } = action.payload
 
-      // Validação: só atualiza se estiver em modo edição
       if (!state.canEdit) {
         console.warn('Tentativa de editar sem canEdit=true')
         return state
@@ -77,7 +68,6 @@ function atendimentoReducer(state, action) {
         return state
       }
 
-      // Rastreia a mudança
       const original = getApenadoOriginal(state.apenado)[field]
       const mudanca = trackFieldChange(original, value, field)
 
@@ -97,12 +87,11 @@ function atendimentoReducer(state, action) {
     case 'TOGGLE_EDIT': {
       const novoCanEdit = !state.canEdit
 
-      // Se desabilitando edição, pode resetar mudanças se configurado
       if (!novoCanEdit) {
         return {
           ...state,
           canEdit: novoCanEdit,
-          mudancas: resetMudancas(), // Descarta mudanças ao desabilitar
+          mudancas: resetMudancas(),
         }
       }
 
@@ -113,11 +102,46 @@ function atendimentoReducer(state, action) {
     }
 
     case 'SET_FOTO': {
-      const fotoAtendimento = action.payload
+      const data = action.payload
 
       return {
         ...state,
-        fotoAtendimento,
+        fotoAtendimento: {
+          ...state.fotoAtendimento,
+          data,
+          error: null,
+        },
+      }
+    }
+
+    case 'SET_PHOTO_STREAMING': {
+      return {
+        ...state,
+        fotoAtendimento: {
+          ...state.fotoAtendimento,
+          isStreaming: action.payload,
+        },
+      }
+    }
+
+    case 'SET_PHOTO_ERROR': {
+      return {
+        ...state,
+        fotoAtendimento: {
+          ...state.fotoAtendimento,
+          error: action.payload,
+        },
+      }
+    }
+
+    case 'CLEAR_PHOTO': {
+      return {
+        ...state,
+        fotoAtendimento: {
+          data: null,
+          isStreaming: false,
+          error: null,
+        },
       }
     }
 
@@ -154,31 +178,28 @@ function atendimentoReducer(state, action) {
 export const ServiceProvider = ({ children }) => {
   const [state, dispatch] = useReducer(atendimentoReducer, initialState)
 
-  // Computed value: isReadyToCapture
   const isReadyToCapture = Boolean(
     state.apenado && (state.apenado.processos?.length === 0 || state.processo)
   )
 
-  // Computed value: hasChanges
   const hasChanges = Object.values(state.mudancas).some((m) => m.mudou === true)
 
   const value = {
-    // State
     ...state,
 
-    // Computed values
     isReadyToCapture,
     hasChanges,
 
-    // Dispatcher
     dispatch,
 
-    // Convenience actions (shortcuts)
     selectApenado: (apenado) => dispatch({ type: 'SELECT_APENADO', payload: apenado }),
     selectProcesso: (processo) => dispatch({ type: 'SELECT_PROCESSO', payload: processo }),
     updateField: (field, value) => dispatch({ type: 'UPDATE_FIELD', payload: { field, value } }),
     toggleEdit: () => dispatch({ type: 'TOGGLE_EDIT' }),
     setFoto: (foto) => dispatch({ type: 'SET_FOTO', payload: foto }),
+    setPhotoStreaming: (bool) => dispatch({ type: 'SET_PHOTO_STREAMING', payload: bool }),
+    setPhotoError: (msg) => dispatch({ type: 'SET_PHOTO_ERROR', payload: msg }),
+    clearPhoto: () => dispatch({ type: 'CLEAR_PHOTO' }),
     setSubmitting: (bool) => dispatch({ type: 'SET_SUBMITTING', payload: bool }),
     setSuccess: (bool) => dispatch({ type: 'SET_SUCCESS', payload: bool }),
     setError: (msg) => dispatch({ type: 'SET_ERROR', payload: msg }),
