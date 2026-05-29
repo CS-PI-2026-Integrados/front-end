@@ -14,7 +14,6 @@ export default function AuthGuard() {
     )
   }
 
-  console.log('SESSAO: ' + session)
   if (!session) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />
   }

@@ -21,13 +21,21 @@ import {
 import { Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useSession } from '@/hooks/useSession'
+import { useNavigate } from 'react-router-dom'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
-  const { session } = useSession()
-
+  const { session, handleLogout } = useSession()
+  const navigate = useNavigate()
   const location = useLocation()
   const isActive = (path) => location.pathname === path
+
+  const onLogout = () => {
+    handleLogout()
+    navigate('/login', {
+      replace: true,
+    })
+  }
 
   return (
     <>
@@ -120,10 +128,8 @@ export default function DashboardLayout() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {/* <DropdownMenuItem>Perfil</DropdownMenuItem> */}
-                    <DropdownMenuItem asChild>
-                      <Link to="/login" className="cursor-pointer">
-                        Sair
-                      </Link>
+                    <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
+                      Sair
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

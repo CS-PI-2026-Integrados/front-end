@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { validateToken } from '@/lib/jwtUtils'
-import { SessionContext } from './sessionContext'
+import { SessionContext } from '@/context/sessionContext'
 
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null)
