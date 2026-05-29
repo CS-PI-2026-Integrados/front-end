@@ -1,84 +1,64 @@
-import { useState } from 'react'
 import { ConvictedCard } from '@/components/service/ConvictedCard.jsx'
 import { useService } from '@/context/ServiceContext'
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { PhotoCaptureCard } from '@/components/service/PhotoCaptureCard.jsx'
 import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
 import { ReceiptSuccessCard } from '@/components/service/ReceiptSuccessCard.jsx'
+import { validateAtendimento } from '@/lib/atendimentoUtils'
+import { getMudancasAtivas } from '@/lib/atendimentoUtils'
 
 const Service = () => {
   const {
-    atendimento,
+    apenado,
+    processo,
     fotoAtendimento,
     isSuccess,
     isSubmitting,
-    setAtendimento,
-    setFotoAtendimento,
-    setErrorMessage,
-    setIsSuccess,
-    setMudancasDetectadas,
+    mudancas,
+    isReadyToCapture,
+    setFoto,
+    setSubmitting,
+    setSuccess,
+    setError,
+    resetAtendimento,
   } = useService()
 
-  const isReadyToCapture = Boolean(
-    atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
-  )
-
-  // const { generateReceipt } = useGenerateReceipt({
-  //   setAtendimento,
-  // })
-
-  // const handleChangeAtendimento = (novoAtendimento) => {
-  //   if (novoAtendimento.apenado?.id !== atendimento.apenado?.id) {
-  //     setErrorMessage('')
-  //     setIsSuccess(false)
-  //     setMudancasDetectadas({})
-  //   }
-  //   setAtendimento(novoAtendimento)
-  // }
-
-  // const handleMudancasDetectadas = (mudancas) => {
-  //   setMudancasDetectadas(mudancas)
-  // }
-
-  // const resetForm = () => {
-  //   setAtendimento({ apenado: null, processo: null })
-  //   setFotoAtendimento(null)
-  //   setErrorMessage('')
-  //   setIsSuccess(false)
-  // }
+  const { generateReceipt } = useGenerateReceipt()
 
   const handleFinalSubmit = async (e) => {
     e.preventDefault()
-    setErrorMessage('')
+    setError('')
 
-    if (!atendimento.apenado) {
-      setErrorMessage('Selecione um apenado para continuar')
-      return
-    }
-    if (!atendimento.processo && atendimento.apenado.processos?.length > 0) {
-      setErrorMessage('Selecione um processo para continuar')
-      return
-    }
-    if (!fotoAtendimento) {
-      setErrorMessage('Capture ou selecione uma foto para gerar o comprovante')
+    // Valida com utilitário centralizado
+    const { isValid, error } = validateAtendimento({
+      apenado,
+      processo,
+      foto: fotoAtendimento,
+    })
+
+    if (!isValid) {
+      setError(error)
       return
     }
 
-    setIsSubmitting(true)
+    setSubmitting(true)
     try {
+      const mudancasAtivas = getMudancasAtivas(mudancas)
+
       await generateReceipt({
-        apenadoAtualizado: atendimento.apenado,
-        processoAtivo: atendimento.processo,
+        apenadoAtualizado: apenado,
+        processoAtivo: processo,
         fotoAtendimento,
-        mudancasDetectadas,
+        mudancasDetectadas: mudancasAtivas,
       })
-      setIsSuccess(true)
-      console.log(atendimento.apenado)
+
+      setSuccess(true)
+      console.log(apenado)
     } catch (error) {
       console.error('Falha ao gerar comprovante:', error)
-      setErrorMessage(error.message || 'Falha ao gerar comprovante. Tente novamente.')
+      setError(error.message || 'Falha ao gerar comprovante. Tente novamente.')
     } finally {
-      setIsSubmitting(false)
+      setSubmitting(false)
     }
   }
 
@@ -107,12 +87,6 @@ const Service = () => {
             </TabsTrigger>
           </TabsList>
         </div>
-        {/* 
-        {errorMessage && (
-          <div className="bg-destructive/10 border-destructive text-destructive mb-4 shrink-0 rounded-lg border p-3 text-sm">
-            {errorMessage}
-          </div>
-        )} */}
 
         <TabsContent
           value="novo"
@@ -142,8 +116,8 @@ const Service = () => {
                   isReady={isReadyToCapture}
                   isSubmitting={isSubmitting}
                   photo={fotoAtendimento}
-                  onPhotoSelect={setFotoAtendimento}
-                  apenado={atendimento.apenado}
+                  onPhotoSelect={setFoto}
+                  apenado={apenado}
                 />
               )}
             </div> */}

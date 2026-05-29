@@ -13,11 +13,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useState } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
-import { ConvictedInfoCard } from '@/components/service/ConvictedInfoCard.jsx'
 import { useService } from '@/context/ServiceContext'
+import { ConvictedInfoCard } from '@/components/service/ConvictedInfoCard.jsx'
 
 export function SelectConvicted() {
-  const { atendimento, setAtendimento } = useService()
+  const { apenado, selectApenado } = useService()
 
   const { apenados } = useDistrictData()
 
@@ -28,12 +28,10 @@ export function SelectConvicted() {
 
   const handleSelectApenado = (idSelecionado) => {
     setOpen(false)
-    const apenado = apenados?.find((a) => String(a.id) === idSelecionado)
+    const apenadoSelecionado = apenados?.find((a) => String(a.id) === idSelecionado)
 
-    if (apenado) {
-      const processoPadrao =
-        apenado.processos && apenado.processos.length > 0 ? apenado.processos[0] : null
-      setAtendimento({ apenado, processo: processoPadrao })
+    if (apenadoSelecionado) {
+      selectApenado(apenadoSelecionado)
     }
   }
 
@@ -50,8 +48,8 @@ export function SelectConvicted() {
               role="combobox"
               className="h-10 w-full justify-between bg-transparent"
             >
-              {atendimento.apenado ? (
-                atendimento.apenado.fullName
+              {apenado ? (
+                apenado.fullName
               ) : (
                 <span className="text-muted-foreground font-normal">Selecione um apenado</span>
               )}
@@ -88,19 +86,7 @@ export function SelectConvicted() {
         </Popover>
       </div>
 
-      {atendimento.apenado ? (
-        <ConvictedInfoCard
-          key={atendimento.apenado.id}
-          apenado={atendimento.apenado}
-          processoAtivo={atendimento.processo}
-        />
-      ) : (
-        <div className="bg-muted/30 flex min-h-[140px] flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
-          <p className="text-muted-foreground text-sm">
-            Selecione o apenado para iniciar um atendimento
-          </p>
-        </div>
-      )}
+      {apenado && <ConvictedInfoCard key={apenado.id} />}
     </div>
   )
 }

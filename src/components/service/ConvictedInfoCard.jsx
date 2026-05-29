@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { Pencil, AlertCircle } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
@@ -13,70 +12,53 @@ import {
 } from '@/components/ui/select'
 
 import { useService } from '@/context/ServiceContext'
+import { formatPhone } from '@/lib/atendimentoUtils'
 
-export function ConvictedInfoCard({ apenado, processoAtivo }) {
-  const { atendimento, setAtendimento, setAlteracoes } = useService()
-  const [canEdit, setCanEdit] = useState(false)
+/**
+ * ConvictedInfoCard - Renderiza as informações do apenado selecionado
+ * Exibe: processo, campos editáveis (phone, address, workingStatus)
+ * Responsabilidade: apenas render + dispatch ao contexto
+ */
+export function ConvictedInfoCard() {
+  const {
+    apenado,
+    processo,
+    canEdit,
+    mudancas,
+    hasChanges,
+    updateField,
+    selectProcesso,
+    toggleEdit,
+  } = useService()
 
-  // Como o componente recria quando a key muda, podemos iniciar o estado diretamente
-  const [apenadoOriginal] = useState(() => ({
-    phone: apenado?.phone,
-    address: apenado?.address,
-    workingStatus: apenado?.workingStatus,
-  }))
-
-  const [mudancasRastreadas, setMudancasRastreadas] = useState({})
-
-  useEffect(() => {
-    // atualiza as alterações rastreadas no contexto
-    setAlteracoes(mudancasRastreadas)
-  }, [mudancasRastreadas, setAlteracoes])
+  if (!apenado) {
+    return (
+      <div className="bg-muted/30 flex min-h-[140px] flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
+        <p className="text-muted-foreground text-sm">
+          Selecione o apenado para iniciar um atendimento
+        </p>
+      </div>
+    )
+  }
 
   const processos = apenado.processos || []
-
-  const handleFieldChange = (field, newValue) => {
-    if (!canEdit) return
-
-    const original = apenadoOriginal?.[field]
-    const isChanged = original !== newValue
-
-    setMudancasRastreadas((prev) => ({
-      ...prev,
-      [field]: {
-        original,
-        novo: newValue,
-        mudou: isChanged,
-      },
-    }))
-
-    // atualiza o apenado dentro do atendimento no contexto
-    setAtendimento((prev) => ({
-      ...prev,
-      apenado: { ...prev.apenado, [field]: newValue },
-    }))
-  }
-
-  const temMudancas = Object.values(mudancasRastreadas).some((m) => m.mudou)
-
-  const formatPhone = (val) => {
-    if (!val) return ''
-    let value = val.replace(/\D/g, '')
-    if (value.length > 11) value = value.slice(0, 11)
-
-    if (value.length > 10) {
-      return `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`
-    } else if (value.length > 6) {
-      return `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`
-    } else if (value.length > 2) {
-      return `(${value.slice(0, 2)}) ${value.slice(2)}`
-    }
-    return value
-  }
 
   const handlePhoneInput = (e) => {
     const formatted = formatPhone(e.target.value)
     e.target.value = formatted
-    handleFieldChange('phone', formatted)
+    updateField('phone', formatted)
+  }
+
+  const getMudancasLabels = () => {
+    const labels = {
+      phone: 'Telefone',
+      address: 'Endereço',
+      workingStatus: 'Situação Trabalhista',
+    }
+    return Object.entries(mudancas)
+      .filter(([, m]) => m.mudou)
+      .map(([field]) => labels[field])
+      .join(', ')
   }
 
   return (
@@ -86,11 +68,11 @@ export function ConvictedInfoCard({ apenado, processoAtivo }) {
           <div className="space-y-1">
             <Label>Processo Ativo</Label>
             <Select
-              value={processoAtivo ? String(processoAtivo.id) : ''}
+              value={processo ? String(processo.id) : ''}
               onValueChange={(id) => {
                 const proc = processos.find((p) => String(p.id) === id)
                 if (proc) {
-                  setAtendimento((prev) => ({ ...prev, processo: proc }))
+                  selectProcesso(proc)
                 }
               }}
             >
@@ -98,28 +80,25 @@ export function ConvictedInfoCard({ apenado, processoAtivo }) {
                 <SelectValue placeholder="Selecione um processo" />
               </SelectTrigger>
               <SelectContent>
-                {processos.map((processo) => (
-                  <SelectItem key={processo.id} value={String(processo.id)}>
-                    {processo.processNumber}
+                {processos.map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {p.processNumber}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {processoAtivo && (
+          {processo && (
             <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
               <p>
-                <span className="text-muted-foreground">Processo:</span>{' '}
-                {processoAtivo.processNumber}
+                <span className="text-muted-foreground">Processo:</span> {processo.processNumber}
               </p>
               <p>
-                <span className="text-muted-foreground">Situação:</span>{' '}
-                {processoAtivo.judicialStatus}
+                <span className="text-muted-foreground">Situação:</span> {processo.judicialStatus}
               </p>
               <p>
-                <span className="text-muted-foreground">Instituição:</span>{' '}
-                {processoAtivo.institution}
+                <span className="text-muted-foreground">Instituição:</span> {processo.institution}
               </p>
             </div>
           )}
@@ -134,7 +113,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo }) {
         <Checkbox
           id="enableEditing"
           checked={canEdit}
-          onCheckedChange={setCanEdit}
+          onCheckedChange={toggleEdit}
           className="mt-1 shrink-0 md:mt-0"
         />
         <Label
@@ -147,24 +126,12 @@ export function ConvictedInfoCard({ apenado, processoAtivo }) {
       </div>
 
       <div className="bg-muted/50 space-y-4 rounded-lg border p-4">
-        {temMudancas && (
+        {hasChanges && (
           <div className="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
               <p className="font-medium">Dados modificados</p>
-              <p className="mt-1 text-xs">
-                {Object.entries(mudancasRastreadas)
-                  .filter(([, m]) => m.mudou)
-                  .map(([field]) => {
-                    const labels = {
-                      phone: 'Telefone',
-                      address: 'Endereço',
-                      workingStatus: 'Situação Trabalhista',
-                    }
-                    return labels[field]
-                  })
-                  .join(', ')}
-              </p>
+              <p className="mt-1 text-xs">{getMudancasLabels()}</p>
             </div>
           </div>
         )}
@@ -195,7 +162,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo }) {
             disabled={!canEdit}
             placeholder="Rua, número..."
             defaultValue={apenado.address || ''}
-            onChange={(e) => handleFieldChange('address', e.target.value)}
+            onChange={(e) => updateField('address', e.target.value)}
           />
         </div>
 
@@ -205,7 +172,7 @@ export function ConvictedInfoCard({ apenado, processoAtivo }) {
             disabled={!canEdit}
             name="workingStatus"
             value={apenado.workingStatus || ''}
-            onValueChange={(value) => handleFieldChange('workingStatus', value)}
+            onValueChange={(value) => updateField('workingStatus', value)}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecione" />

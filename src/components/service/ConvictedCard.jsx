@@ -6,7 +6,7 @@ import { SelectConvicted } from './SelectConvicted.jsx'
 import { useService } from '@/context/ServiceContext'
 
 export function ConvictedCard({ className }) {
-  const { atendimento } = useService()
+  const { apenado } = useService()
   const currentDateTime = useMemo(
     () =>
       new Date().toLocaleString('pt-BR', {
@@ -31,7 +31,7 @@ export function ConvictedCard({ className }) {
       <CardContent
         className={cn(
           'flex flex-col px-4 pb-4 md:min-h-0 md:flex-1 md:px-6 md:pb-6',
-          atendimento.apenado ? 'md:overflow-y-auto' : 'md:overflow-hidden'
+          apenado ? 'md:overflow-y-auto' : 'md:overflow-hidden'
         )}
       >
         <SelectConvicted />
