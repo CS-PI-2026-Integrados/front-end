@@ -74,7 +74,7 @@ export default function DashboardLayout() {
               </Button>
               <Button
                 asChild
-                variant={isActive('/atendimento') ? 'default' : 'ghost'}
+                variant={isActive('/grupos') ? 'default' : 'ghost'}
                 className="justify-start"
               >
                 <Link to="/grupos" className="flex w-full items-center gap-2">
