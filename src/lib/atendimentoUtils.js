@@ -28,7 +28,10 @@ export const validateAtendimento = ({ apenado, processo, foto }) => {
     }
   }
 
-  if (!foto) {
+  // Suporta tanto foto string quanto objeto { data, isStreaming, error }
+  const fotoData = typeof foto === 'object' ? foto?.data : foto
+
+  if (!fotoData) {
     return {
       isValid: false,
       error: 'Capture ou selecione uma foto para gerar o comprovante',
