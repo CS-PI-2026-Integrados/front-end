@@ -10,6 +10,7 @@ import Certificate from './pages/Certificate'
 import NotFound from './pages/NotFound'
 import DashboardLayout from './layout/DashboardLayout'
 import ApenadoProfile from './pages/ApenadoProfile'
+import Groups from './pages/Groups'
 
 const AppRouter = () => {
   const { session } = useSession()
@@ -26,6 +27,7 @@ const AppRouter = () => {
 
       <Route element={<DashboardLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="grupos" element={<Groups />} />
         <Route path="apenados" element={<Convicteds />} />
         <Route path="atendimento" element={<Service />} />
         <Route path="instituicoes" element={<Institutions />} />
