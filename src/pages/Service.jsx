@@ -29,7 +29,6 @@ const Service = () => {
     e.preventDefault()
     setError('')
 
-    // Valida com utilitário centralizado
     const { isValid, error } = validateAtendimento({
       apenado,
       processo,
@@ -48,7 +47,7 @@ const Service = () => {
       await generateReceipt({
         apenadoAtualizado: apenado,
         processoAtivo: processo,
-        fotoAtendimento,
+        fotoAtendimento: fotoAtendimento.data,
         mudancasDetectadas: mudancasAtivas,
       })
 
@@ -98,29 +97,23 @@ const Service = () => {
                 isSuccess ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
               }`}
             />
-            {/* <div
-              className={`flex w-full flex-col transition-all duration-300 md:min-h-0 md:flex-1 ${!isReadyToCapture && !isSuccess
-                ? 'pointer-events-none opacity-40 grayscale-[0.5]'
-                : ''
-                }`}
+            <div
+              className={`flex w-full flex-col transition-all duration-300 md:min-h-0 md:flex-1 ${
+                !isReadyToCapture && !isSuccess
+                  ? 'pointer-events-none opacity-40 grayscale-[0.5]'
+                  : ''
+              }`}
             >
               {isSuccess ? (
                 <ReceiptSuccessCard
                   className="flex-1 md:h-full"
-                  atendimento={atendimento}
-                  onReset={resetForm}
+                  atendimento={{ apenado, processo }}
+                  onReset={resetAtendimento}
                 />
               ) : (
-                <PhotoCaptureCard
-                  className="flex-1 md:h-full"
-                  isReady={isReadyToCapture}
-                  isSubmitting={isSubmitting}
-                  photo={fotoAtendimento}
-                  onPhotoSelect={setFoto}
-                  apenado={apenado}
-                />
+                <PhotoCaptureCard className="flex-1 md:h-full" />
               )}
-            </div> */}
+            </div>
           </form>
         </TabsContent>
       </Tabs>
