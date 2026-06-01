@@ -1,13 +1,88 @@
+import { Search, Plus } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+
 const Groups = () => {
   return (
-    <div className="max-w-7x1 mx-auto">
+    <div className="mx-auto max-w-7xl">
       <div className="space-y-6">
-        <div>
-          <h1 className="mb-2 text-3xl font-bold">Grupos Reflexivos</h1>
-          <p className="text-muted-foreground">Visão geral</p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">Grupos Reflexivos</h1>
+            <p className="text-muted-foreground">
+              Gerencie grupos de reflexão e acompanhe participantes
+            </p>
+          </div>
+
+          <Button className="w-fit">
+            <Plus className="h-4 w-4" />
+            Novo Grupo
+          </Button>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4"></div>
+        <Card>
+          <CardContent className="space-y-6 pt-6">
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="relative flex-1">
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+
+                <Input placeholder="Buscar por nome do grupo..." className="pl-10" />
+              </div>
+
+              <Select defaultValue="todos">
+                <SelectTrigger className="w-full md:w-[220px]">
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="andamento">Em andamento</SelectItem>
+                  <SelectItem value="concluido">Concluído</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome do Grupo</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Participantes</TableHead>
+                    <TableHead>Encontros</TableHead>
+                    <TableHead>Início</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-muted-foreground h-32 text-center">
+                      Nenhum grupo encontrado
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
