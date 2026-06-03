@@ -1,7 +1,16 @@
+import { useState } from 'react'
 import { Search, Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -20,6 +29,8 @@ import {
 } from '@/components/ui/table'
 
 const Groups = () => {
+  const [novoGrupoAberto, setNovoGrupoAberto] = useState(false)
+
   return (
     <div className="mx-auto max-w-7xl">
       <div className="space-y-6">
@@ -31,11 +42,33 @@ const Groups = () => {
             </p>
           </div>
 
-          <Button className="w-fit">
+          <Button className="w-fit" type="button" onClick={() => setNovoGrupoAberto(true)}>
             <Plus className="h-4 w-4" />
             Novo Grupo
           </Button>
         </div>
+
+        <Dialog open={novoGrupoAberto} onOpenChange={setNovoGrupoAberto}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Novo Grupo</DialogTitle>
+              <DialogDescription>
+                Cadastre um novo grupo reflexivo para iniciar as atividades.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <Input placeholder="Nome do grupo" />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={() => setNovoGrupoAberto(false)}>
+                Cancelar
+              </Button>
+              <Button type="button" onClick={() => setNovoGrupoAberto(false)}>
+                Salvar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Card>
           <CardContent className="space-y-6 pt-6">
