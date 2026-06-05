@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSession } from '@/hooks/useSession'
+import { useSession } from '@/context/sessionContext'
 
 const STORAGE_KEY = 'apenados_data_v3'
 

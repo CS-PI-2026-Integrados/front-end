@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from '@/schemas/loginSchema'
 import { authenticateUser } from '@/services/authService'
 import { formatCpf } from '@/lib/validadorCpf'
-import { useSession } from '@/hooks/useSession'
+import { useSession } from '@/context/sessionContext'
 
 export function useLogin() {
   const [showPassword, setShowPassword] = useState(false)

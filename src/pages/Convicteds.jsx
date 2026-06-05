@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { useSession } from '@/hooks/useSession'
+import { useSession } from '@/context/sessionContext'
 import mockApenados from '../mocks/apenados.json'
 import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'

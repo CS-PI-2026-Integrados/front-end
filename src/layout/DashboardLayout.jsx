@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
-import { useSession } from '@/hooks/useSession'
+import { useSession } from '@/context/sessionContext'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
