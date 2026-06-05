@@ -74,10 +74,10 @@ export default function DashboardLayout() {
               </Button>
               <Button
                 asChild
-                variant={isActive('/grupos') ? 'default' : 'ghost'}
+                variant={isActive('/grupos-reflexivos') ? 'default' : 'ghost'}
                 className="justify-start"
               >
-                <Link to="/grupos" className="flex w-full items-center gap-2">
+                <Link to="/grupos-reflexivos" className="flex w-full items-center gap-2">
                   <Boxes /> Grupos Reflexivos
                 </Link>
               </Button>
