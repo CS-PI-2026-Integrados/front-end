@@ -1,40 +1,35 @@
 import React, { useEffect, useState } from 'react'
 import { SessionContext } from '@/context/sessionContext'
-import { validateToken } from '@/mocks/requests/token.requests.mock'
-import { getUserByPayload } from '@/mocks/requests/users.requests.mock'
+import { clearAuthSession, persistSessionToken, restoreAuthSession } from '@/services/authService'
 
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const handleLogin = (user, tenant, token) => {
-    localStorage.setItem('@sicape:token', token)
+    persistSessionToken(token)
     setSession({ user, tenant })
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('@sicape:token')
+    clearAuthSession()
     setSession(null)
   }
 
   useEffect(() => {
     const checkSession = () => {
-      const token = localStorage.getItem('@sicape:token')
-      const payload = validateToken(token)
+      const restoredSession = restoreAuthSession()
 
-      if (!payload) {
-        handleLogout()
+      if (!restoredSession) {
+        setSession(null)
         setIsLoading(false)
         return
       }
 
-      try {
-        const { userData, tenantData } = getUserByPayload(payload)
-        handleLogin(userData, tenantData, token)
-      } catch {
-        handleLogout()
-      }
-
+      setSession({
+        user: restoredSession.user,
+        tenant: restoredSession.tenant,
+      })
       setIsLoading(false)
     }
     checkSession()

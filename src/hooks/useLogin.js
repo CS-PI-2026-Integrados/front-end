@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from '@/schemas/loginSchema'
-import { authenticateUser } from '@/services/loginAuth'
+import { authenticateUser } from '@/services/authService'
 import { formatCpf } from '@/lib/validadorCpf'
 import { useSession } from '@/hooks/useSession'
 
@@ -18,7 +18,6 @@ export function useLogin() {
     mode: 'onTouched',
   })
 
-  console.log('Query atual:', location.search)
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev)
 
   const signIn = async (data) => {
@@ -30,7 +29,6 @@ export function useLogin() {
       handleLogin(response.user, response.tenant, response.token)
 
       const redirectTo = new URLSearchParams(location.search).get('redirect') || '/dashboard'
-      console.log('Redirect encontrado:', redirectTo)
       navigate(redirectTo, { replace: true })
     } catch (error) {
       setAuthError(error.message || 'Ocorreu um erro inesperado.')

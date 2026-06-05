@@ -267,15 +267,7 @@ Para o front-end, a recomendação é usar convenção JavaScript em `camelCase`
 
 ```js
 {
-  id,
-  tenantId,
-  fullName,
-  cpf,
-  dateOfBirth,
-  phone,
-  address,
-  status,
-  workingStatus
+  ;(id, tenantId, fullName, cpf, dateOfBirth, phone, address, status, workingStatus)
 }
 ```
 
