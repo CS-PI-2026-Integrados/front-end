@@ -1,16 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Search, Plus } from 'lucide-react'
+import { useSession } from '@/context/SessionContext'
+import mockApenados from '@/mocks/apenados.json'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -27,12 +21,41 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import NewGroupForm from '@/components/hooks/NewGroupForm'
 
 const Groups = () => {
+  const { session } = useSession()
   const [novoGrupoAberto, setNovoGrupoAberto] = useState(false)
+  const [grupos, setGrupos] = useState([])
+  const [searchGrupo, setSearchGrupo] = useState('')
+  const [statusFilter, setStatusFilter] = useState('todos')
+
+  // Get available participants from session tenant
+  const availableParticipants = useMemo(() => {
+    const comarca = session?.tenant?.id
+    if (!comarca) return []
+    return mockApenados.filter((a) => a.tenant_id === comarca && a.status === 'Ativo')
+  }, [session?.tenant?.id])
+
+  const handleCreateGroup = async (formData) => {
+    try {
+      // Simulating API call - replace with actual API call
+      const novoGrupo = {
+        id: grupos.length + 1,
+        ...formData,
+        status: 'Planejamento',
+        criadoEm: new Date().toISOString(),
+      }
+
+      setGrupos((prev) => [novoGrupo, ...prev])
+      setNovoGrupoAberto(false)
+    } catch (error) {
+      throw error
+    }
+  }
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto min-h-screen max-w-7xl">
       <div className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
@@ -48,27 +71,12 @@ const Groups = () => {
           </Button>
         </div>
 
-        <Dialog open={novoGrupoAberto} onOpenChange={setNovoGrupoAberto}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Novo Grupo</DialogTitle>
-              <DialogDescription>
-                Cadastre um novo grupo reflexivo para iniciar as atividades.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <Input placeholder="Nome do grupo" />
-            </div>
-            <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => setNovoGrupoAberto(false)}>
-                Cancelar
-              </Button>
-              <Button type="button" onClick={() => setNovoGrupoAberto(false)}>
-                Salvar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <NewGroupForm
+          isOpen={novoGrupoAberto}
+          onOpenChange={setNovoGrupoAberto}
+          availableParticipants={availableParticipants}
+          onSubmit={handleCreateGroup}
+        />
 
         <Card>
           <CardContent className="space-y-6 pt-6">
@@ -76,18 +84,24 @@ const Groups = () => {
               <div className="relative flex-1">
                 <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
 
-                <Input placeholder="Buscar por nome do grupo..." className="pl-10" />
+                <Input
+                  placeholder="Buscar por nome do grupo..."
+                  className="pl-10"
+                  value={searchGrupo}
+                  onChange={(e) => setSearchGrupo(e.target.value)}
+                />
               </div>
 
-              <Select defaultValue="todos">
+              <Select defaultValue={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full md:w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
 
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="andamento">Em andamento</SelectItem>
-                  <SelectItem value="concluido">Concluído</SelectItem>
+                  <SelectItem value="Planejamento">Planejamento</SelectItem>
+                  <SelectItem value="EmAndamento">Em andamento</SelectItem>
+                  <SelectItem value="Concluido">Concluído</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -106,11 +120,30 @@ const Groups = () => {
                 </TableHeader>
 
                 <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-muted-foreground h-32 text-center">
-                      Nenhum grupo encontrado
-                    </TableCell>
-                  </TableRow>
+                  {grupos.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-muted-foreground h-32 text-center">
+                        Nenhum grupo encontrado
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    grupos.map((grupo) => (
+                      <TableRow key={grupo.id}>
+                        <TableCell className="font-medium">{grupo.nomeGrupo}</TableCell>
+                        <TableCell>{grupo.status}</TableCell>
+                        <TableCell>{grupo.participantes.length}</TableCell>
+                        <TableCell>
+                          {grupo.totalEncontros} ({grupo.frequencia})
+                        </TableCell>
+                        <TableCell>{grupo.dataInicio}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm">
+                            Ver
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
