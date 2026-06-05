@@ -37,12 +37,11 @@ export const clearAuthSession = () => {
   clearStoredToken()
 }
 
-export const restoreAuthSession = () => {
+export const readAuthSession = () => {
   const token = getStoredToken()
   const payload = validateStoredToken(token)
 
   if (!payload) {
-    clearAuthSession()
     return null
   }
 
@@ -51,7 +50,16 @@ export const restoreAuthSession = () => {
 
     return buildSession(userData, tenantData, token)
   } catch {
-    clearAuthSession()
     return null
   }
+}
+
+export const restoreAuthSession = () => {
+  const authSession = readAuthSession()
+
+  if (!authSession) {
+    clearAuthSession()
+  }
+
+  return authSession
 }

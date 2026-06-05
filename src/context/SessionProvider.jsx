@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { SessionContext } from '@/context/sessionContext'
 import { clearAuthSession, persistSessionToken, restoreAuthSession } from '@/services/authService'
 
@@ -6,34 +6,45 @@ export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const handleLogin = (user, tenant, token) => {
+  const applySession = useCallback((authSession) => {
+    const nextSession = {
+      user: authSession.user,
+      tenant: authSession.tenant,
+    }
+
+    setSession(nextSession)
+
+    return nextSession
+  }, [])
+
+  const handleLogin = useCallback((user, tenant, token) => {
     persistSessionToken(token)
     setSession({ user, tenant })
-  }
+  }, [])
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     clearAuthSession()
     setSession(null)
-  }
+  }, [])
+
+  const handleRestoreSession = useCallback(() => {
+    const restoredSession = restoreAuthSession()
+
+    if (!restoredSession) {
+      setSession(null)
+      return null
+    }
+
+    return applySession(restoredSession)
+  }, [applySession])
 
   useEffect(() => {
     const checkSession = () => {
-      const restoredSession = restoreAuthSession()
-
-      if (!restoredSession) {
-        setSession(null)
-        setIsLoading(false)
-        return
-      }
-
-      setSession({
-        user: restoredSession.user,
-        tenant: restoredSession.tenant,
-      })
+      handleRestoreSession()
       setIsLoading(false)
     }
     checkSession()
-  }, [])
+  }, [handleRestoreSession])
 
   return (
     <SessionContext.Provider
@@ -42,6 +53,7 @@ export const SessionProvider = ({ children }) => {
         setSession,
         handleLogin,
         handleLogout,
+        handleRestoreSession,
         isLoading,
       }}
     >
