@@ -2,7 +2,7 @@ import { useLayoutEffect } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSession } from '@/hooks/useSession'
 import { readAuthSession } from '@/services/authService'
-import { Loader2 } from 'lucide-react'
+import RouteGuardLoader from '@/components/guards/RouteGuardLoader'
 
 const buildRequestedRoute = (location) => {
   return `${location.pathname}${location.search}${location.hash}`
@@ -10,14 +10,6 @@ const buildRequestedRoute = (location) => {
 
 const buildLoginRedirectPath = (requestedRoute) => {
   return `/login?redirect=${encodeURIComponent(requestedRoute)}`
-}
-
-const GuardLoader = () => {
-  return (
-    <div className="flex h-screen w-screen items-center justify-center">
-      <Loader2 className="animate-spin text-emerald-500" size={40} />
-    </div>
-  )
 }
 
 const InvalidSessionRedirect = ({ to }) => {
@@ -36,7 +28,7 @@ export default function AuthGuard() {
   const requestedRoute = buildRequestedRoute(location)
 
   if (isLoading) {
-    return <GuardLoader />
+    return <RouteGuardLoader />
   }
 
   if (!readAuthSession()) {

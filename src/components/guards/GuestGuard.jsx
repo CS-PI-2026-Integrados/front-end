@@ -1,21 +1,41 @@
+import { useLayoutEffect } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useSession } from '@/hooks/useSession'
-import { Loader2 } from 'lucide-react'
+import { readAuthSession } from '@/services/authService'
+import RouteGuardLoader from '@/components/guards/RouteGuardLoader'
 
-export default function GuestGuard() {
-  const { session, isLoading } = useSession()
+const DASHBOARD_ROUTE = '/dashboard'
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center">
-        <Loader2 className="animate-spin text-emerald-500" size={40} />
-      </div>
-    )
-  }
+const AuthenticatedSessionRedirect = ({ to }) => {
+  const { handleRestoreSession } = useSession()
 
-  if (session) {
-    return <Navigate to="/dashboard" replace />
-  }
+  useLayoutEffect(() => {
+    handleRestoreSession()
+  }, [handleRestoreSession])
+
+  return <Navigate to={to} replace />
+}
+
+const GuestRouteOutlet = () => {
+  const { handleLogout } = useSession()
+
+  useLayoutEffect(() => {
+    handleLogout()
+  }, [handleLogout])
 
   return <Outlet />
+}
+
+export default function GuestGuard() {
+  const { isLoading } = useSession()
+
+  if (isLoading) {
+    return <RouteGuardLoader />
+  }
+
+  if (readAuthSession()) {
+    return <AuthenticatedSessionRedirect to={DASHBOARD_ROUTE} />
+  }
+
+  return <GuestRouteOutlet />
 }
