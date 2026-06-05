@@ -1,14 +1,5 @@
-import {
-  ChartBar,
-  FileText,
-  FolderArchive,
-  LayoutDashboard,
-  Settings,
-  Users,
-  User,
-  Menu,
-} from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { FileText, LayoutDashboard, Users, User, Menu } from 'lucide-react'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import Logo from '/assets/logo/to-light-background.svg'
 
 import { Button } from '@/components/ui/button'
@@ -18,23 +9,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { Outlet, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSession } from '@/hooks/useSession'
-import { useNavigate } from 'react-router-dom'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
   const { session, handleLogout } = useSession()
-  const navigate = useNavigate()
   const location = useLocation()
   const isActive = (path) => location.pathname === path
 
   const onLogout = () => {
     handleLogout()
-    navigate('/login', {
-      replace: true,
-    })
   }
 
   return (

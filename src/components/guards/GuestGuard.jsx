@@ -1,41 +1,37 @@
-import { useLayoutEffect } from 'react'
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSession } from '@/hooks/useSession'
 import { readAuthSession } from '@/services/authService'
 import RouteGuardLoader from '@/components/guards/RouteGuardLoader'
 
-const DASHBOARD_ROUTE = '/dashboard'
-
-const AuthenticatedSessionRedirect = ({ to }) => {
-  const { handleRestoreSession } = useSession()
-
-  useLayoutEffect(() => {
-    handleRestoreSession()
-  }, [handleRestoreSession])
-
-  return <Navigate to={to} replace />
+const isInternalRedirect = (redirect) => {
+  return redirect?.startsWith('/') && !redirect.startsWith('//')
 }
 
-const GuestRouteOutlet = () => {
-  const { handleLogout } = useSession()
+const getPathname = (route) => {
+  return route.split(/[?#]/)[0] || '/'
+}
 
-  useLayoutEffect(() => {
-    handleLogout()
-  }, [handleLogout])
+const getAuthenticatedRedirectPath = (location) => {
+  const redirect = new URLSearchParams(location.search).get('redirect')?.trim()
 
-  return <Outlet />
+  if (!isInternalRedirect(redirect) || getPathname(redirect) === location.pathname) {
+    return '/dashboard'
+  }
+
+  return redirect
 }
 
 export default function GuestGuard() {
   const { isLoading } = useSession()
+  const location = useLocation()
 
   if (isLoading) {
     return <RouteGuardLoader />
   }
 
   if (readAuthSession()) {
-    return <AuthenticatedSessionRedirect to={DASHBOARD_ROUTE} />
+    return <Navigate to={getAuthenticatedRedirectPath(location)} replace />
   }
 
-  return <GuestRouteOutlet />
+  return <Outlet />
 }
