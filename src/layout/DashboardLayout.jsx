@@ -1,6 +1,6 @@
 import { FileText, LayoutDashboard, Users, User, Menu } from 'lucide-react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import Logo from '/assets/logo/to-light-background.svg'
+import Logo from '@/assets/logos/to-light-background.svg'
 
 import { Button } from '@/components/ui/button'
 import {

@@ -10,12 +10,14 @@ import DashboardLayout from '@/layout/DashboardLayout'
 import ApenadoProfile from '@/pages/ApenadoProfile'
 import AuthGuard from '@/components/guards/AuthGuard'
 import GuestGuard from '@/components/guards/GuestGuard'
+import RecoverPassword from '@/pages/RecoverPassword'
 
 const AppRouter = () => {
   return (
     <Routes>
       <Route element={<GuestGuard />}>
         <Route path="login" element={<Login />} />
+        <Route path="recuperar-senha" element={<RecoverPassword />} />
       </Route>
 
       <Route element={<AuthGuard />}>
