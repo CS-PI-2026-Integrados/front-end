@@ -1,7 +1,0 @@
-import { z } from 'zod'
-import { cpfSchema } from '@/schemas/commonFieldsSchema'
-
-export const loginSchema = z.object({
-  cpf: cpfSchema,
-  password: z.string().min(1, 'A senha é obrigatória.'),
-})

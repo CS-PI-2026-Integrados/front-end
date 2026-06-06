@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { loginSchema } from '@/schemas/loginSchema'
+import { loginSchema } from '@/schemas/authSchemas'
 import { authenticateUser } from '@/services/authService'
 import { formatCpf } from '@/lib/validadorCpf'
 import { useSession } from '@/context/sessionContext'

@@ -2,8 +2,7 @@ import { mockTenants } from '@/mocks/tenants.mock'
 import { mockUsers } from '@/mocks/users.mock'
 
 const AUTH_TOKEN_STORAGE_KEY = '@sicape:token'
-const TOKEN_SIGNATURE_SALT = 'sicape_mock_auth_v1'
-const PASSWORD_RESET_TOKEN_TTL_IN_MINUTES = 30
+const MOCK_USERS_STORAGE_KEY = '@sicape:mock-users'
 
 const encodeTokenPart = (value) => {
   return btoa(JSON.stringify(value))
@@ -14,13 +13,46 @@ const decodeTokenPart = (value) => {
 }
 
 const createSignature = (header, payload) => {
-  return btoa(`${header}.${payload}.${TOKEN_SIGNATURE_SALT}`)
+  return btoa(`${header}.${payload}.sicape_mock_auth_v1`)
 }
 
 const createPasswordResetToken = () => {
   const randomValue = crypto.getRandomValues(new Uint32Array(2)).join('')
 
-  return btoa(`${Date.now()}.${randomValue}`).replaceAll('=', '')
+  return btoa(`${Date.now()}.${randomValue}`)
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replaceAll('=', '')
+}
+
+const getMockUsers = () => {
+  const storedUsers = localStorage.getItem(MOCK_USERS_STORAGE_KEY)
+
+  if (!storedUsers) return mockUsers.users
+
+  try {
+    return JSON.parse(storedUsers)
+  } catch {
+    return mockUsers.users
+  }
+}
+
+const saveMockUsers = (users) => {
+  localStorage.setItem(MOCK_USERS_STORAGE_KEY, JSON.stringify(users))
+}
+
+const findUserWithValidPasswordResetToken = (users, token) => {
+  if (!token || typeof token !== 'string') return null
+
+  const user = users.find((mockUser) => mockUser.reset_token === token)
+
+  if (!user?.reset_token_expires_at) return null
+
+  const expiresAt = new Date(user.reset_token_expires_at).getTime()
+
+  if (Number.isNaN(expiresAt) || expiresAt <= Date.now()) return null
+
+  return user
 }
 
 const buildUserResponse = (user) => {
@@ -57,19 +89,15 @@ const isValidPayload = (payload) => {
 }
 
 export const findUserByCredentials = (cpf, password) => {
-  const user = mockUsers.users.find((mockUser) => {
+  const user = getMockUsers().find((mockUser) => {
     return mockUser.cpf === cpf && mockUser.password === password
   })
 
   return buildUserResponse(user)
 }
 
-export const findUserByCpf = (cpf) => {
-  return mockUsers.users.find((mockUser) => mockUser.cpf === cpf) || null
-}
-
 export const findUserByTokenPayload = (payload) => {
-  const user = mockUsers.users.find((mockUser) => mockUser.id === payload.sub)
+  const user = getMockUsers().find((mockUser) => mockUser.id === payload.sub)
 
   return buildUserResponse(user)
 }
@@ -94,17 +122,17 @@ export const createToken = (user) => {
 }
 
 export const createUserPasswordResetToken = (cpf) => {
-  const user = findUserByCpf(cpf)
+  const users = getMockUsers()
+  const user = users.find((mockUser) => mockUser.cpf === cpf)
 
   if (!user) return null
 
   const token = createPasswordResetToken()
-  const expiresAt = new Date(
-    Date.now() + PASSWORD_RESET_TOKEN_TTL_IN_MINUTES * 60 * 1000
-  ).toISOString()
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString()
 
   user.reset_token = token
   user.reset_token_expires_at = expiresAt
+  saveMockUsers(users)
 
   return {
     email: user.email,
@@ -118,6 +146,29 @@ export const enviarEmailRecuperacao = (email, token) => {
   console.log(`[MOCK EMAIL] Para: ${email} | Link: /redefinir-senha?token=${token}`)
 
   return Promise.resolve()
+}
+
+export const findUserByValidPasswordResetToken = (token) => {
+  return findUserWithValidPasswordResetToken(getMockUsers(), token)
+}
+
+export const updateUserPasswordByResetToken = (token, password) => {
+  const users = getMockUsers()
+  const user = findUserWithValidPasswordResetToken(users, token)
+
+  if (!user) {
+    throw new Error('Este link não é mais válido.')
+  }
+
+  user.password = password
+  user.reset_token = null
+  user.reset_token_expires_at = null
+
+  if ('must_change_password' in user) {
+    user.must_change_password = false
+  }
+
+  saveMockUsers(users)
 }
 
 export const validateStoredToken = (token) => {

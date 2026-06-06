@@ -4,7 +4,7 @@ import mockApenados from '../mocks/apenados.json'
 import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 const ITEMS_PER_PAGE = 10
@@ -146,7 +146,6 @@ const Convicteds = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Toaster position="top-right" />
       <ModalInative
         apenado={apenadoInativar}
         onConfirmar={handleInativar}

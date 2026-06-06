@@ -18,6 +18,7 @@ export function PasswordField({
   showPassword,
   onToggleVisibility,
   labelAction,
+  placeholder = 'Digite sua senha',
   className,
 }) {
   return (
@@ -33,7 +34,7 @@ export function PasswordField({
           id={id}
           type={showPassword ? 'text' : 'password'}
           inputMode="text"
-          placeholder="Digite sua senha"
+          placeholder={placeholder}
           disabled={disabled}
           {...registration}
           className={`${inputBaseStyles} ${error ? inputErrorStyles : inputDefaultStyles} ${className || ''}`}

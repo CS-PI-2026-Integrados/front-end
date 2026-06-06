@@ -5,8 +5,10 @@ import {
   enviarEmailRecuperacao,
   findUserByCredentials,
   findUserByTokenPayload,
+  findUserByValidPasswordResetToken,
   getStoredToken,
   saveStoredToken,
+  updateUserPasswordByResetToken,
   validateStoredToken,
 } from '@/repositories/authRepository.mock'
 
@@ -42,6 +44,27 @@ export const requestPasswordReset = async (cpf) => {
       }
 
       enviarEmailRecuperacao(resetRequest.email, resetRequest.token).finally(resolve)
+    }, 1000)
+  })
+}
+
+export const validatePasswordResetToken = async (token) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(Boolean(findUserByValidPasswordResetToken(token)))
+    }, 300)
+  })
+}
+
+export const resetPassword = async (token, password) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        updateUserPasswordByResetToken(token, password)
+        resolve()
+      } catch (error) {
+        reject(error)
+      }
     }, 1000)
   })
 }

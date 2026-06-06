@@ -13,7 +13,6 @@ export function RecoverPasswordForm() {
       formState: { errors, isValid, isSubmitting },
     },
     formatCpf,
-    successMessage,
     requestResetLink,
   } = useRecoverPassword()
 
@@ -30,12 +29,6 @@ export function RecoverPasswordForm() {
           disabled={isSubmitting}
           error={errors.cpf?.message}
         />
-
-        {successMessage && (
-          <p className="rounded-[8px] bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            {successMessage}
-          </p>
-        )}
 
         <Button
           type="submit"
