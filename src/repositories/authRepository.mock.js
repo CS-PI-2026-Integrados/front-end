@@ -3,6 +3,7 @@ import { mockUsers } from '@/mocks/users.mock'
 
 const AUTH_TOKEN_STORAGE_KEY = '@sicape:token'
 const TOKEN_SIGNATURE_SALT = 'sicape_mock_auth_v1'
+const PASSWORD_RESET_TOKEN_TTL_IN_MINUTES = 30
 
 const encodeTokenPart = (value) => {
   return btoa(JSON.stringify(value))
@@ -14,6 +15,12 @@ const decodeTokenPart = (value) => {
 
 const createSignature = (header, payload) => {
   return btoa(`${header}.${payload}.${TOKEN_SIGNATURE_SALT}`)
+}
+
+const createPasswordResetToken = () => {
+  const randomValue = crypto.getRandomValues(new Uint32Array(2)).join('')
+
+  return btoa(`${Date.now()}.${randomValue}`).replaceAll('=', '')
 }
 
 const buildUserResponse = (user) => {
@@ -57,6 +64,10 @@ export const findUserByCredentials = (cpf, password) => {
   return buildUserResponse(user)
 }
 
+export const findUserByCpf = (cpf) => {
+  return mockUsers.users.find((mockUser) => mockUser.cpf === cpf) || null
+}
+
 export const findUserByTokenPayload = (payload) => {
   const user = mockUsers.users.find((mockUser) => mockUser.id === payload.sub)
 
@@ -80,6 +91,33 @@ export const createToken = (user) => {
   const signature = createSignature(header, payload)
 
   return `${header}.${payload}.${signature}`
+}
+
+export const createUserPasswordResetToken = (cpf) => {
+  const user = findUserByCpf(cpf)
+
+  if (!user) return null
+
+  const token = createPasswordResetToken()
+  const expiresAt = new Date(
+    Date.now() + PASSWORD_RESET_TOKEN_TTL_IN_MINUTES * 60 * 1000
+  ).toISOString()
+
+  user.reset_token = token
+  user.reset_token_expires_at = expiresAt
+
+  return {
+    email: user.email,
+    token,
+    expiresAt,
+  }
+}
+
+export const enviarEmailRecuperacao = (email, token) => {
+  // eslint-disable-next-line no-console
+  console.log(`[MOCK EMAIL] Para: ${email} | Link: /redefinir-senha?token=${token}`)
+
+  return Promise.resolve()
 }
 
 export const validateStoredToken = (token) => {
