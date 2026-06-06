@@ -37,9 +37,14 @@ export function LoginForm() {
           disabled={isSubmitting}
           error={errors.password?.message || authError}
           labelAction={
-            <Link to="/recuperar-senha" className="text-sm text-emerald-500 hover:text-emerald-700">
-              Esqueci minha senha
-            </Link>
+            <Button asChild variant="link" className="mt-2 h-auto text-emerald-200">
+              <Link
+                to="/recuperar-senha"
+                className="text-sm text-emerald-600 hover:text-emerald-800"
+              >
+                Esqueci minha senha
+              </Link>
+            </Button>
           }
         />
 

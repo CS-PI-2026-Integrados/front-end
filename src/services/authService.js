@@ -1,6 +1,8 @@
 import {
   clearStoredToken,
   createToken,
+  createUserPasswordResetToken,
+  enviarEmailRecuperacao,
   findUserByCredentials,
   findUserByTokenPayload,
   getStoredToken,
@@ -25,6 +27,21 @@ export const authenticateUser = async (cpf, password) => {
       } catch (error) {
         reject(error)
       }
+    }, 1000)
+  })
+}
+
+export const requestPasswordReset = async (cpf) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const resetRequest = createUserPasswordResetToken(cpf)
+
+      if (!resetRequest) {
+        resolve()
+        return
+      }
+
+      enviarEmailRecuperacao(resetRequest.email, resetRequest.token).finally(resolve)
     }, 1000)
   })
 }
