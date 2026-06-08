@@ -16,9 +16,11 @@ const Service = () => {
     isSubmitting,
     mudancas,
     isReadyToCapture,
+    reciboGerado,
     setFoto,
     setSubmitting,
     setSuccess,
+    setReciboGerado,
     setError,
     resetAtendimento,
   } = useService()
@@ -44,15 +46,15 @@ const Service = () => {
     try {
       const mudancasAtivas = getMudancasAtivas(mudancas)
 
-      await generateReceipt({
-        apenadoAtualizado: apenado,
-        processoAtivo: processo,
+      const recibo = await generateReceipt({
+        apenado: apenado,
+        processo: processo,
         fotoAtendimento: fotoAtendimento.data,
         mudancasDetectadas: mudancasAtivas,
       })
 
+      setReciboGerado(recibo)
       setSuccess(true)
-      console.log(apenado)
     } catch (error) {
       console.error('Falha ao gerar comprovante:', error)
       setError(error.message || 'Falha ao gerar comprovante. Tente novamente.')
@@ -107,7 +109,7 @@ const Service = () => {
               {isSuccess ? (
                 <ReceiptSuccessCard
                   className="flex-1 md:h-full"
-                  atendimento={{ apenado, processo }}
+                  atendimento={{ apenado, processo, recibo: reciboGerado }}
                   onReset={resetAtendimento}
                 />
               ) : (
