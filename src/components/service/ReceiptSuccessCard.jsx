@@ -2,8 +2,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.j
 import { Button } from '@/components/ui/button.jsx'
 import { CheckCircle2, Download, Eye, PlusCircle } from 'lucide-react'
 import { cn } from '@/lib/utils.js'
+import pdfMake from 'pdfmake/build/pdfmake'
+import { generateReceiptPDF } from '@/lib/pdfGenerator.js'
 
 export function ReceiptSuccessCard({ className, atendimento, onReset }) {
+  const handleDownload = async () => {
+    try {
+      const docDefinition = await generateReceiptPDF(atendimento)
+
+      const nomeApenado = atendimento.apenado?.fullName?.replace(/\s+/g, '_') || 'Apenado'
+      const dataStr = new Date().toISOString().split('T')[0].replace(/-/g, '')
+      const fileName = `comprovante_${nomeApenado}_${dataStr}.pdf`
+
+      pdfMake.createPdf(docDefinition).download(fileName)
+    } catch (error) {
+      console.error('Erro ao gerar o PDF do comprovante:', error)
+    }
+  }
+
   return (
     <Card
       className={cn(
@@ -53,7 +69,7 @@ export function ReceiptSuccessCard({ className, atendimento, onReset }) {
             Visualizar Comprovante
           </Button>
 
-          <Button type="button" className="h-10 w-full">
+          <Button type="button" className="h-10 w-full" onClick={handleDownload}>
             <Download className="mr-2 h-4 w-4 shrink-0" />
             Baixar Comprovante (PDF)
           </Button>
