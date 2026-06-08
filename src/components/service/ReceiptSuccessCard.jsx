@@ -20,13 +20,28 @@ export function ReceiptSuccessCard({ className, atendimento, onReset }) {
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 md:px-6 md:pb-6">
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center space-y-4">
-          <div className="bg-primary/10 flex shrink-0 items-center justify-center rounded-full p-4">
-            <img></img>
+          <div className="bg-primary/10 flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full p-4">
+            {atendimento.recibo?.photoUrl ? (
+              <img
+                src={atendimento.recibo.photoUrl}
+                alt="Foto do Atendimento"
+                className="h-full w-full rounded-full object-cover"
+              />
+            ) : (
+              <CheckCircle2 className="text-primary h-12 w-12" />
+            )}
           </div>
           <div className="shrink-0 space-y-1 text-center">
             <p className="font-semibold">{atendimento.apenado?.fullName || 'Apenado'}</p>
-            <p className="font-sm">{atendimento.processo?.processNumber || 'Apenado'}</p>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm font-medium">
+              {atendimento.processo?.processNumber || 'Sem Processo Vinculado'}
+            </p>
+            {atendimento.recibo?.verificationCode && (
+              <p className="text-muted-foreground mt-2 font-mono text-xs">
+                Protocolo: {atendimento.recibo.verificationCode}
+              </p>
+            )}
+            <p className="text-muted-foreground mt-1 text-sm">
               O documento já está disponível para visualização e download.
             </p>
           </div>

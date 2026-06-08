@@ -4,29 +4,42 @@ import { Button } from '@/components/ui/button.jsx'
 import { Camera, Loader2, Upload, X } from 'lucide-react'
 import { usePhotoCaptureCard } from '@/hooks/usePhotoCaptureCard.js'
 import { Label } from '@/components/ui/label.jsx'
+import { useService } from '@/context/ServiceContext'
 
-export function PhotoCaptureCard({
-  className,
-  isReady,
-  isSubmitting,
-  photo,
-  onPhotoSelect,
-  apenado,
-}) {
+export function PhotoCaptureCard({ className }) {
   const {
-    error,
+    fotoAtendimento,
+    apenado,
+    isReadyToCapture,
+    isSubmitting,
+    setFoto,
+    setPhotoStreaming,
+    setPhotoError,
+    clearPhoto,
+  } = useService()
+
+  const {
     preview,
-    isStreaming,
+    isStreaming: _,
     videoRef,
     fileInputRef,
     handleFileChange,
-    clearPhoto,
     discardPhoto,
     startCamera,
     stopCamera,
     takePhoto,
     openFileDialog,
-  } = usePhotoCaptureCard({ photo, onPhotoSelect })
+  } = usePhotoCaptureCard({
+    photo: fotoAtendimento.data,
+    isStreaming: fotoAtendimento.isStreaming,
+    setFoto,
+    setPhotoStreaming,
+    setPhotoError,
+    clearPhoto,
+  })
+
+  const isStreaming = fotoAtendimento.isStreaming
+  const error = fotoAtendimento.error
 
   return (
     <Card className={cn('flex flex-col overflow-hidden rounded-xl shadow-sm', className)}>
@@ -141,12 +154,12 @@ export function PhotoCaptureCard({
         )}
 
         <div className="mt-auto shrink-0 space-y-2 pt-4">
-          {!preview && !isSubmitting && isReady && (
+          {!preview && !isSubmitting && isReadyToCapture && (
             <p className="text-muted-foreground text-center text-xs">
               Tire ou envie uma foto para continuar
             </p>
           )}
-          {preview && !isReady && (
+          {preview && !isReadyToCapture && (
             <p className="text-muted-foreground text-center text-xs">
               Selecione um apenado e processo (se houver) para gerar
             </p>
@@ -154,7 +167,7 @@ export function PhotoCaptureCard({
 
           {preview ? (
             <div className="flex flex-col gap-2">
-              <Button type="submit" className="w-full" disabled={!isReady || isSubmitting}>
+              <Button type="submit" className="w-full" disabled={!isReadyToCapture || isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

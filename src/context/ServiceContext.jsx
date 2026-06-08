@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from 'react'
+import React, { createContext, useContext, useReducer, useMemo } from 'react'
 import {
   getProcessoPadrao,
   getApenadoOriginal,
@@ -22,6 +22,7 @@ const initialState = {
 
   isSubmitting: false,
   isSuccess: false,
+  reciboGerado: null,
   errorMessage: '',
 }
 
@@ -115,6 +116,7 @@ function atendimentoReducer(state, action) {
     }
 
     case 'SET_PHOTO_STREAMING': {
+      if (state.fotoAtendimento.isStreaming === action.payload) return state
       return {
         ...state,
         fotoAtendimento: {
@@ -159,6 +161,13 @@ function atendimentoReducer(state, action) {
       }
     }
 
+    case 'SET_RECIBO_GERADO': {
+      return {
+        ...state,
+        reciboGerado: action.payload,
+      }
+    }
+
     case 'SET_ERROR': {
       return {
         ...state,
@@ -184,27 +193,35 @@ export const ServiceProvider = ({ children }) => {
 
   const hasChanges = Object.values(state.mudancas).some((m) => m.mudou === true)
 
-  const value = {
-    ...state,
+  const actions = useMemo(
+    () => ({
+      selectApenado: (apenado) => dispatch({ type: 'SELECT_APENADO', payload: apenado }),
+      selectProcesso: (processo) => dispatch({ type: 'SELECT_PROCESSO', payload: processo }),
+      updateField: (field, value) => dispatch({ type: 'UPDATE_FIELD', payload: { field, value } }),
+      toggleEdit: () => dispatch({ type: 'TOGGLE_EDIT' }),
+      setFoto: (foto) => dispatch({ type: 'SET_FOTO', payload: foto }),
+      setPhotoStreaming: (bool) => dispatch({ type: 'SET_PHOTO_STREAMING', payload: bool }),
+      setPhotoError: (msg) => dispatch({ type: 'SET_PHOTO_ERROR', payload: msg }),
+      clearPhoto: () => dispatch({ type: 'CLEAR_PHOTO' }),
+      setSubmitting: (bool) => dispatch({ type: 'SET_SUBMITTING', payload: bool }),
+      setSuccess: (bool) => dispatch({ type: 'SET_SUCCESS', payload: bool }),
+      setReciboGerado: (recibo) => dispatch({ type: 'SET_RECIBO_GERADO', payload: recibo }),
+      setError: (msg) => dispatch({ type: 'SET_ERROR', payload: msg }),
+      resetAtendimento: () => dispatch({ type: 'RESET_ATENDIMENTO' }),
+    }),
+    []
+  )
 
-    isReadyToCapture,
-    hasChanges,
-
-    dispatch,
-
-    selectApenado: (apenado) => dispatch({ type: 'SELECT_APENADO', payload: apenado }),
-    selectProcesso: (processo) => dispatch({ type: 'SELECT_PROCESSO', payload: processo }),
-    updateField: (field, value) => dispatch({ type: 'UPDATE_FIELD', payload: { field, value } }),
-    toggleEdit: () => dispatch({ type: 'TOGGLE_EDIT' }),
-    setFoto: (foto) => dispatch({ type: 'SET_FOTO', payload: foto }),
-    setPhotoStreaming: (bool) => dispatch({ type: 'SET_PHOTO_STREAMING', payload: bool }),
-    setPhotoError: (msg) => dispatch({ type: 'SET_PHOTO_ERROR', payload: msg }),
-    clearPhoto: () => dispatch({ type: 'CLEAR_PHOTO' }),
-    setSubmitting: (bool) => dispatch({ type: 'SET_SUBMITTING', payload: bool }),
-    setSuccess: (bool) => dispatch({ type: 'SET_SUCCESS', payload: bool }),
-    setError: (msg) => dispatch({ type: 'SET_ERROR', payload: msg }),
-    resetAtendimento: () => dispatch({ type: 'RESET_ATENDIMENTO' }),
-  }
+  const value = useMemo(
+    () => ({
+      ...state,
+      isReadyToCapture,
+      hasChanges,
+      dispatch,
+      ...actions,
+    }),
+    [state, isReadyToCapture, hasChanges, actions]
+  )
 
   return <ServiceContext.Provider value={value}>{children}</ServiceContext.Provider>
 }

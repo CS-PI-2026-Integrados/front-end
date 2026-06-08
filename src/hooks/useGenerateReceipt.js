@@ -19,41 +19,43 @@ export function useGenerateReceipt() {
       new Promise((resolve, reject) => {
         // Apenas para mock. Futuramente, implementação pra API
         setTimeout(() => {
-          const {
-            apenadoAtualizado,
-            processoAtivo,
-            fotoAtendimento,
-            mudancasDetectadas = {},
-          } = params
+          try {
+            const { apenado, processo, fotoAtendimento, mudancasDetectadas = {} } = params
 
-          if (!apenadoAtualizado) {
-            return reject(new Error('Dados do apenado não fornecidos para gerar o comprovante'))
+            if (!apenado) {
+              return reject(new Error('Dados do apenado não fornecidos para gerar o comprovante'))
+            }
+
+            const now = new Date().toISOString()
+            const apenadoFinal = { ...apenado, lastProof: now }
+
+            const index = mockApenados.apenados.findIndex((a) => a.id === apenadoFinal.id)
+
+            if (index !== -1) {
+              mockApenados.apenados[index] = apenadoFinal
+            }
+
+            const novaPresenca = {
+              id: String(mockPresenca.presencas.length + 1),
+              apenadoId: apenadoFinal?.id,
+              tenantId: apenadoFinal?.tenantId,
+              processoId: processo?.id,
+              apenadoName: apenadoFinal?.fullName,
+              cpf: apenadoFinal.cpf,
+              dateTime: now,
+              operatorName: usuario || 'Servidor',
+              verificationCode: `COMP-${new Date(now).getTime()}-${generateRandomCode()}`,
+              photoUrl: fotoAtendimento,
+              mudancasRastreadas: mudancasDetectadas,
+            }
+
+            // Persiste o comprovante, futuramente rota /presencas ou comprovantes
+            mockPresenca.presencas.push(novaPresenca)
+            console.log(mockPresenca.presencas)
+            resolve(novaPresenca)
+          } catch (error) {
+            reject(error)
           }
-
-          const now = new Date().toISOString()
-          const apenadoFinal = { ...apenadoAtualizado, lastProof: now }
-
-          const index = mockApenados.apenados.findIndex((a) => a.id === apenadoFinal.id)
-          if (index !== -1) {
-            mockApenados.apenados[index] = apenadoFinal
-          }
-
-          const novaPresenca = {
-            idApenado: apenadoFinal?.id,
-            idTenant: apenadoFinal?.tenantId,
-            idProcesso: processoAtivo?.id,
-            name: apenadoFinal?.fullName,
-            photo64: fotoAtendimento,
-            cpf: apenadoFinal.cpf,
-            timestamp: now,
-            operatorName: usuario,
-            proofCode: `COMP-${new Date(now).getTime()}-${generateRandomCode()}`,
-            mudancasRastreadas: mudancasDetectadas,
-          }
-
-          // Persiste o comprovante, futuramente rota /presencas ou comprovantes
-          mockPresenca.presencas.push(novaPresenca)
-          resolve(novaPresenca)
         }, 500)
       }),
     [usuario]

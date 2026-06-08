@@ -28,8 +28,7 @@ export const validateAtendimento = ({ apenado, processo, foto }) => {
     }
   }
 
-  // Suporta tanto foto string quanto objeto { data, isStreaming, error }
-  const fotoData = typeof foto === 'object' ? foto?.data : foto
+  const fotoData = foto?.data
 
   if (!fotoData) {
     return {
@@ -46,7 +45,7 @@ export const hasChanges = (mudancas) => {
   return Object.values(mudancas).some((m) => m.mudou === true)
 }
 
-export const trackFieldChange = (original, novo, field) => {
+export const trackFieldChange = (original, novo) => {
   return {
     original,
     novo,

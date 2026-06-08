@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Pencil, AlertCircle } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
@@ -31,6 +32,9 @@ export function ConvictedInfoCard() {
     toggleEdit,
   } = useService()
 
+  const [localPhone, setLocalPhone] = useState(apenado ? formatPhone(apenado.phone || '') : '')
+  const [localAddress, setLocalAddress] = useState(apenado ? apenado.address || '' : '')
+
   if (!apenado) {
     return (
       <div className="bg-muted/30 flex min-h-[140px] flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
@@ -43,10 +47,25 @@ export function ConvictedInfoCard() {
 
   const processos = apenado.processos || []
 
-  const handlePhoneInput = (e) => {
+  const handlePhoneChange = (e) => {
     const formatted = formatPhone(e.target.value)
-    e.target.value = formatted
-    updateField('phone', formatted)
+    setLocalPhone(formatted)
+  }
+
+  const handlePhoneBlur = () => {
+    if (localPhone !== formatPhone(apenado.phone || '')) {
+      updateField('phone', localPhone)
+    }
+  }
+
+  const handleAddressChange = (e) => {
+    setLocalAddress(e.target.value)
+  }
+
+  const handleAddressBlur = () => {
+    if (localAddress !== (apenado.address || '')) {
+      updateField('address', localAddress)
+    }
   }
 
   const getMudancasLabels = () => {
@@ -148,8 +167,9 @@ export function ConvictedInfoCard() {
             pattern="^\(\d{2}\) \d{4,5}-\d{4}$"
             title="O telefone deve conter DDD e entre 8 a 9 números."
             placeholder="(00) 00000-0000"
-            defaultValue={formatPhone(apenado.phone)}
-            onChange={handlePhoneInput}
+            value={localPhone}
+            onChange={handlePhoneChange}
+            onBlur={handlePhoneBlur}
           />
         </div>
 
@@ -161,8 +181,9 @@ export function ConvictedInfoCard() {
             key={`address-${apenado?.id}`}
             disabled={!canEdit}
             placeholder="Rua, número..."
-            defaultValue={apenado.address || ''}
-            onChange={(e) => updateField('address', e.target.value)}
+            value={localAddress}
+            onChange={handleAddressChange}
+            onBlur={handleAddressBlur}
           />
         </div>
 
