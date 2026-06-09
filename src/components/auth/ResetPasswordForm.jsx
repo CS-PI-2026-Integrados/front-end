@@ -1,19 +1,11 @@
 import { Link } from 'react-router-dom'
-import { Loader2 } from 'lucide-react'
 import { FieldGroup } from '@/components/ui/field'
 import { Button } from '@/components/ui/button'
-import { PasswordField } from '@/components/auth/PasswordField'
-import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter'
+import { AuthSubmitButton } from '@/components/auth/AuthSubmitButton'
+import { PasswordField } from '@/components/auth/fields/PasswordField'
+import { PasswordStrengthMeter } from '@/components/auth/fields/PasswordStrengthMeter'
 
-export function ResetPasswordForm({
-  form,
-  newPassword,
-  showNewPassword,
-  showConfirmPassword,
-  toggleNewPasswordVisibility,
-  toggleConfirmPasswordVisibility,
-  redefinePassword,
-}) {
+export function ResetPasswordForm({ form, newPassword, redefinePassword }) {
   const {
     register,
     handleSubmit,
@@ -30,8 +22,6 @@ export function ResetPasswordForm({
             id="newPassword"
             label="Nova Senha"
             registration={register('newPassword')}
-            showPassword={showNewPassword}
-            onToggleVisibility={toggleNewPasswordVisibility}
             disabled={isSubmitting}
             error={errors.newPassword?.message}
             placeholder="Digite sua senha"
@@ -44,24 +34,14 @@ export function ResetPasswordForm({
           id="confirmPassword"
           label="Confirmar Senha"
           registration={register('confirmPassword')}
-          showPassword={showConfirmPassword}
-          onToggleVisibility={toggleConfirmPasswordVisibility}
           disabled={isSubmitting}
           error={errors.confirmPassword?.message}
           placeholder="Digite sua senha"
         />
 
-        <Button
-          type="submit"
-          disabled={!isValid || isSubmitting}
-          className={`mt-3 flex h-13 w-full items-center justify-center rounded-[8px] px-3 py-4 text-lg font-medium text-white transition-all ${
-            !isValid || isSubmitting
-              ? 'cursor-not-allowed bg-gray-400 opacity-70'
-              : 'bg-primary cursor-pointer hover:ring-emerald-700'
-          } `}
-        >
-          {isSubmitting ? <Loader2 className="animate-spin text-white" size={24} /> : 'Redefinir'}
-        </Button>
+        <AuthSubmitButton disabled={!isValid} isLoading={isSubmitting}>
+          Redefinir
+        </AuthSubmitButton>
 
         <Button asChild variant="link" className="mt-2 h-auto text-emerald-200">
           <Link to="/login" className="text-sm text-emerald-600 hover:text-emerald-800">

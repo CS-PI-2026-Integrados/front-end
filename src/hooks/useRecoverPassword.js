@@ -3,7 +3,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { recoverPasswordSchema } from '@/schemas/authSchemas'
 import { requestPasswordReset } from '@/services/authService'
-import { formatCpf } from '@/lib/validadorCpf'
 
 export function useRecoverPassword() {
   const form = useForm({
@@ -19,7 +18,6 @@ export function useRecoverPassword() {
 
   return {
     form,
-    formatCpf,
     requestResetLink,
   }
 }

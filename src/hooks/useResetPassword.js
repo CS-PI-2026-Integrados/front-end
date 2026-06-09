@@ -11,8 +11,6 @@ export function useResetPassword() {
   const navigate = useNavigate()
   const token = searchParams.get('token') || ''
   const [tokenStatus, setTokenStatus] = useState('loading')
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const form = useForm({
     resolver: zodResolver(resetPasswordSchema),
     mode: 'onChange',
@@ -54,10 +52,6 @@ export function useResetPassword() {
     form,
     newPassword,
     tokenStatus,
-    showNewPassword,
-    showConfirmPassword,
-    toggleNewPasswordVisibility: () => setShowNewPassword((currentValue) => !currentValue),
-    toggleConfirmPasswordVisibility: () => setShowConfirmPassword((currentValue) => !currentValue),
     redefinePassword,
   }
 }
