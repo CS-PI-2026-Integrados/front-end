@@ -1,105 +1,68 @@
 import {
   clearStoredToken,
-  createToken,
+  createSessionToken,
   createUserPasswordResetToken,
-  enviarEmailRecuperacao,
   findUserByCredentials,
-  findUserByTokenPayload,
+  findUserById,
   findUserByValidPasswordResetToken,
   getStoredToken,
   saveStoredToken,
   updateUserPasswordByResetToken,
-  validateStoredToken,
-} from '@/repositories/authRepository.mock'
+  validateSessionToken,
+} from '@/repositories/authRepositoryFacade.js'
+import { sendPasswordResetEmail } from '@/services/authEmailService.mock'
 
-const buildSession = (userData, tenantData, token) => ({
-  user: userData,
-  tenant: tenantData,
-  token,
+const buildSession = ({ user, tenant }) => ({
+  user,
+  tenant,
 })
 
-export const authenticateUser = async (cpf, password) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      try {
-        const authenticatedUser = findUserByCredentials(cpf, password)
-        const token = createToken(authenticatedUser.userData)
+export const login = async ({ cpf, password }) => {
+  const authUser = await findUserByCredentials(cpf, password)
+  const token = createSessionToken(authUser.user)
 
-        resolve(buildSession(authenticatedUser.userData, authenticatedUser.tenantData, token))
-      } catch (error) {
-        reject(error)
-      }
-    }, 1000)
-  })
-}
-
-export const requestPasswordReset = async (cpf) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const resetRequest = createUserPasswordResetToken(cpf)
-
-      if (!resetRequest) {
-        resolve()
-        return
-      }
-
-      enviarEmailRecuperacao(resetRequest.email, resetRequest.token).finally(resolve)
-    }, 1000)
-  })
-}
-
-export const validatePasswordResetToken = async (token) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(Boolean(findUserByValidPasswordResetToken(token)))
-    }, 300)
-  })
-}
-
-export const resetPassword = async (token, password) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      try {
-        updateUserPasswordByResetToken(token, password)
-        resolve()
-      } catch (error) {
-        reject(error)
-      }
-    }, 1000)
-  })
-}
-
-export const persistSessionToken = (token) => {
   saveStoredToken(token)
+
+  return buildSession(authUser)
 }
 
-export const clearAuthSession = () => {
+export const logout = () => {
   clearStoredToken()
 }
 
-export const readAuthSession = () => {
+export const restoreSession = async () => {
   const token = getStoredToken()
-  const payload = validateStoredToken(token)
+  const payload = validateSessionToken(token)
 
   if (!payload) {
+    logout()
     return null
   }
 
   try {
-    const { userData, tenantData } = findUserByTokenPayload(payload)
+    const authUser = await findUserById(payload.sub)
 
-    return buildSession(userData, tenantData, token)
+    return buildSession(authUser)
   } catch {
+    logout()
     return null
   }
 }
 
-export const restoreAuthSession = () => {
-  const authSession = readAuthSession()
+export const requestPasswordReset = async (cpf) => {
+  const resetRequest = await createUserPasswordResetToken(cpf)
 
-  if (!authSession) {
-    clearAuthSession()
-  }
+  if (!resetRequest) return
 
-  return authSession
+  await sendPasswordResetEmail(resetRequest.email, resetRequest.token)
+}
+
+export const validatePasswordResetToken = async (token) => {
+  const user = await findUserByValidPasswordResetToken(token)
+
+  return Boolean(user)
+}
+
+export const resetPassword = async (token, password) => {
+  await updateUserPasswordByResetToken(token, password)
 }

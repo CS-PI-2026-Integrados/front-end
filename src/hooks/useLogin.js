@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from '@/schemas/authSchemas'
-import { authenticateUser } from '@/services/authService'
+import { login } from '@/services/authService'
 import { useSession } from '@/context/sessionContext'
 
 export function useLogin() {
@@ -15,9 +15,9 @@ export function useLogin() {
     form.clearErrors('root')
 
     try {
-      const response = await authenticateUser(data.cpf, data.password)
+      const authSession = await login(data)
 
-      handleLogin(response.user, response.tenant, response.token)
+      handleLogin(authSession)
     } catch (error) {
       form.setError('root', {
         type: 'server',
