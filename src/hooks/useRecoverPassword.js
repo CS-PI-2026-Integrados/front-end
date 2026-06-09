@@ -1,23 +1,29 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import toast from 'react-hot-toast'
 import { recoverPasswordSchema } from '@/schemas/authSchemas'
 import { requestPasswordReset } from '@/services/authService'
 
+const resetLinkRequestedMessage =
+  'Se este CPF estiver cadastrado, você receberá um link de acesso no seu e-mail em breve.'
+
 export function useRecoverPassword() {
+  const [feedbackMessage, setFeedbackMessage] = useState('')
   const form = useForm({
     resolver: zodResolver(recoverPasswordSchema),
     mode: 'onTouched',
   })
 
   const requestResetLink = async (data) => {
+    setFeedbackMessage('')
     await requestPasswordReset(data.cpf)
-    toast.success('Se este CPF estiver cadastrado, você receberá um link de acesso em breve.')
+    setFeedbackMessage(resetLinkRequestedMessage)
     form.reset()
   }
 
   return {
     form,
+    feedbackMessage,
     requestResetLink,
   }
 }

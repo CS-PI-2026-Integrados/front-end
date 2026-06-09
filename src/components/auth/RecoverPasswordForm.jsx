@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { FieldGroup } from '@/components/ui/field'
 import { Button } from '@/components/ui/button'
+import { AuthFeedbackMessage } from '@/components/auth/AuthFeedbackMessage'
 import { AuthSubmitButton } from '@/components/auth/AuthSubmitButton'
 import { CpfField } from '@/components/auth/fields/CpfField'
 import { useRecoverPassword } from '@/hooks/useRecoverPassword'
@@ -12,6 +13,7 @@ export function RecoverPasswordForm() {
       handleSubmit,
       formState: { errors, isValid, isSubmitting },
     },
+    feedbackMessage,
     requestResetLink,
   } = useRecoverPassword()
 
@@ -27,6 +29,8 @@ export function RecoverPasswordForm() {
           disabled={isSubmitting}
           error={errors.cpf?.message}
         />
+
+        {feedbackMessage && <AuthFeedbackMessage>{feedbackMessage}</AuthFeedbackMessage>}
 
         <AuthSubmitButton disabled={!isValid} isLoading={isSubmitting}>
           Enviar link
