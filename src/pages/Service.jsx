@@ -2,6 +2,7 @@ import { ConvictedCard } from '@/components/service/ConvictedCard.jsx'
 import { useService } from '@/context/ServiceContext'
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { PhotoCaptureCard } from '@/components/service/PhotoCaptureCard.jsx'
+import { ProofHistory } from '@/components/service/ProofHistory.jsx'
 import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
 import { ReceiptSuccessCard } from '@/components/service/ReceiptSuccessCard.jsx'
 import { validateAtendimento } from '@/lib/atendimentoUtils'
@@ -117,6 +118,12 @@ const Service = () => {
               )}
             </div>
           </form>
+        </TabsContent>
+        <TabsContent
+          value="historico"
+          className="mt-0 flex w-full flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:flex-row md:items-stretch"
+        >
+          <ProofHistory comprovantes={[]} />
         </TabsContent>
       </Tabs>
     </div>
