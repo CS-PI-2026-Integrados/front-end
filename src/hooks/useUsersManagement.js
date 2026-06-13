@@ -8,13 +8,12 @@ import {
   reactivateTenantUser,
   requestTenantUserPasswordReset,
 } from '@/services/usersService'
-import { USER_STATUS } from '@/lib/roles'
 import { normalizeSearch } from '@/lib/userFormatters'
 
 export const USERS_STATUS_FILTERS = {
   ALL: 'all',
-  ACTIVE: USER_STATUS.ACTIVE,
-  INACTIVE: USER_STATUS.INACTIVE,
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
 }
 
 const SUCCESS_MESSAGE = 'Alteração feita com sucesso'
@@ -25,6 +24,7 @@ export function useUsersManagement() {
   const [users, setUsers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState(USERS_STATUS_FILTERS.ALL)
   const [selectedUserId, setSelectedUserId] = useState(null)
 
@@ -54,9 +54,12 @@ export function useUsersManagement() {
 
     return users.filter((user) => {
       const matchesStatus =
-        statusFilter === USERS_STATUS_FILTERS.ALL || user.status === statusFilter
+        statusFilter === USERS_STATUS_FILTERS.ALL ||
+        (statusFilter === USERS_STATUS_FILTERS.ACTIVE && user.isActive) ||
+        (statusFilter === USERS_STATUS_FILTERS.INACTIVE && !user.isActive)
+      const matchesRole = roleFilter === 'all' || user.roleId === roleFilter
 
-      if (!matchesStatus) return false
+      if (!matchesStatus || !matchesRole) return false
 
       if (!normalizedSearch && !searchDigits) return true
 
@@ -65,11 +68,25 @@ export function useUsersManagement() {
 
       return normalizedName.includes(normalizedSearch) || cpfDigits.includes(searchDigits)
     })
-  }, [search, statusFilter, users])
+  }, [roleFilter, search, statusFilter, users])
+
+  const roleOptions = useMemo(() => {
+    const rolesById = new Map()
+
+    users.forEach((user) => {
+      if (user.role) {
+        rolesById.set(user.role.id, user.role)
+      }
+    })
+
+    return Array.from(rolesById.values()).sort((firstRole, secondRole) => {
+      return secondRole.level - firstRole.level
+    })
+  }, [users])
 
   const metrics = useMemo(() => {
-    const activeUsers = users.filter((user) => user.status === USER_STATUS.ACTIVE)
-    const inactiveUsers = users.filter((user) => user.status === USER_STATUS.INACTIVE)
+    const activeUsers = users.filter((user) => user.isActive)
+    const inactiveUsers = users.filter((user) => !user.isActive)
 
     return {
       total: users.length,
@@ -149,6 +166,8 @@ export function useUsersManagement() {
     filteredUsers,
     isLoading,
     metrics,
+    roleFilter,
+    roleOptions,
     search,
     selectedUser,
     selectedUserId,
@@ -159,6 +178,7 @@ export function useUsersManagement() {
     resetUserPassword,
     setSearch,
     setSelectedUserId,
+    setRoleFilter,
     setStatusFilter,
   }
 }

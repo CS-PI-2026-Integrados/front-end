@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CalendarDays, Clock3, KeyRound, Mail, Power, RotateCcw, Shield, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { canDeactivateUser, canReactivateUser, canResetUserPassword } from '@/lib/roles'
+import { canDeactivateUser, canReactivateUser, canResetUserPassword } from '@/lib/userPermissions'
 import {
   formatDate,
   formatDateTime,
@@ -98,7 +98,7 @@ export function UserDetailsPanel({
           <div className="flex-1 overflow-y-auto p-5">
             <div className="flex flex-wrap gap-2">
               <UserRoleBadge role={user.role} />
-              <UserStatusBadge status={user.status} />
+              <UserStatusBadge isActive={user.isActive} />
             </div>
 
             <div className="mt-6 space-y-5 border-t pt-5">
@@ -117,7 +117,7 @@ export function UserDetailsPanel({
               <DetailItem
                 icon={Power}
                 label="Status da sessão"
-                value={getSessionStatusLabel(user.sessionStatus)}
+                value={getSessionStatusLabel(user.hasActiveSession)}
               />
             </div>
 

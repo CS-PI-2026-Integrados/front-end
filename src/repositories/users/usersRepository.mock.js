@@ -1,7 +1,8 @@
-import { mockUsers } from '@/mocks/users.mock'
-import { SESSION_STATUS } from '@/lib/roles'
+import { mockUsers } from '@/mocks/usuarios.mock'
+import { findRoleById, findRoleByKey } from '@/repositories/roles/rolesRepository.mock'
+import { ROLE_KEYS } from '@/lib/userPermissions'
 
-const MOCK_USERS_STORAGE_KEY = '@sicape:mock-users'
+const MOCK_USERS_STORAGE_KEY = '@sicape:mock-users-v2'
 
 export const removeSensitiveUserFields = (user) => {
   const publicUser = { ...user }
@@ -13,10 +14,21 @@ export const removeSensitiveUserFields = (user) => {
   return publicUser
 }
 
-const mapUserForReturn = (user, { includeSensitive = false } = {}) => {
+const enrichUserRole = async (user) => {
   if (!user) return null
 
-  return includeSensitive ? { ...user } : removeSensitiveUserFields(user)
+  return {
+    ...user,
+    role: await findRoleById(user.roleId),
+  }
+}
+
+const mapUserForReturn = async (user, { includeSensitive = false } = {}) => {
+  const userWithRole = await enrichUserRole(user)
+
+  if (!userWithRole) return null
+
+  return includeSensitive ? userWithRole : removeSensitiveUserFields(userWithRole)
 }
 
 const getStoredUsers = () => {
@@ -36,9 +48,9 @@ const saveStoredUsers = (users) => {
 }
 
 export const listUsersByTenant = async (tenantId, options) => {
-  return getStoredUsers()
-    .filter((user) => user.tenantId === tenantId)
-    .map((user) => mapUserForReturn(user, options))
+  const users = getStoredUsers().filter((user) => user.tenantId === tenantId)
+
+  return Promise.all(users.map((user) => mapUserForReturn(user, options)))
 }
 
 export const findUserById = async (userId, options) => {
@@ -77,16 +89,16 @@ export const createUser = async (userData) => {
     mustChangePassword: true,
     createdAt: new Date().toISOString(),
     lastAccessAt: null,
-    sessionStatus: SESSION_STATUS.INACTIVE,
+    hasActiveSession: false,
     ...userData,
   }
 
   saveStoredUsers([...users, newUser])
 
-  return removeSensitiveUserFields(newUser)
+  return mapUserForReturn(newUser)
 }
 
-export const updateUserStatus = async ({ userId, status }) => {
+export const updateUserActiveState = async ({ userId, isActive }) => {
   const users = getStoredUsers()
   const targetUser = users.find((user) => user.id === userId)
 
@@ -99,14 +111,14 @@ export const updateUserStatus = async ({ userId, status }) => {
 
     return {
       ...user,
-      status,
-      sessionStatus: status === targetUser.status ? user.sessionStatus : SESSION_STATUS.INACTIVE,
+      isActive,
+      hasActiveSession: isActive === targetUser.isActive ? user.hasActiveSession : false,
     }
   })
 
   saveStoredUsers(updatedUsers)
 
-  return removeSensitiveUserFields(updatedUsers.find((user) => user.id === userId))
+  return mapUserForReturn(updatedUsers.find((user) => user.id === userId))
 }
 
 export const updateUserPasswordResetToken = async ({ userId, resetToken, resetTokenExpiresAt }) => {
@@ -129,7 +141,7 @@ export const updateUserPasswordResetToken = async ({ userId, resetToken, resetTo
 
   saveStoredUsers(updatedUsers)
 
-  return removeSensitiveUserFields(updatedUsers.find((user) => user.id === userId))
+  return mapUserForReturn(updatedUsers.find((user) => user.id === userId))
 }
 
 export const updateUserPassword = async ({ userId, password }) => {
@@ -154,5 +166,11 @@ export const updateUserPassword = async ({ userId, password }) => {
 
   saveStoredUsers(updatedUsers)
 
-  return removeSensitiveUserFields(updatedUsers.find((user) => user.id === userId))
+  return mapUserForReturn(updatedUsers.find((user) => user.id === userId))
+}
+
+export const getOperatorRoleId = async () => {
+  const role = await findRoleByKey(ROLE_KEYS.OPERATOR)
+
+  return role?.id
 }

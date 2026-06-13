@@ -1,4 +1,3 @@
-import { SESSION_STATUS, USER_STATUS } from '@/lib/roles'
 import { formatDateTime, getSessionStatusLabel, maskCpf } from '@/lib/userFormatters'
 import { cn } from '@/lib/utils'
 import { UserRoleBadge } from '@/components/users/UserRoleBadge'
@@ -32,9 +31,9 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
         </thead>
         <tbody>
           {users.map((user) => {
-            const isInactive = user.status === USER_STATUS.INACTIVE
+            const isInactive = !user.isActive
             const isSelected = selectedUserId === user.id
-            const isSessionActive = user.sessionStatus === SESSION_STATUS.ACTIVE
+            const isSessionActive = user.hasActiveSession
 
             return (
               <tr
@@ -60,7 +59,7 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
                         isSessionActive ? 'bg-emerald-500' : 'bg-muted-foreground/40'
                       )}
                     />
-                    {getSessionStatusLabel(user.sessionStatus)}
+                    {getSessionStatusLabel(user.hasActiveSession)}
                   </div>
                 </td>
                 <td className="text-muted-foreground px-4 py-3 font-medium">{maskCpf(user.cpf)}</td>
@@ -68,7 +67,7 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
                   <UserRoleBadge role={user.role} />
                 </td>
                 <td className="px-4 py-3">
-                  <UserStatusBadge status={user.status} />
+                  <UserStatusBadge isActive={user.isActive} />
                 </td>
                 <td className="text-muted-foreground px-4 py-3">
                   {formatDateTime(user.lastAccessAt)}

@@ -17,7 +17,6 @@ import {
   updateUserPasswordByResetToken,
 } from '@/repositories/auth/passwordResetRepository.mock'
 import { sendPasswordResetEmail } from '@/services/authEmailService.mock'
-import { USER_STATUS } from '@/lib/roles'
 
 const buildSession = ({ user, tenant }) => ({
   user,
@@ -25,7 +24,7 @@ const buildSession = ({ user, tenant }) => ({
 })
 
 const ensureActiveUser = (user) => {
-  if (user.status !== USER_STATUS.ACTIVE) {
+  if (!user.isActive) {
     throw new Error('Usuário sem acesso ativo.')
   }
 }

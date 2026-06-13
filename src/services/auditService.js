@@ -7,8 +7,10 @@ export const registerUserAuditAction = async ({ action, actor, target }) => {
     action,
     tenantId: actor.tenantId,
     actorId: actor.id,
-    actorRole: actor.role,
+    actorRoleId: actor.roleId,
+    actorRoleKey: actor.role?.key,
     targetId: target.id,
-    targetRole: target.role,
+    targetRoleId: target.roleId,
+    targetRoleKey: target.role?.key,
   })
 }

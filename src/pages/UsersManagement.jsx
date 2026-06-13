@@ -26,10 +26,13 @@ export default function UsersManagement() {
     metrics,
     reactivateUser,
     resetUserPassword,
+    roleFilter,
+    roleOptions,
     search,
     selectedUser,
     selectedUserId,
     setSearch,
+    setRoleFilter,
     setSelectedUserId,
     setStatusFilter,
     statusFilter,
@@ -39,8 +42,8 @@ export default function UsersManagement() {
     <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestão de Usuários</h1>
-          <p className="text-muted-foreground mt-2 text-sm">
+          <h1 className="mb-2 text-3xl font-bold">Gestão de Usuários</h1>
+          <p className="text-muted-foreground">
             Cadastro e controle de acesso dos operadores da comarca
           </p>
         </div>
@@ -51,7 +54,7 @@ export default function UsersManagement() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <MetricCard
           title="Total de usuários"
           description="Cadastrados na comarca"
@@ -89,12 +92,27 @@ export default function UsersManagement() {
               value={search}
             />
           </div>
+
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger className="w-full lg:w-44">
+              <SelectValue placeholder="Nível" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Níveis</SelectItem>
+              {roleOptions.map((role) => (
+                <SelectItem key={role.id} value={role.id}>
+                  {role.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full lg:w-44">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={USERS_STATUS_FILTERS.ALL}>Todos</SelectItem>
+              <SelectItem value={USERS_STATUS_FILTERS.ALL}>Todos os Status</SelectItem>
               <SelectItem value={USERS_STATUS_FILTERS.ACTIVE}>Ativos</SelectItem>
               <SelectItem value={USERS_STATUS_FILTERS.INACTIVE}>Inativos</SelectItem>
             </SelectContent>

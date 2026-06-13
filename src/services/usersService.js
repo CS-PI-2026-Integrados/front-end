@@ -4,20 +4,18 @@ import {
   findUserByCpf,
   findUserByEmail,
   findUserById,
+  getOperatorRoleId,
   listUsersByTenant,
-  updateUserStatus,
+  updateUserActiveState,
 } from '@/repositories/users/usersRepository.mock'
 import { sendPasswordResetEmail } from '@/services/authEmailService.mock'
 import { registerUserAuditAction } from '@/services/auditService'
 import {
-  SESSION_STATUS,
-  USER_ROLES,
-  USER_STATUS,
   canAccessUsersPage,
   canDeactivateUser,
   canReactivateUser,
   canResetUserPassword,
-} from '@/lib/roles'
+} from '@/lib/userPermissions'
 import { formatCpf, validateCPF } from '@/lib/validadorCpf'
 
 const getActorFromSession = (session) => {
@@ -81,14 +79,20 @@ export const createTenantOperator = async ({ session, operatorData }) => {
     throw new Error('E-mail já cadastrado.')
   }
 
+  const operatorRoleId = await getOperatorRoleId()
+
+  if (!operatorRoleId) {
+    throw new Error('Cargo de operador não encontrado.')
+  }
+
   const createdUser = await createUser({
     tenantId: actor.tenantId,
     name,
     cpf,
     email,
-    role: USER_ROLES.OPERATOR,
-    status: USER_STATUS.ACTIVE,
-    sessionStatus: SESSION_STATUS.INACTIVE,
+    roleId: operatorRoleId,
+    isActive: true,
+    hasActiveSession: false,
     password: crypto.randomUUID(),
   })
 
@@ -115,9 +119,9 @@ export const deactivateTenantUser = async ({ session, targetUserId }) => {
     throw new Error('Usuário sem permissão para desativar esta conta.')
   }
 
-  const updatedTarget = await updateUserStatus({
+  const updatedTarget = await updateUserActiveState({
     userId: targetUserId,
-    status: USER_STATUS.INACTIVE,
+    isActive: false,
   })
 
   await registerUserAuditAction({
@@ -137,9 +141,9 @@ export const reactivateTenantUser = async ({ session, targetUserId }) => {
     throw new Error('Usuário sem permissão para reativar esta conta.')
   }
 
-  const updatedTarget = await updateUserStatus({
+  const updatedTarget = await updateUserActiveState({
     userId: targetUserId,
-    status: USER_STATUS.ACTIVE,
+    isActive: true,
   })
 
   await registerUserAuditAction({

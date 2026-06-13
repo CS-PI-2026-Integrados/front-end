@@ -14,7 +14,7 @@ import RecoverPassword from '@/pages/RecoverPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import UsersManagement from '@/pages/UsersManagement'
 import RoleGuard from '@/components/guards/RoleGuard'
-import { canAccessUsersPage } from '@/lib/roles'
+import { canAccessUsersPage } from '@/lib/userPermissions'
 
 const AppRouter = () => {
   return (

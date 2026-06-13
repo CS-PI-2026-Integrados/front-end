@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { useSession } from '@/context/sessionContext'
-import { canAccessUsersPage } from '@/lib/roles'
+import { canAccessUsersPage } from '@/lib/userPermissions'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)

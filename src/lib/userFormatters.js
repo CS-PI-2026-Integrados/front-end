@@ -1,5 +1,3 @@
-import { ROLE_LABELS, SESSION_STATUS_LABELS, STATUS_LABELS } from '@/lib/roles'
-
 const EMPTY_VALUE = '-'
 
 export const maskCpf = (cpf) => {
@@ -47,15 +45,15 @@ export const formatDateTime = (value) => {
 }
 
 export const getRoleLabel = (role) => {
-  return ROLE_LABELS[role] || EMPTY_VALUE
+  return role?.label || EMPTY_VALUE
 }
 
-export const getStatusLabel = (status) => {
-  return STATUS_LABELS[status] || EMPTY_VALUE
+export const getActiveStatusLabel = (isActive) => {
+  return isActive ? 'ATIVO' : 'INATIVO'
 }
 
-export const getSessionStatusLabel = (status) => {
-  return SESSION_STATUS_LABELS[status] || EMPTY_VALUE
+export const getSessionStatusLabel = (hasActiveSession) => {
+  return hasActiveSession ? 'Sessão ativa' : 'Sessão inativa'
 }
 
 export const normalizeSearch = (value) => {
