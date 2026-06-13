@@ -12,6 +12,9 @@ import AuthGuard from '@/components/guards/AuthGuard'
 import GuestGuard from '@/components/guards/GuestGuard'
 import RecoverPassword from '@/pages/RecoverPassword'
 import ResetPassword from '@/pages/ResetPassword'
+import UsersManagement from '@/pages/UsersManagement'
+import RoleGuard from '@/components/guards/RoleGuard'
+import { canAccessUsersPage } from '@/lib/roles'
 
 const AppRouter = () => {
   return (
@@ -31,6 +34,9 @@ const AppRouter = () => {
           <Route path="instituicoes" element={<Institutions />} />
           <Route path="comprovante" element={<Certificate />} />
           <Route path="apenados/:id" element={<ApenadoProfile />} />
+          <Route element={<RoleGuard canAccess={canAccessUsersPage} />}>
+            <Route path="usuarios" element={<UsersManagement />} />
+          </Route>
         </Route>
       </Route>
 

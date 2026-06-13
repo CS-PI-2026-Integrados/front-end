@@ -1,24 +1,40 @@
 import {
   clearStoredToken,
-  createSessionToken,
-  createUserPasswordResetToken,
-  findUserByCredentials,
-  findUserById,
-  findUserByValidPasswordResetToken,
   getStoredToken,
   saveStoredToken,
-  updateUserPasswordByResetToken,
+} from '@/repositories/auth/authSessionStorage.mock'
+import {
+  createSessionToken,
   validateSessionToken,
-} from '@/repositories/authRepositoryFacade.js'
+} from '@/repositories/auth/authTokenRepository.mock'
+import {
+  findAuthUserByCredentials,
+  findAuthUserById,
+} from '@/repositories/auth/authRepository.mock'
+import {
+  createUserPasswordResetToken,
+  findUserByValidPasswordResetToken,
+  updateUserPasswordByResetToken,
+} from '@/repositories/auth/passwordResetRepository.mock'
 import { sendPasswordResetEmail } from '@/services/authEmailService.mock'
+import { USER_STATUS } from '@/lib/roles'
 
 const buildSession = ({ user, tenant }) => ({
   user,
   tenant,
 })
 
+const ensureActiveUser = (user) => {
+  if (user.status !== USER_STATUS.ACTIVE) {
+    throw new Error('Usuário sem acesso ativo.')
+  }
+}
+
 export const login = async ({ cpf, password }) => {
-  const authUser = await findUserByCredentials(cpf, password)
+  const authUser = await findAuthUserByCredentials(cpf, password)
+
+  ensureActiveUser(authUser.user)
+
   const token = createSessionToken(authUser.user)
 
   saveStoredToken(token)
@@ -40,7 +56,9 @@ export const restoreSession = async () => {
   }
 
   try {
-    const authUser = await findUserById(payload.sub)
+    const authUser = await findAuthUserById(payload.sub)
+
+    ensureActiveUser(authUser.user)
 
     return buildSession(authUser)
   } catch {

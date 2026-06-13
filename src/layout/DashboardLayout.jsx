@@ -1,4 +1,4 @@
-import { FileText, LayoutDashboard, Users, User, Menu } from 'lucide-react'
+import { FileText, LayoutDashboard, Users, User, Menu, UserCog } from 'lucide-react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import Logo from '@/assets/logos/to-light-background.svg'
 
@@ -11,12 +11,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { useSession } from '@/context/sessionContext'
+import { canAccessUsersPage } from '@/lib/roles'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
   const { session, handleLogout } = useSession()
   const location = useLocation()
   const isActive = (path) => location.pathname === path
+  const canManageUsers = canAccessUsersPage(session?.user)
 
   const onLogout = () => {
     handleLogout()
@@ -64,6 +66,17 @@ export default function DashboardLayout() {
                   <FileText /> Comprovantes
                 </Link>
               </Button>
+              {canManageUsers && (
+                <Button
+                  asChild
+                  variant={isActive('/usuarios') ? 'default' : 'ghost'}
+                  className="justify-start"
+                >
+                  <Link to="/usuarios" className="flex w-full items-center gap-2">
+                    <UserCog /> Usuários
+                  </Link>
+                </Button>
+              )}
               {/* <Button asChild variant={isActive('/documentos') ? 'default' : 'ghost'} className="justify-start">
                 <Link to="/documentos" className="flex items-center gap-2 w-full">
                   <FolderArchive /> Documentos

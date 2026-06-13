@@ -1,4 +1,9 @@
-import { getMockUsers, saveMockUsers } from '@/repositories/auth/authUserRepository.mock'
+import {
+  findUserByCpf,
+  findUserByResetToken,
+  updateUserPassword,
+  updateUserPasswordResetToken,
+} from '@/repositories/users/usersRepository.mock'
 
 const PASSWORD_RESET_TOKEN_DURATION_MS = 30 * 60 * 1000
 
@@ -11,10 +16,10 @@ const createPasswordResetToken = () => {
     .replaceAll('=', '')
 }
 
-const findUserWithValidPasswordResetToken = (users, token) => {
+const findUserWithValidPasswordResetToken = async (token) => {
   if (!token || typeof token !== 'string') return null
 
-  const user = users.find((mockUser) => mockUser.resetToken === token)
+  const user = await findUserByResetToken(token, { includeSensitive: true })
 
   if (!user?.resetTokenExpiresAt) return null
 
@@ -26,24 +31,17 @@ const findUserWithValidPasswordResetToken = (users, token) => {
 }
 
 export const createUserPasswordResetToken = async (cpf) => {
-  const users = getMockUsers()
-  const user = users.find((mockUser) => mockUser.cpf === cpf)
+  const user = await findUserByCpf(cpf, { includeSensitive: true })
 
   if (!user) return null
 
   const token = createPasswordResetToken()
   const expiresAt = new Date(Date.now() + PASSWORD_RESET_TOKEN_DURATION_MS).toISOString()
-  const updatedUsers = users.map((mockUser) => {
-    if (mockUser.id !== user.id) return mockUser
-
-    return {
-      ...mockUser,
-      resetToken: token,
-      resetTokenExpiresAt: expiresAt,
-    }
+  await updateUserPasswordResetToken({
+    userId: user.id,
+    resetToken: token,
+    resetTokenExpiresAt: expiresAt,
   })
-
-  saveMockUsers(updatedUsers)
 
   return {
     email: user.email,
@@ -53,28 +51,18 @@ export const createUserPasswordResetToken = async (cpf) => {
 }
 
 export const findUserByValidPasswordResetToken = async (token) => {
-  return findUserWithValidPasswordResetToken(getMockUsers(), token)
+  return findUserWithValidPasswordResetToken(token)
 }
 
 export const updateUserPasswordByResetToken = async (token, password) => {
-  const users = getMockUsers()
-  const user = findUserWithValidPasswordResetToken(users, token)
+  const user = await findUserWithValidPasswordResetToken(token)
 
   if (!user) {
-    throw new Error('Este link nao e mais valido.')
+    throw new Error('Este link não é mais válido.')
   }
 
-  const updatedUsers = users.map((mockUser) => {
-    if (mockUser.id !== user.id) return mockUser
-
-    return {
-      ...mockUser,
-      password,
-      resetToken: null,
-      resetTokenExpiresAt: null,
-      mustChangePassword: false,
-    }
+  await updateUserPassword({
+    userId: user.id,
+    password,
   })
-
-  saveMockUsers(updatedUsers)
 }
