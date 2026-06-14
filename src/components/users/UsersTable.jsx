@@ -1,9 +1,9 @@
-import { formatDateTime, getSessionStatusLabel, maskCpf } from '@/lib/userFormatters'
+import { formatDateTime, getSessionStatusLabel, maskCpf, maskEmail } from '@/lib/userFormatters'
 import { cn } from '@/lib/utils'
 import { UserRoleBadge } from '@/components/users/UserRoleBadge'
 import { UserStatusBadge } from '@/components/users/UserStatusBadge'
 
-const columns = ['Nome Completo', 'CPF', 'Nível de Acesso', 'Status', 'Último Acesso']
+const columns = ['Nome Completo', 'CPF', 'E-mail', 'Nível de Acesso', 'Status', 'Último Acesso']
 
 export function UsersTable({ users, selectedUserId, onSelectUser }) {
   if (users.length === 0) {
@@ -18,12 +18,9 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
     <div className="overflow-x-auto">
       <table className="w-full min-w-[820px] text-sm">
         <thead>
-          <tr className="bg-muted/40 border-y">
+          <tr className="bg-secondary border-y">
             {columns.map((column) => (
-              <th
-                key={column}
-                className="text-foreground px-4 py-3 text-left text-xs font-semibold"
-              >
+              <th key={column} className="px-4 py-3 text-left text-xs font-semibold">
                 {column}
               </th>
             ))}
@@ -50,19 +47,22 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
                   <div
                     className={cn(
                       'mt-1 flex items-center gap-1 text-xs',
-                      isSessionActive ? 'text-emerald-600' : 'text-muted-foreground'
+                      isSessionActive ? 'text-primary' : 'text-muted-foreground'
                     )}
                   >
                     <span
                       className={cn(
                         'size-1.5 rounded-full',
-                        isSessionActive ? 'bg-emerald-500' : 'bg-muted-foreground/40'
+                        isSessionActive ? 'bg-primary' : 'bg-muted-foreground/40'
                       )}
                     />
                     {getSessionStatusLabel(user.hasActiveSession)}
                   </div>
                 </td>
                 <td className="text-muted-foreground px-4 py-3 font-medium">{maskCpf(user.cpf)}</td>
+                <td className="text-muted-foreground px-4 py-3 font-medium">
+                  {maskEmail(user.email)}
+                </td>
                 <td className="px-4 py-3">
                   <UserRoleBadge role={user.role} />
                 </td>

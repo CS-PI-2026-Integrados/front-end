@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { CalendarDays, Clock3, KeyRound, Mail, Power, RotateCcw, Shield, X } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { CalendarDays, Clock3, KeyRound, Mail, Power, RotateCcw, IdCard, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { canDeactivateUser, canReactivateUser, canResetUserPassword } from '@/lib/userPermissions'
 import {
@@ -12,6 +12,9 @@ import {
 import { UserActionConfirmDialog } from '@/components/users/UserActionConfirmDialog'
 import { UserRoleBadge } from '@/components/users/UserRoleBadge'
 import { UserStatusBadge } from '@/components/users/UserStatusBadge'
+import { cn } from '@/lib/utils'
+
+const PANEL_ANIMATION_MS = 200
 
 export function UserDetailsPanel({
   currentUser,
@@ -22,13 +25,28 @@ export function UserDetailsPanel({
   user,
 }) {
   const [pendingAction, setPendingAction] = useState(null)
+  const [isClosing, setIsClosing] = useState(false)
+  const closeTimeoutRef = useRef(null)
+
+  const requestClose = useCallback(() => {
+    if (isClosing) return
+
+    setPendingAction(null)
+    setIsClosing(true)
+
+    closeTimeoutRef.current = window.setTimeout(() => {
+      onClose()
+      setIsClosing(false)
+      closeTimeoutRef.current = null
+    }, PANEL_ANIMATION_MS)
+  }, [isClosing, onClose])
 
   useEffect(() => {
     if (!user) return
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
-        onClose()
+        requestClose()
       }
     }
 
@@ -37,7 +55,15 @@ export function UserDetailsPanel({
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [onClose, user])
+  }, [requestClose, user])
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        window.clearTimeout(closeTimeoutRef.current)
+      }
+    }
+  }, [])
 
   if (!user) return null
 
@@ -79,9 +105,18 @@ export function UserDetailsPanel({
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/40" onClick={onClose}>
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/40 duration-200',
+          isClosing ? 'animate-out fade-out-0' : 'animate-in fade-in-0'
+        )}
+        onClick={requestClose}
+      >
         <aside
-          className="bg-background ring-border ml-auto flex h-full w-full max-w-sm flex-col shadow-xl ring-1"
+          className={cn(
+            'bg-background ring-border ml-auto flex h-full w-full max-w-sm flex-col shadow-xl ring-1 duration-200',
+            isClosing ? 'animate-out slide-out-to-right' : 'animate-in slide-in-from-right'
+          )}
           onClick={(event) => event.stopPropagation()}
         >
           <header className="flex items-start justify-between gap-4 border-b p-5">
@@ -89,7 +124,7 @@ export function UserDetailsPanel({
               <h2 className="text-base font-semibold">{user.name}</h2>
               <p className="text-muted-foreground mt-1 text-sm">Detalhes do usuário da comarca</p>
             </div>
-            <Button variant="ghost" size="icon-sm" onClick={onClose}>
+            <Button variant="ghost" size="icon-sm" onClick={requestClose}>
               <X />
               <span className="sr-only">Fechar painel</span>
             </Button>
@@ -102,7 +137,7 @@ export function UserDetailsPanel({
             </div>
 
             <div className="mt-6 space-y-5 border-t pt-5">
-              <DetailItem icon={Shield} label="CPF" value={maskCpf(user.cpf)} />
+              <DetailItem icon={IdCard} label="CPF" value={maskCpf(user.cpf)} />
               <DetailItem icon={Mail} label="E-mail de recuperação" value={maskEmail(user.email)} />
               <DetailItem
                 icon={CalendarDays}

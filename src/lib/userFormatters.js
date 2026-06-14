@@ -49,7 +49,7 @@ export const getRoleLabel = (role) => {
 }
 
 export const getActiveStatusLabel = (isActive) => {
-  return isActive ? 'ATIVO' : 'INATIVO'
+  return isActive ? 'Ativo' : 'Inativo'
 }
 
 export const getSessionStatusLabel = (hasActiveSession) => {

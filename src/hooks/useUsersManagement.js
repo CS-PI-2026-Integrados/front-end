@@ -65,8 +65,10 @@ export function useUsersManagement() {
 
       const normalizedName = normalizeSearch(user.name)
       const cpfDigits = user.cpf.replace(/\D/g, '')
+      const matchesName = normalizedSearch ? normalizedName.includes(normalizedSearch) : false
+      const matchesCpf = searchDigits ? cpfDigits.includes(searchDigits) : false
 
-      return normalizedName.includes(normalizedSearch) || cpfDigits.includes(searchDigits)
+      return matchesName || matchesCpf
     })
   }, [roleFilter, search, statusFilter, users])
 

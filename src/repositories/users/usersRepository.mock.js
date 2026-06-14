@@ -2,7 +2,7 @@ import { mockUsers } from '@/mocks/usuarios.mock'
 import { findRoleById, findRoleByKey } from '@/repositories/roles/rolesRepository.mock'
 import { ROLE_KEYS } from '@/lib/userPermissions'
 
-const MOCK_USERS_STORAGE_KEY = '@sicape:mock-users-v2'
+const MOCK_USERS_STORAGE_KEY = '@sicape:mock-users-v3'
 
 export const removeSensitiveUserFields = (user) => {
   const publicUser = { ...user }
@@ -113,6 +113,29 @@ export const updateUserActiveState = async ({ userId, isActive }) => {
       ...user,
       isActive,
       hasActiveSession: isActive === targetUser.isActive ? user.hasActiveSession : false,
+    }
+  })
+
+  saveStoredUsers(updatedUsers)
+
+  return mapUserForReturn(updatedUsers.find((user) => user.id === userId))
+}
+
+export const updateUserSessionState = async ({ userId, hasActiveSession, lastAccessAt }) => {
+  const users = getStoredUsers()
+  const targetUser = users.find((user) => user.id === userId)
+
+  if (!targetUser) {
+    throw new Error('Usuário não encontrado.')
+  }
+
+  const updatedUsers = users.map((user) => {
+    if (user.id !== userId) return user
+
+    return {
+      ...user,
+      hasActiveSession,
+      lastAccessAt: lastAccessAt ?? user.lastAccessAt,
     }
   })
 

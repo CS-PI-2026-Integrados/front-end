@@ -18,7 +18,7 @@ export const mockUsers = {
     },
     {
       id: '2',
-      tenantId: '2',
+      tenantId: '1',
       roleId: '1',
       name: 'Maria Silva',
       cpf: '296.956.992-27',
@@ -53,7 +53,7 @@ export const mockUsers = {
       tenantId: '1',
       roleId: '3',
       name: 'Carlos Mendes Operador',
-      cpf: '402.982.247-90',
+      cpf: '096.767.219-80',
       email: 'carlos.mendes@sicape.local',
       password: '123',
       isActive: true,
@@ -130,7 +130,7 @@ export const mockUsers = {
     },
     {
       id: '9',
-      tenantId: '2',
+      tenantId: '1',
       roleId: '2',
       name: 'Paulo Admin',
       cpf: '019.876.543-21',
