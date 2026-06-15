@@ -4,6 +4,7 @@ import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs.j
 import { PhotoCaptureCard } from '@/components/service/PhotoCaptureCard.jsx'
 import { ProofHistory } from '@/components/service/ProofHistory.jsx'
 import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
+import { useDistrictData } from '@/hooks/useDistrictData.js'
 import { ReceiptSuccessCard } from '@/components/service/ReceiptSuccessCard.jsx'
 import { validateAtendimento } from '@/lib/atendimentoUtils'
 import { getMudancasAtivas } from '@/lib/atendimentoUtils'
@@ -25,6 +26,8 @@ const Service = () => {
     setError,
     resetAtendimento,
   } = useService()
+
+  const { presencas } = useDistrictData()
 
   const { generateReceipt } = useGenerateReceipt()
 
@@ -85,7 +88,7 @@ const Service = () => {
               value="historico"
               className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
-              Histórico
+              Histórico {presencas.length > 0 ? `(${presencas.length})` : ''}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -123,7 +126,7 @@ const Service = () => {
           value="historico"
           className="mt-0 flex w-full flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:flex-row md:items-stretch"
         >
-          <ProofHistory comprovantes={[]} />
+          <ProofHistory />
         </TabsContent>
       </Tabs>
     </div>
