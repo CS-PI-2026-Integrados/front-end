@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 import { mockApenados } from '@/mocks/apenados.mock.js'
-import { mockPresenca } from '@/mocks/presenca.mock.js'
+import { presencasStore } from '@/mocks/presenca.mock.js'
 import { useSession } from '@/context/SessionContext.jsx'
 
-const generateRandomCode = (length = 9) => {
-  return Math.random()
-    .toString(36)
-    .substring(2, 2 + length)
-    .toUpperCase()
+export const generateAuthCode = () => {
+  const data = new Date().toISOString().split('T')[0].replace(/-/g, '')
+  const serial = Math.random().toString(36).substring(2, 10).toUpperCase()
+  return `COMP-${data}-${serial}`
 }
 
 export function useGenerateReceipt() {
@@ -36,7 +35,7 @@ export function useGenerateReceipt() {
             }
 
             const novaPresenca = {
-              id: String(mockPresenca.presencas.length + 1),
+              id: String(presencasStore.getSnapshot().length + 1),
               apenadoId: apenadoFinal?.id,
               tenantId: apenadoFinal?.tenantId,
               processoId: processo?.id,
@@ -44,14 +43,14 @@ export function useGenerateReceipt() {
               cpf: apenadoFinal.cpf,
               dateTime: now,
               operatorName: usuario || 'Servidor',
-              verificationCode: `COMP-${new Date(now).getTime()}-${generateRandomCode()}`,
+              verificationCode: generateAuthCode(),
               photoUrl: fotoAtendimento,
               mudancasRastreadas: mudancasDetectadas,
             }
 
-            // Persiste o comprovante, futuramente rota /presencas ou comprovantes
-            mockPresenca.presencas.push(novaPresenca)
-            console.log(mockPresenca.presencas)
+            // Persiste o comprovante na store simulando um cache de backend
+            presencasStore.addPresenca(novaPresenca)
+
             resolve(novaPresenca)
           } catch (error) {
             reject(error)
