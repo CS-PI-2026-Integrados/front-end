@@ -33,7 +33,14 @@ export const generateReceiptPDF = async (atendimento) => {
     referencePhotoBase64 = await getBase64ImageFromUrl(apenado.referencePhotoUrl)
   }
 
-  const capturedPhotoBase64 = recibo?.photoUrl
+  let capturedPhotoBase64 = null
+  if (recibo?.photoUrl) {
+    if (recibo.photoUrl.startsWith('data:')) {
+      capturedPhotoBase64 = recibo.photoUrl
+    } else {
+      capturedPhotoBase64 = await getBase64ImageFromUrl(recibo.photoUrl)
+    }
+  }
 
   const logoBase64 = await getBase64ImageFromUrl(tjprLogo)
 
@@ -91,7 +98,9 @@ export const generateReceiptPDF = async (atendimento) => {
           { text: 'Fórum: ', bold: true },
           'FÓRUM DE TERRA RICA\n',
           { text: 'Vara: ', bold: true },
-          'EXECUÇÃO MEIO ABERTO - TERRA RICA',
+          'EXECUÇÃO MEIO ABERTO - TERRA RICA\n',
+          { text: 'Protocolo de Validação: ', bold: true },
+          `${recibo?.verificationCode || 'Não gerado'}`,
         ],
         style: 'processData',
         marginBottom: 30,
