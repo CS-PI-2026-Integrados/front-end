@@ -68,8 +68,8 @@ const Service = () => {
   }
 
   return (
-    <div className="mx-auto flex min-h-full max-w-7xl flex-col md:h-full">
-      <Tabs defaultValue="novo" className="flex min-h-0 w-full flex-1 flex-col">
+    <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col px-4 py-4 md:h-full md:px-8 md:py-6">
+      <Tabs defaultValue="novo" className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
         <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <h1 className="text-2xl font-bold md:text-3xl">Emissão de Comprovantes</h1>
@@ -77,16 +77,16 @@ const Service = () => {
               Gere comprovantes de comparecimento com foto
             </p>
           </div>
-          <TabsList className="bg-muted text-muted-foreground inline-flex h-9 w-full shrink-0 items-center justify-center rounded-lg p-0.5 shadow-sm md:w-auto">
+          <TabsList className="bg-muted text-muted-foreground grid h-auto w-full grid-cols-2 items-center justify-center rounded-lg p-1 shadow-sm md:inline-flex md:h-9 md:w-auto">
             <TabsTrigger
               value="novo"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-[32px] items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Novo comprovante
             </TabsTrigger>
             <TabsTrigger
               value="historico"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-[32px] items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Histórico {presencas.length > 0 ? `(${presencas.length})` : ''}
             </TabsTrigger>
@@ -124,7 +124,7 @@ const Service = () => {
         </TabsContent>
         <TabsContent
           value="historico"
-          className="mt-0 flex w-full flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:flex-row md:items-stretch"
+          className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:flex-row md:items-stretch"
         >
           <ProofHistory />
         </TabsContent>

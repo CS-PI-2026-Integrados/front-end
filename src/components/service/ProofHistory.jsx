@@ -47,16 +47,16 @@ export function ProofHistory() {
   }
 
   return (
-    <Card className="flex h-full w-full flex-col rounded-xl shadow-sm md:flex-1">
+    <Card className="flex h-full w-full flex-col overflow-hidden rounded-xl shadow-sm md:flex-1">
       <CardHeader className="flex flex-col space-y-1 px-4 pt-3 pb-2 md:px-6 md:pt-4 md:pb-3">
         <CardTitle className="text-lg font-semibold md:text-xl">
           Histórico de Comprovantes Emitidos
         </CardTitle>
-        <div className="flex w-full items-end justify-between">
-          <p className="text-muted-foreground text-sm">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <p className="text-muted-foreground flex-1 text-sm">
             Visualize todos os comprovantes emitidos anteriormente
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-start sm:self-auto">
             <Button
               variant="outline"
               size="icon"
@@ -82,9 +82,9 @@ export function ProofHistory() {
         </div>
       </CardHeader>
 
-      <CardContent className="flex min-h-[360px] flex-col p-0">
+      <CardContent className="flex min-h-[360px] min-w-0 flex-col p-0">
         {comprovantes.length > 0 ? (
-          <div className="w-full">
+          <div className="w-full overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-card sticky top-0 z-10">
                 <tr className="text-muted-foreground border-b">
@@ -126,19 +126,19 @@ export function ProofHistory() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleView(comp)}
-                          className="h-8"
+                          className="h-8 px-2 md:px-3"
                         >
-                          <Eye className="mr-2 h-4 w-4" />
-                          Visualizar
+                          <Eye className="h-4 w-4 md:mr-2" />
+                          <span className="hidden md:inline">Visualizar</span>
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDownload(comp)}
-                          className="h-8"
+                          className="h-8 px-2 md:px-3"
                         >
-                          <Download className="mr-2 h-4 w-4" />
-                          PDF
+                          <Download className="h-4 w-4 md:mr-2" />
+                          <span className="hidden md:inline">PDF</span>
                         </Button>
                       </div>
                     </td>
