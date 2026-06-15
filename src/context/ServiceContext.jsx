@@ -176,7 +176,7 @@ function atendimentoReducer(state, action) {
     }
 
     case 'RESET_ATENDIMENTO': {
-      return initialState
+      return { ...initialState }
     }
 
     default:
