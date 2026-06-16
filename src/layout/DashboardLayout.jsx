@@ -1,14 +1,5 @@
-import {
-  ChartBar,
-  FileText,
-  FolderArchive,
-  LayoutDashboard,
-  Settings,
-  Users,
-  User,
-  Menu,
-} from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { FileText, LayoutDashboard, Users, User, Menu } from 'lucide-react'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import Logo from '/assets/logo/to-light-background.svg'
 
 import { Button } from '@/components/ui/button'
@@ -18,16 +9,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { Outlet, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { useSession } from '@/context/SessionContext'
+import { useState } from 'react'
+import { useSession } from '@/context/sessionContext'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
-  const { session } = useSession()
-
+  const { session, handleLogout } = useSession()
   const location = useLocation()
   const isActive = (path) => location.pathname === path
+
+  const onLogout = () => {
+    handleLogout()
+  }
 
   return (
     <>
@@ -120,10 +113,8 @@ export default function DashboardLayout() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {/* <DropdownMenuItem>Perfil</DropdownMenuItem> */}
-                    <DropdownMenuItem asChild>
-                      <Link to="/login" className="cursor-pointer">
-                        Sair
-                      </Link>
+                    <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
+                      Sair
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
