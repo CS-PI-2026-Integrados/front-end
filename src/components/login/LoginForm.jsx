@@ -40,6 +40,7 @@ export function LoginForm() {
             type="text"
             inputMode="numeric"
             placeholder="000.000.000-00"
+            autoComplete="username"
             {...restCpfRegister}
             onChange={(e) => {
               e.target.value = formatCpf(e.target.value)
@@ -68,6 +69,7 @@ export function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               inputMode="text"
               placeholder="Digite sua senha"
+              autoComplete="current-password"
               disabled={isSubmitting}
               {...register('password')}
               className={`${inputBaseStyles} ${errors.password || authError ? inputErrorStyles : inputDefaultStyles} `}
