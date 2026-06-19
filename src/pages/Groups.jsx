@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Search, Plus } from 'lucide-react'
 import { useSession } from '@/context/SessionContext'
 import mockApenados from '@/mocks/apenados.json'
@@ -6,6 +6,16 @@ import mockApenados from '@/mocks/apenados.json'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -22,6 +32,138 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import NewGroupForm from '@/components/hooks/NewGroupForm'
+import ParticipantSelector from '@/components/hooks/ParticipantSelector'
+
+const GroupViewModal = ({ group, isOpen, onOpenChange, availableParticipants, onUpdate }) => {
+  const [editData, setEditData] = useState({ nomeGrupo: '', descricao: '', participantes: [] })
+  const isEditable = group?.status === 'EmAndamento'
+
+  useEffect(() => {
+    if (!group) return
+    /* setEditData({
+      nomeGrupo: group.nomeGrupo ?? '',
+      descricao: group.descricao ?? '',
+      participantes: group.participantes ?? [],
+    }) */
+  }, [group, isOpen])
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setEditData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleParticipantsChange = (participants) => {
+    setEditData((prev) => ({ ...prev, participantes: participants }))
+  }
+
+  const handleSave = () => {
+    if (!group) return
+    onUpdate({ ...group, ...editData })
+    onOpenChange(false)
+  }
+
+  if (!group) return null
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px]">
+        <DialogHeader>
+          <DialogTitle>Detalhes do grupo reflexivo</DialogTitle>
+          <DialogDescription>
+            Visualize e edite apenas nome, descrição e participantes.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Input value={group.status} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Data de início</Label>
+              <Input value={group.dataInicio} disabled />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Frequência</Label>
+              <Input value={group.frequencia} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Dia da semana</Label>
+              <Input value={group.diaSemana} disabled />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Horário</Label>
+              <Input value={group.horario} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Total de encontros</Label>
+              <Input value={String(group.totalEncontros)} disabled />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="nomeGrupo">Nome do grupo</Label>
+            <Input
+              id="nomeGrupo"
+              name="nomeGrupo"
+              value={editData.nomeGrupo}
+              onChange={handleInputChange}
+              disabled={!isEditable}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="descricao">Descrição</Label>
+            <Textarea
+              id="descricao"
+              name="descricao"
+              value={editData.descricao}
+              onChange={handleInputChange}
+              disabled={!isEditable}
+              className="resize-none"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Participantes</Label>
+            <ParticipantSelector
+              participants={editData.participantes}
+              onParticipantsChange={handleParticipantsChange}
+              availableParticipants={availableParticipants}
+              disabled={!isEditable}
+            />
+          </div>
+
+          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+            {isEditable ? (
+              <p>
+                O grupo está em andamento. Você pode editar apenas nome, descrição e participantes.
+              </p>
+            ) : (
+              <p>Grupo não está em andamento. Todos os campos permanecem somente leitura.</p>
+            )}
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Fechar
+          </Button>
+          <Button type="button" onClick={handleSave} disabled={!isEditable}>
+            Salvar alterações
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 const Groups = () => {
   const { session } = useSession()
@@ -29,17 +171,25 @@ const Groups = () => {
   const [grupos, setGrupos] = useState([])
   const [searchGrupo, setSearchGrupo] = useState('')
   const [statusFilter, setStatusFilter] = useState('todos')
+  const [grupoSelecionado, setGrupoSelecionado] = useState(null)
+  const [visualizarGrupoAberto, setVisualizarGrupoAberto] = useState(false)
 
-  // Get available participants from session tenant
   const availableParticipants = useMemo(() => {
     const comarca = session?.tenant?.id
     if (!comarca) return []
     return mockApenados.filter((a) => a.tenant_id === comarca && a.status === 'Ativo')
   }, [session?.tenant?.id])
 
+  const filteredGrupos = useMemo(() => {
+    return grupos.filter((grupo) => {
+      const matchesSearch = grupo.nomeGrupo?.toLowerCase().includes(searchGrupo.toLowerCase())
+      const matchesStatus = statusFilter === 'todos' || grupo.status === statusFilter
+      return matchesSearch && matchesStatus
+    })
+  }, [grupos, searchGrupo, statusFilter])
+
   const handleCreateGroup = async (formData) => {
     try {
-      // Simulating API call - replace with actual API call
       const novoGrupo = {
         id: grupos.length + 1,
         ...formData,
@@ -52,6 +202,15 @@ const Groups = () => {
     } catch (error) {
       throw error
     }
+  }
+
+  const handleOpenGroup = (grupo) => {
+    setGrupoSelecionado(grupo)
+    setVisualizarGrupoAberto(true)
+  }
+
+  const handleUpdateGroup = (updatedGrupo) => {
+    setGrupos((prev) => prev.map((grupo) => (grupo.id === updatedGrupo.id ? updatedGrupo : grupo)))
   }
 
   return (
@@ -120,14 +279,14 @@ const Groups = () => {
                 </TableHeader>
 
                 <TableBody>
-                  {grupos.length === 0 ? (
+                  {filteredGrupos.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-muted-foreground h-32 text-center">
                         Nenhum grupo encontrado
                       </TableCell>
                     </TableRow>
                   ) : (
-                    grupos.map((grupo) => (
+                    filteredGrupos.map((grupo) => (
                       <TableRow key={grupo.id}>
                         <TableCell className="font-medium">{grupo.nomeGrupo}</TableCell>
                         <TableCell>{grupo.status}</TableCell>
@@ -137,7 +296,7 @@ const Groups = () => {
                         </TableCell>
                         <TableCell>{grupo.dataInicio}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" onClick={() => handleOpenGroup(grupo)}>
                             Ver
                           </Button>
                         </TableCell>
@@ -149,6 +308,14 @@ const Groups = () => {
             </div>
           </CardContent>
         </Card>
+
+        <GroupViewModal
+          group={grupoSelecionado}
+          isOpen={visualizarGrupoAberto}
+          onOpenChange={setVisualizarGrupoAberto}
+          availableParticipants={availableParticipants}
+          onUpdate={handleUpdateGroup}
+        />
       </div>
     </div>
   )

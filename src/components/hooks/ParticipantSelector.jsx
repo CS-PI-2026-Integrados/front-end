@@ -3,12 +3,17 @@ import { X, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 
-const ParticipantSelector = ({ participants, onParticipantsChange, availableParticipants }) => {
+const ParticipantSelector = ({
+  participants,
+  onParticipantsChange,
+  availableParticipants,
+  disabled = false,
+}) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
 
   const filteredSuggestions = useMemo(() => {
-    if (!searchTerm.trim()) return []
+    if (!searchTerm.trim() || disabled) return []
 
     const term = searchTerm.toLowerCase().trim()
     return availableParticipants.filter((p) => {
@@ -17,12 +22,12 @@ const ParticipantSelector = ({ participants, onParticipantsChange, availablePart
       const cleanTerm = term.replace(/\D/g, '')
       const matchCPF = cleanTerm !== '' && cleanCPF.includes(cleanTerm)
 
-      // Avoid showing already selected participants
       return (matchNome || matchCPF) && !participants.find((sel) => sel.id === p.id)
     })
   }, [searchTerm, availableParticipants, participants])
 
   const handleSelectParticipant = (participant) => {
+    if (disabled) return
     if (!participants.find((p) => p.id === participant.id)) {
       onParticipantsChange([...participants, participant])
     }
@@ -31,6 +36,7 @@ const ParticipantSelector = ({ participants, onParticipantsChange, availablePart
   }
 
   const handleRemoveParticipant = (id) => {
+    if (disabled) return
     onParticipantsChange(participants.filter((p) => p.id !== id))
   }
 
@@ -44,12 +50,14 @@ const ParticipantSelector = ({ participants, onParticipantsChange, availablePart
             placeholder="Buscar por nome, CPF ou nº de processo..."
             value={searchTerm}
             onChange={(e) => {
+              if (disabled) return
               setSearchTerm(e.target.value)
               setShowSuggestions(true)
             }}
-            onFocus={() => setShowSuggestions(true)}
+            onFocus={() => !disabled && setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             className="pl-10"
+            disabled={disabled}
           />
         </div>
 
