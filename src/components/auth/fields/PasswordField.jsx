@@ -12,6 +12,10 @@ export function PasswordField({
   labelAction,
   placeholder = 'Digite sua senha',
   className,
+  errorClassName,
+  fieldClassName,
+  inputWrapperClassName,
+  labelClassName,
 }) {
   const [showPassword, setShowPassword] = useState(false)
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev)
@@ -28,6 +32,10 @@ export function PasswordField({
       error={error}
       registration={registration}
       className={cn('pr-12', className)}
+      errorClassName={errorClassName}
+      fieldClassName={fieldClassName}
+      inputWrapperClassName={inputWrapperClassName}
+      labelClassName={labelClassName}
       rightElement={
         <button
           type="button"

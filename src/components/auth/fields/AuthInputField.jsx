@@ -20,6 +20,7 @@ export function AuthInputField({
   className,
   fieldClassName,
   inputWrapperClassName,
+  labelClassName,
   errorClassName,
   ...inputProps
 }) {
@@ -27,13 +28,19 @@ export function AuthInputField({
     <Field className={cn('gap-1', fieldClassName)}>
       {labelAction ? (
         <div className="flex justify-between">
-          <FieldLabel htmlFor={id} className="text-lg font-normal text-gray-600">
+          <FieldLabel
+            htmlFor={id}
+            className={cn('text-lg font-normal text-gray-600', labelClassName)}
+          >
             {label}
           </FieldLabel>
           {labelAction}
         </div>
       ) : (
-        <FieldLabel htmlFor={id} className="text-lg font-normal text-gray-600">
+        <FieldLabel
+          htmlFor={id}
+          className={cn('text-lg font-normal text-gray-600', labelClassName)}
+        >
           {label}
         </FieldLabel>
       )}

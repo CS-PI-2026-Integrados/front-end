@@ -16,7 +16,7 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[820px] text-sm">
+      <table className="w-full min-w-205 text-sm">
         <thead>
           <tr className="bg-secondary border-y">
             {columns.map((column) => (

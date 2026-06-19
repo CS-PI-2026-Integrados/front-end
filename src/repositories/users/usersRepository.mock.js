@@ -65,6 +65,14 @@ export const findUserByCpf = async (cpf, options) => {
   return mapUserForReturn(user, options)
 }
 
+export const findUserByTenantAndCpf = async ({ tenantId, cpf }, options) => {
+  const user = getStoredUsers().find((mockUser) => {
+    return mockUser.tenantId === tenantId && mockUser.cpf === cpf
+  })
+
+  return mapUserForReturn(user, options)
+}
+
 export const findUserByEmail = async (email, options) => {
   const normalizedEmail = String(email || '')
     .trim()

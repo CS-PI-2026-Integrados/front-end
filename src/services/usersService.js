@@ -1,22 +1,26 @@
 import { createUserPasswordResetToken } from '@/repositories/auth/passwordResetRepository.mock'
+import { findRoleByKey } from '@/repositories/roles/rolesRepository.mock'
 import {
   createUser,
-  findUserByCpf,
+  findUserByTenantAndCpf,
   findUserByEmail,
   findUserById,
-  getOperatorRoleId,
   listUsersByTenant,
   updateUserActiveState,
 } from '@/repositories/users/usersRepository.mock'
-import { sendPasswordResetEmail } from '@/services/authEmailService.mock'
+import { enviarEmailRecuperacao, sendPasswordResetEmail } from '@/services/authEmailService.mock'
 import { registerUserAuditAction } from '@/services/auditService'
 import {
+  ROLE_KEYS,
   canAccessUsersPage,
   canDeactivateUser,
   canReactivateUser,
   canResetUserPassword,
+  isRoleAbove,
 } from '@/lib/userPermissions'
 import { formatCpf, validateCPF } from '@/lib/validadorCpf'
+
+const CREATABLE_ROLE_KEYS = [ROLE_KEYS.OPERATOR, ROLE_KEYS.ADMIN]
 
 const getActorFromSession = (session) => {
   if (!session?.user || !session?.tenant) {
@@ -42,6 +46,24 @@ const getTargetUser = async (targetUserId) => {
   return targetUser
 }
 
+const getCreatableRole = async ({ actor, roleKey }) => {
+  if (!CREATABLE_ROLE_KEYS.includes(roleKey)) {
+    throw new Error('Nível de acesso inválido.')
+  }
+
+  const role = await findRoleByKey(roleKey)
+
+  if (!role) {
+    throw new Error('Cargo não encontrado.')
+  }
+
+  if (!isRoleAbove(actor.role, role)) {
+    throw new Error('Usuário sem permissão para cadastrar este nível de acesso.')
+  }
+
+  return role
+}
+
 export const listManageableTenantUsers = async (session) => {
   const actor = getActorFromSession(session)
 
@@ -58,8 +80,10 @@ export const createTenantOperator = async ({ session, operatorData }) => {
   const name = operatorData.name?.trim()
   const cpf = formatCpf(operatorData.cpf || '')
   const email = operatorData.email?.trim().toLowerCase()
+  const password = operatorData.password || ''
+  const roleKey = operatorData.roleKey || ROLE_KEYS.OPERATOR
 
-  if (!name || !cpf || !email) {
+  if (!name || !cpf || !email || !password) {
     throw new Error('Preencha todos os campos obrigatórios.')
   }
 
@@ -67,10 +91,13 @@ export const createTenantOperator = async ({ session, operatorData }) => {
     throw new Error('CPF inválido.')
   }
 
-  const existingCpfUser = await findUserByCpf(cpf)
+  const existingCpfUser = await findUserByTenantAndCpf({
+    tenantId: actor.tenantId,
+    cpf,
+  })
 
   if (existingCpfUser) {
-    throw new Error('CPF já cadastrado.')
+    throw new Error('CPF já cadastrado na comarca.')
   }
 
   const existingEmailUser = await findUserByEmail(email)
@@ -79,21 +106,17 @@ export const createTenantOperator = async ({ session, operatorData }) => {
     throw new Error('E-mail já cadastrado.')
   }
 
-  const operatorRoleId = await getOperatorRoleId()
-
-  if (!operatorRoleId) {
-    throw new Error('Cargo de operador não encontrado.')
-  }
+  const role = await getCreatableRole({ actor, roleKey })
 
   const createdUser = await createUser({
     tenantId: actor.tenantId,
     name,
     cpf,
     email,
-    roleId: operatorRoleId,
+    roleId: role.id,
     isActive: true,
     hasActiveSession: false,
-    password: crypto.randomUUID(),
+    password,
   })
 
   await registerUserAuditAction({
@@ -102,11 +125,7 @@ export const createTenantOperator = async ({ session, operatorData }) => {
     target: createdUser,
   })
 
-  const resetRequest = await createUserPasswordResetToken(cpf)
-
-  if (resetRequest) {
-    await sendPasswordResetEmail(resetRequest.email, resetRequest.token)
-  }
+  await enviarEmailRecuperacao(email)
 
   return createdUser
 }

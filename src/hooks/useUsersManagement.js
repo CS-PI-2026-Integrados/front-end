@@ -17,6 +17,7 @@ export const USERS_STATUS_FILTERS = {
 }
 
 const SUCCESS_MESSAGE = 'Alteração feita com sucesso'
+const CREATE_SUCCESS_MESSAGE = 'Operador cadastrado com sucesso.'
 const ERROR_MESSAGE = 'Houve um erro ao completar essa ação'
 
 export function useUsersManagement() {
@@ -116,15 +117,15 @@ export function useUsersManagement() {
   )
 
   const createOperator = useCallback(
-    (operatorData) => {
-      return runUserAction(() =>
-        createTenantOperator({
-          session,
-          operatorData,
-        })
-      )
+    async (operatorData) => {
+      await createTenantOperator({
+        session,
+        operatorData,
+      })
+      await loadUsers()
+      toast.success(CREATE_SUCCESS_MESSAGE)
     },
-    [runUserAction, session]
+    [loadUsers, session]
   )
 
   const deactivateUser = useCallback(
