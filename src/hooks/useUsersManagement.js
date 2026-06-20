@@ -6,7 +6,7 @@ import {
   deactivateTenantUser,
   listManageableTenantUsers,
   reactivateTenantUser,
-  requestTenantUserPasswordReset,
+  resetTenantUserPassword,
 } from '@/services/usersService'
 import { normalizeSearch } from '@/lib/userFormatters'
 
@@ -53,24 +53,28 @@ export function useUsersManagement() {
     const normalizedSearch = normalizeSearch(search)
     const searchDigits = search.replace(/\D/g, '')
 
-    return users.filter((user) => {
-      const matchesStatus =
-        statusFilter === USERS_STATUS_FILTERS.ALL ||
-        (statusFilter === USERS_STATUS_FILTERS.ACTIVE && user.isActive) ||
-        (statusFilter === USERS_STATUS_FILTERS.INACTIVE && !user.isActive)
-      const matchesRole = roleFilter === 'all' || user.roleId === roleFilter
+    return users
+      .filter((user) => {
+        const matchesStatus =
+          statusFilter === USERS_STATUS_FILTERS.ALL ||
+          (statusFilter === USERS_STATUS_FILTERS.ACTIVE && user.isActive) ||
+          (statusFilter === USERS_STATUS_FILTERS.INACTIVE && !user.isActive)
+        const matchesRole = roleFilter === 'all' || user.roleId === roleFilter
 
-      if (!matchesStatus || !matchesRole) return false
+        if (!matchesStatus || !matchesRole) return false
 
-      if (!normalizedSearch && !searchDigits) return true
+        if (!normalizedSearch && !searchDigits) return true
 
-      const normalizedName = normalizeSearch(user.name)
-      const cpfDigits = user.cpf.replace(/\D/g, '')
-      const matchesName = normalizedSearch ? normalizedName.includes(normalizedSearch) : false
-      const matchesCpf = searchDigits ? cpfDigits.includes(searchDigits) : false
+        const normalizedName = normalizeSearch(user.name)
+        const cpfDigits = user.cpf.replace(/\D/g, '')
+        const matchesName = normalizedSearch ? normalizedName.includes(normalizedSearch) : false
+        const matchesCpf = searchDigits ? cpfDigits.includes(searchDigits) : false
 
-      return matchesName || matchesCpf
-    })
+        return matchesName || matchesCpf
+      })
+      .sort((firstUser, secondUser) => {
+        return firstUser.name.localeCompare(secondUser.name, 'pt-BR', { sensitivity: 'base' })
+      })
   }, [roleFilter, search, statusFilter, users])
 
   const roleOptions = useMemo(() => {
@@ -156,15 +160,27 @@ export function useUsersManagement() {
   )
 
   const resetUserPassword = useCallback(
-    (user) => {
-      return runUserAction(() =>
-        requestTenantUserPasswordReset({
+    async (user) => {
+      try {
+        const result = await resetTenantUserPassword({
           session,
           targetUserId: user.id,
         })
-      )
+
+        setUsers((currentUsers) => {
+          return currentUsers.map((currentUser) => {
+            return currentUser.id === result.user.id ? result.user : currentUser
+          })
+        })
+        toast.success('Senha temporária gerada com sucesso.')
+
+        return result.temporaryPassword
+      } catch {
+        toast.error(ERROR_MESSAGE)
+        throw new Error(ERROR_MESSAGE)
+      }
     },
-    [runUserAction, session]
+    [session]
   )
 
   return {

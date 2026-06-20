@@ -200,7 +200,7 @@ export const updateUserPasswordResetToken = async ({ userId, resetToken, resetTo
   return mapUserForReturn(updatedUsers.find((user) => user.id === userId))
 }
 
-export const updateUserPassword = async ({ userId, password }) => {
+export const updateUserPassword = async ({ userId, password, mustChangePassword = false }) => {
   const users = getStoredUsers()
   const targetUser = users.find((user) => user.id === userId)
 
@@ -216,7 +216,8 @@ export const updateUserPassword = async ({ userId, password }) => {
       password,
       resetToken: null,
       resetTokenExpiresAt: null,
-      mustChangePassword: false,
+      mustChangePassword,
+      hasActiveSession: mustChangePassword ? false : user.hasActiveSession,
     }
   })
 

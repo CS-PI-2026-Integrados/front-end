@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button'
 import { useResetPassword } from '@/hooks/useResetPassword'
 import { RouteLoader } from '@/components/feedback/RouteLoader'
 
-const ResetPassword = () => {
-  const resetPasswordController = useResetPassword()
+const ResetPassword = ({ mandatory = false }) => {
+  const resetPasswordController = useResetPassword({ mandatory })
   const { tokenStatus } = resetPasswordController
   const isLoading = tokenStatus === 'loading'
   const isInvalid = tokenStatus === 'invalid'
@@ -27,7 +27,14 @@ const ResetPassword = () => {
               </Button>
             </div>
           )}
-          {!isLoading && !isInvalid && <ResetPasswordForm {...resetPasswordController} />}
+          {!isLoading && !isInvalid && (
+            <ResetPasswordForm
+              {...resetPasswordController}
+              title={mandatory ? 'Defina uma nova senha' : 'Redefinir senha'}
+              submitLabel={mandatory ? 'Salvar nova senha' : 'Redefinir'}
+              onBack={mandatory ? resetPasswordController.returnToLogin : undefined}
+            />
+          )}
         </AuthFormCard>
       </div>
     </AuthBackgroundLayout>

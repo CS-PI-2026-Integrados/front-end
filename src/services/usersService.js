@@ -1,4 +1,3 @@
-import { createUserPasswordResetToken } from '@/repositories/auth/passwordResetRepository.mock'
 import { findRoleByKey } from '@/repositories/roles/rolesRepository.mock'
 import {
   createUser,
@@ -7,8 +6,9 @@ import {
   findUserById,
   listUsersByTenant,
   updateUserActiveState,
+  updateUserPassword,
 } from '@/repositories/users/usersRepository.mock'
-import { sendPasswordResetEmail, sendWelcomeEmail } from '@/services/authEmailService.mock'
+import { sendWelcomeEmail } from '@/services/authEmailService.mock'
 import { registerUserAuditAction } from '@/services/auditService'
 import {
   ROLE_KEYS,
@@ -46,6 +46,12 @@ const getTargetUser = async (targetUserId) => {
 
 const createFormError = (field, message) => {
   return Object.assign(new Error(message), { field })
+}
+
+const generateTemporaryPassword = () => {
+  const randomValue = crypto.getRandomValues(new Uint32Array(1))[0] % 10000
+
+  return `Comarca@${String(randomValue).padStart(4, '0')}`
 }
 
 const getCreatableRole = async ({ actor, roleKey }) => {
@@ -176,7 +182,7 @@ export const reactivateTenantUser = async ({ session, targetUserId }) => {
   return updatedTarget
 }
 
-export const requestTenantUserPasswordReset = async ({ session, targetUserId }) => {
+export const resetTenantUserPassword = async ({ session, targetUserId }) => {
   const actor = getActorFromSession(session)
   const target = await getTargetUser(targetUserId)
 
@@ -184,18 +190,21 @@ export const requestTenantUserPasswordReset = async ({ session, targetUserId }) 
     throw new Error('Usuário sem permissão para redefinir a senha desta conta.')
   }
 
-  const resetRequest = await createUserPasswordResetToken(target.cpf)
-
-  if (!resetRequest) {
-    throw new Error('Não foi possível gerar o link de recuperação.')
-  }
-
-  await sendPasswordResetEmail(resetRequest.email, resetRequest.token)
-  await registerUserAuditAction({
-    action: 'user.password_reset_requested',
-    actor,
-    target,
+  const temporaryPassword = generateTemporaryPassword()
+  const updatedTarget = await updateUserPassword({
+    userId: target.id,
+    password: temporaryPassword,
+    mustChangePassword: true,
   })
 
-  return resetRequest
+  await registerUserAuditAction({
+    action: 'user.temporary_password_generated',
+    actor,
+    target: updatedTarget,
+  })
+
+  return {
+    temporaryPassword,
+    user: updatedTarget,
+  }
 }

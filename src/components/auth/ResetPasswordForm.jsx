@@ -5,7 +5,14 @@ import { AuthSubmitButton } from '@/components/auth/AuthSubmitButton'
 import { PasswordField } from '@/components/auth/fields/PasswordField'
 import { PasswordStrengthMeter } from '@/components/auth/fields/PasswordStrengthMeter'
 
-export function ResetPasswordForm({ form, newPassword, redefinePassword }) {
+export function ResetPasswordForm({
+  form,
+  newPassword,
+  redefinePassword,
+  onBack,
+  submitLabel = 'Redefinir',
+  title = 'Redefinir senha',
+}) {
   const {
     register,
     handleSubmit,
@@ -14,14 +21,14 @@ export function ResetPasswordForm({ form, newPassword, redefinePassword }) {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit(redefinePassword)}>
-      <h1 className="text-2xl font-semibold text-gray-700">Redefinir senha</h1>
+      <h1 className="text-2xl font-semibold text-gray-700">{title}</h1>
 
       <FieldGroup className="gap-1 p-0">
         <div className="space-y-2">
           <PasswordField
             id="newPassword"
             label="Nova Senha"
-            registration={register('newPassword')}
+            registration={register('newPassword', { deps: ['confirmPassword'] })}
             disabled={isSubmitting}
             error={errors.newPassword?.message}
             placeholder="Digite sua senha"
@@ -40,14 +47,31 @@ export function ResetPasswordForm({ form, newPassword, redefinePassword }) {
         />
 
         <AuthSubmitButton disabled={!isValid} isLoading={isSubmitting}>
-          Redefinir
+          {submitLabel}
         </AuthSubmitButton>
 
-        <Button asChild variant="link" className="mt-2 h-auto text-emerald-200">
-          <Link to="/login" className="text-sm text-emerald-600 hover:text-emerald-800">
+        {errors.root?.message && (
+          <p role="alert" className="text-sm text-red-500">
+            {errors.root.message}
+          </p>
+        )}
+
+        {onBack ? (
+          <Button
+            type="button"
+            variant="link"
+            className="mt-2 h-auto text-sm text-emerald-600 hover:text-emerald-800"
+            onClick={onBack}
+          >
             Voltar para login
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button asChild variant="link" className="mt-2 h-auto text-emerald-200">
+            <Link to="/login" className="text-sm text-emerald-600 hover:text-emerald-800">
+              Voltar para login
+            </Link>
+          </Button>
+        )}
       </FieldGroup>
     </form>
   )

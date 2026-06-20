@@ -10,6 +10,7 @@ import {
   maskEmail,
 } from '@/lib/userFormatters'
 import { UserActionConfirmDialog } from '@/components/users/UserActionConfirmDialog'
+import { ResetUserPasswordDialog } from '@/components/users/ResetUserPasswordDialog'
 import { UserRoleBadge } from '@/components/users/UserRoleBadge'
 import { UserStatusBadge } from '@/components/users/UserStatusBadge'
 import { cn } from '@/lib/utils'
@@ -73,9 +74,6 @@ export function UserDetailsPanel({
       label: 'Redefinir senha',
       icon: KeyRound,
       visible: canResetUserPassword(currentUser, user),
-      title: 'Redefinir senha',
-      description: `Gerar um link de recuperação de senha para ${user.name}?`,
-      onConfirm: () => onResetPassword(user),
     },
     {
       key: 'deactivate',
@@ -186,7 +184,18 @@ export function UserDetailsPanel({
         </aside>
       </div>
 
-      {selectedAction && (
+      {selectedAction?.key === 'reset-password' && (
+        <ResetUserPasswordDialog
+          onConfirm={() => onResetPassword(user)}
+          onOpenChange={(open) => {
+            if (!open) setPendingAction(null)
+          }}
+          open
+          user={user}
+        />
+      )}
+
+      {selectedAction && selectedAction.key !== 'reset-password' && (
         <UserActionConfirmDialog
           actionLabel={selectedAction.label}
           description={selectedAction.description}

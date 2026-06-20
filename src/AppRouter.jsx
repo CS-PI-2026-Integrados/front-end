@@ -14,6 +14,7 @@ import RecoverPassword from '@/pages/RecoverPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import UsersManagement from '@/pages/UsersManagement'
 import RoleGuard from '@/components/guards/RoleGuard'
+import MustChangePasswordGuard from '@/components/guards/MustChangePasswordGuard'
 import { canAccessUsersPage } from '@/lib/userPermissions'
 
 const AppRouter = () => {
@@ -26,16 +27,19 @@ const AppRouter = () => {
       </Route>
 
       <Route element={<AuthGuard />}>
-        <Route element={<DashboardLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="apenados" element={<Convicteds />} />
-          <Route path="atendimento" element={<Service />} />
-          <Route path="instituicoes" element={<Institutions />} />
-          <Route path="comprovante" element={<Certificate />} />
-          <Route path="apenados/:id" element={<ApenadoProfile />} />
-          <Route element={<RoleGuard canAccess={canAccessUsersPage} />}>
-            <Route path="usuarios" element={<UsersManagement />} />
+        <Route element={<MustChangePasswordGuard />}>
+          <Route path="alterar-senha" element={<ResetPassword mandatory />} />
+          <Route element={<DashboardLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="apenados" element={<Convicteds />} />
+            <Route path="atendimento" element={<Service />} />
+            <Route path="instituicoes" element={<Institutions />} />
+            <Route path="comprovante" element={<Certificate />} />
+            <Route path="apenados/:id" element={<ApenadoProfile />} />
+            <Route element={<RoleGuard canAccess={canAccessUsersPage} />}>
+              <Route path="usuarios" element={<UsersManagement />} />
+            </Route>
           </Route>
         </Route>
       </Route>

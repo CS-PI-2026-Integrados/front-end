@@ -11,6 +11,10 @@ export default function GuestGuard() {
   }
 
   if (session) {
+    if (session.user.mustChangePassword) {
+      return <Navigate to="/alterar-senha" replace />
+    }
+
     const redirect = new URLSearchParams(location.search).get('redirect')?.trim()
 
     return <Navigate to={redirect ? redirect : '/dashboard'} replace />

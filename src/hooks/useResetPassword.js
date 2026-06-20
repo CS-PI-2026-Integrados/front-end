@@ -4,13 +4,19 @@ import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { resetPasswordSchema } from '@/schemas/authSchemas'
-import { resetPassword, validatePasswordResetToken } from '@/services/authService'
+import {
+  changeRequiredPassword,
+  resetPassword,
+  validatePasswordResetToken,
+} from '@/services/authService'
+import { useSession } from '@/context/sessionContext'
 
-export function useResetPassword() {
+export function useResetPassword({ mandatory = false } = {}) {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { session, handleLogout, handleRestoreSession } = useSession()
   const token = searchParams.get('token') || ''
-  const [tokenStatus, setTokenStatus] = useState('loading')
+  const [tokenStatus, setTokenStatus] = useState(mandatory ? 'valid' : 'loading')
   const form = useForm({
     resolver: zodResolver(resetPasswordSchema),
     mode: 'onChange',
@@ -25,6 +31,10 @@ export function useResetPassword() {
   })
 
   useEffect(() => {
+    if (mandatory) {
+      return
+    }
+
     let shouldUpdateState = true
 
     validatePasswordResetToken(token).then((isValidToken) => {
@@ -36,16 +46,33 @@ export function useResetPassword() {
     return () => {
       shouldUpdateState = false
     }
-  }, [token])
+  }, [mandatory, token])
 
   const redefinePassword = async (data) => {
     try {
+      if (mandatory) {
+        await changeRequiredPassword(session, data.newPassword)
+        await handleRestoreSession()
+        toast.success('Senha redefinida com sucesso.')
+        navigate('/dashboard', { replace: true })
+        return
+      }
+
       await resetPassword(token, data.newPassword)
       toast.success('Senha redefinida com sucesso. \nFaça login com a nova senha.')
       navigate('/login', { replace: true })
-    } catch {
-      setTokenStatus('invalid')
+    } catch (error) {
+      if (mandatory) {
+        form.setError('root', { message: error.message })
+      } else {
+        setTokenStatus('invalid')
+      }
     }
+  }
+
+  const returnToLogin = () => {
+    handleLogout()
+    navigate('/login', { replace: true })
   }
 
   return {
@@ -53,5 +80,6 @@ export function useResetPassword() {
     newPassword,
     tokenStatus,
     redefinePassword,
+    returnToLogin,
   }
 }

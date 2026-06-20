@@ -13,6 +13,7 @@ import {
 } from '@/repositories/auth/authRepository.mock'
 import {
   subscribeToUsersChanges,
+  updateUserPassword,
   updateUserSessionState,
 } from '@/repositories/users/usersRepository.mock'
 import {
@@ -27,7 +28,7 @@ const buildSession = ({ user, tenant }) => ({
   tenant,
 })
 
-const AUTH_RELEVANT_USER_FIELDS = ['isActive', 'roleId', 'tenantId']
+const AUTH_RELEVANT_USER_FIELDS = ['isActive', 'roleId', 'tenantId', 'mustChangePassword']
 
 const hasUserAccessChanged = (previousUser, currentUser) => {
   if (!previousUser || !currentUser) {
@@ -138,4 +139,15 @@ export const validatePasswordResetToken = async (token) => {
 
 export const resetPassword = async (token, password) => {
   await updateUserPasswordByResetToken(token, password)
+}
+
+export const changeRequiredPassword = async (session, password) => {
+  if (!session?.user?.mustChangePassword) {
+    throw new Error('A troca obrigatória de senha não está pendente.')
+  }
+
+  return updateUserPassword({
+    userId: session.user.id,
+    password,
+  })
 }
