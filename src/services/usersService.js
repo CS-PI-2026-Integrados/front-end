@@ -8,7 +8,7 @@ import {
   listUsersByTenant,
   updateUserActiveState,
 } from '@/repositories/users/usersRepository.mock'
-import { enviarEmailRecuperacao, sendPasswordResetEmail } from '@/services/authEmailService.mock'
+import { sendPasswordResetEmail, sendWelcomeEmail } from '@/services/authEmailService.mock'
 import { registerUserAuditAction } from '@/services/auditService'
 import {
   ROLE_KEYS,
@@ -19,8 +19,6 @@ import {
   isRoleAbove,
 } from '@/lib/userPermissions'
 import { formatCpf, validateCPF } from '@/lib/validadorCpf'
-
-const CREATABLE_ROLE_KEYS = [ROLE_KEYS.OPERATOR, ROLE_KEYS.ADMIN]
 
 const getActorFromSession = (session) => {
   if (!session?.user || !session?.tenant) {
@@ -46,19 +44,23 @@ const getTargetUser = async (targetUserId) => {
   return targetUser
 }
 
+const createFormError = (field, message) => {
+  return Object.assign(new Error(message), { field })
+}
+
 const getCreatableRole = async ({ actor, roleKey }) => {
-  if (!CREATABLE_ROLE_KEYS.includes(roleKey)) {
-    throw new Error('Nível de acesso inválido.')
+  if (![ROLE_KEYS.OPERATOR, ROLE_KEYS.ADMIN].includes(roleKey)) {
+    throw createFormError('roleKey', 'Nível de acesso inválido.')
   }
 
   const role = await findRoleByKey(roleKey)
 
   if (!role) {
-    throw new Error('Cargo não encontrado.')
+    throw createFormError('roleKey', 'Cargo não encontrado.')
   }
 
   if (!isRoleAbove(actor.role, role)) {
-    throw new Error('Usuário sem permissão para cadastrar este nível de acesso.')
+    throw createFormError('roleKey', 'Usuário sem permissão para cadastrar este nível de acesso.')
   }
 
   return role
@@ -88,7 +90,7 @@ export const createTenantOperator = async ({ session, operatorData }) => {
   }
 
   if (!validateCPF(cpf)) {
-    throw new Error('CPF inválido.')
+    throw createFormError('cpf', 'CPF inválido.')
   }
 
   const existingCpfUser = await findUserByTenantAndCpf({
@@ -97,13 +99,13 @@ export const createTenantOperator = async ({ session, operatorData }) => {
   })
 
   if (existingCpfUser) {
-    throw new Error('CPF já cadastrado na comarca.')
+    throw createFormError('cpf', 'CPF já cadastrado na comarca.')
   }
 
   const existingEmailUser = await findUserByEmail(email)
 
   if (existingEmailUser) {
-    throw new Error('E-mail já cadastrado.')
+    throw createFormError('email', 'E-mail já cadastrado.')
   }
 
   const role = await getCreatableRole({ actor, roleKey })
@@ -125,7 +127,7 @@ export const createTenantOperator = async ({ session, operatorData }) => {
     target: createdUser,
   })
 
-  await enviarEmailRecuperacao(email)
+  await sendWelcomeEmail(email)
 
   return createdUser
 }

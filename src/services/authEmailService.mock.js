@@ -3,7 +3,7 @@ export const sendPasswordResetEmail = async (email, token) => {
   console.log(`[MOCK EMAIL] Para: ${email} | Link: /redefinir-senha?token=${token}`)
 }
 
-export const enviarEmailRecuperacao = async (email) => {
+export const sendWelcomeEmail = async (email) => {
   // eslint-disable-next-line no-console
   console.log(`[MOCK EMAIL] Para: ${email} | Assunto: Bem-vindo ao SICAPE`)
 }

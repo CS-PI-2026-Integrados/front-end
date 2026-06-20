@@ -152,6 +152,7 @@ export default function UsersManagement() {
       />
 
       <CreateOperatorDialog
+        currentUser={currentUser}
         onCreate={createOperator}
         onOpenChange={setIsCreateDialogOpen}
         open={isCreateDialogOpen}

@@ -1,6 +1,7 @@
 import { mockUsers } from '@/mocks/usuarios.mock'
 import { findRoleById, findRoleByKey } from '@/repositories/roles/rolesRepository.mock'
 import { ROLE_KEYS } from '@/lib/userPermissions'
+import { normalizeCpf } from '@/lib/validadorCpf'
 
 const MOCK_USERS_STORAGE_KEY = '@sicape:mock-users'
 
@@ -89,8 +90,9 @@ export const findUserByCpf = async (cpf, options) => {
 }
 
 export const findUserByTenantAndCpf = async ({ tenantId, cpf }, options) => {
+  const normalizedCpf = normalizeCpf(cpf)
   const user = getStoredUsers().find((mockUser) => {
-    return mockUser.tenantId === tenantId && mockUser.cpf === cpf
+    return mockUser.tenantId === tenantId && normalizeCpf(mockUser.cpf) === normalizedCpf
   })
 
   return mapUserForReturn(user, options)

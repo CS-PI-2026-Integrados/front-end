@@ -118,14 +118,17 @@ export function useUsersManagement() {
 
   const createOperator = useCallback(
     async (operatorData) => {
-      await createTenantOperator({
+      const createdUser = await createTenantOperator({
         session,
         operatorData,
       })
-      await loadUsers()
+
+      setUsers((currentUsers) => [...currentUsers, createdUser])
       toast.success(CREATE_SUCCESS_MESSAGE)
+
+      return createdUser
     },
-    [loadUsers, session]
+    [session]
   )
 
   const deactivateUser = useCallback(
