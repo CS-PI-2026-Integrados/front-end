@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSession } from '@/context/sessionContext'
 
-const STORAGE_KEY = 'apenados_data_v3'
+const STORAGE_KEY = 'apenados_data_v4'
 
 export default function ApenadoProfile() {
   const { id } = useParams()
@@ -61,7 +61,7 @@ export default function ApenadoProfile() {
     )
 
   return (
-    <div className="min-h-screen bg-white p-4">
+    <div className="min-h-screen bg-white p-1 sm:p-4">
       <div className="mb-8">
         <button
           onClick={() => navigate(-1)}
@@ -69,7 +69,7 @@ export default function ApenadoProfile() {
         >
           ← Voltar para listagem
         </button>
-        <h1 className="text-3xl leading-tight font-bold tracking-tight text-gray-900">
+        <h1 className="text-2xl leading-tight font-bold tracking-tight text-gray-900 sm:text-3xl">
           Perfil do Apenado
         </h1>
         <p className="mt-1 text-sm text-gray-400">Dados essenciais e situação processual</p>
@@ -77,8 +77,8 @@ export default function ApenadoProfile() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6">
-          <div className="rounded-xl border border-gray-100 bg-white p-6 text-center shadow-sm">
-            <div className="mx-auto mb-4 h-40 w-40 overflow-hidden rounded-2xl border-2 border-green-800 bg-gray-50">
+          <div className="rounded-xl border border-gray-100 bg-white p-4 text-center shadow-sm sm:p-6">
+            <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-2xl border-2 border-green-800 bg-gray-50 sm:h-40 sm:w-40">
               {apenado.foto ? (
                 <img src={apenado.foto} alt="Foto" className="h-full w-full object-cover" />
               ) : (
@@ -87,8 +87,10 @@ export default function ApenadoProfile() {
                 </div>
               )}
             </div>
-            <h2 className="text-xl leading-tight font-bold text-gray-900">{apenado.nome}</h2>
-            <p className="mt-1 text-sm font-medium text-gray-400">CPF: {apenado.cpf}</p>
+            <h2 className="text-xl leading-tight font-bold break-words text-gray-900">
+              {apenado.nome}
+            </h2>
+            <p className="mt-1 text-sm font-medium break-words text-gray-400">CPF: {apenado.cpf}</p>
             <div className="mt-4">
               <span
                 className={`inline-block rounded-full border px-4 py-1 text-xs font-bold ${
@@ -102,7 +104,7 @@ export default function ApenadoProfile() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
             <h3 className="mb-4 text-xs font-bold tracking-widest text-gray-400 uppercase">
               Módulos Adicionais
             </h3>
@@ -117,7 +119,7 @@ export default function ApenadoProfile() {
         </div>
 
         <div className="space-y-6 lg:col-span-2">
-          <div className="rounded-xl border border-gray-100 bg-white p-8 shadow-sm">
+          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-8">
             <h3 className="mb-6 border-b border-gray-50 pb-4 text-lg font-bold text-green-800">
               Painel Civil
             </h3>
@@ -141,7 +143,7 @@ export default function ApenadoProfile() {
                 <label className="mb-1 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
                   Endereço Completo
                 </label>
-                <p className="text-sm leading-relaxed font-medium text-gray-700">
+                <p className="text-sm leading-relaxed font-medium break-words text-gray-700">
                   {apenado.endereco}
                 </p>
               </div>
@@ -156,7 +158,9 @@ export default function ApenadoProfile() {
                 <label className="mb-1 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
                   Número do Processo
                 </label>
-                <p className="text-sm font-medium text-gray-700">{apenado.numero_processo}</p>
+                <p className="text-sm font-medium break-words text-gray-700">
+                  {apenado.numero_processo}
+                </p>
               </div>
               <div>
                 <label className="mb-1 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
@@ -170,7 +174,7 @@ export default function ApenadoProfile() {
               <label className="mb-2 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
                 Observações do Prontuário
               </label>
-              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm leading-relaxed text-gray-600 italic">
+              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm leading-relaxed break-words text-gray-600 italic">
                 {apenado.observacoes || 'Nenhuma observação registrada até o momento.'}
               </div>
             </div>

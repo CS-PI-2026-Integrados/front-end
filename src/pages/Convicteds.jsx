@@ -136,11 +136,11 @@ const Convicteds = () => {
 
   const paginationFooter =
     totalPages > 1 ? (
-      <div className="text-muted-foreground flex items-center justify-between border-t px-6 py-3.5 text-xs">
+      <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <span>
           Página {visiblePage} de {totalPages}
         </span>
-        <div className="flex gap-1.5">
+        <div className="flex w-full justify-between gap-1.5 sm:w-auto sm:justify-start">
           <Button
             variant="outline"
             size="xs"
@@ -149,16 +149,18 @@ const Convicteds = () => {
           >
             Anterior
           </Button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <Button
-              key={page}
-              variant={page === visiblePage ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => setCurrentPage(page)}
-            >
-              {page}
-            </Button>
-          ))}
+          <div className="hidden gap-1.5 sm:flex">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <Button
+                key={page}
+                variant={page === visiblePage ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
           <Button
             variant="outline"
             size="xs"
@@ -197,7 +199,7 @@ const Convicteds = () => {
         action={
           <Button
             size="sm"
-            className="bg-primary hover:bg-primary/90 min-w-40 cursor-pointer gap-2 px-4 text-sm font-medium shadow-sm"
+            className="bg-primary hover:bg-primary/90 w-full cursor-pointer gap-2 px-4 text-sm font-medium shadow-sm sm:w-auto sm:min-w-40"
             onClick={() => setModalCadastroAberto(true)}
           >
             <Plus />
@@ -207,7 +209,7 @@ const Convicteds = () => {
       />
 
       <FiltersPanel description="Pesquise e filtre os apenados cadastrados">
-        <div className="relative min-w-64 flex-1">
+        <div className="relative min-w-0 flex-1">
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             placeholder="Buscar por nome ou CPF..."
@@ -255,8 +257,20 @@ const Convicteds = () => {
         }
         footer={paginationFooter}
       >
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="divide-y md:hidden">
+          {paginated.map((apenado) => (
+            <ApenadoMobileCard
+              key={apenado.id}
+              apenado={apenado}
+              onEdit={() => setApenadoEditar(apenado)}
+              onInactivate={() => setApenadoInativar(apenado)}
+              onView={() => navigate(`/apenados/${apenado.id}`)}
+            />
+          ))}
+        </div>
+
+        <div className="hidden overflow-x-auto md:block">
+          <table className="w-full min-w-210 text-sm">
             <thead>
               <tr className="bg-secondary border-y">
                 {['Nome', 'Telefone', 'Endereço', 'Sit. Trabalhista', 'Status', 'Ações'].map(
@@ -334,6 +348,49 @@ const Convicteds = () => {
         </div>
       </DataTableCard>
     </div>
+  )
+}
+
+function ApenadoMobileCard({ apenado, onEdit, onInactivate, onView }) {
+  return (
+    <article className="space-y-4 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-foreground truncate font-semibold">{apenado.nome}</h3>
+          <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(apenado.cpf)}</p>
+        </div>
+        <StatusBadge status={apenado.status} />
+      </div>
+
+      <dl className="grid grid-cols-1 gap-3 text-sm min-[420px]:grid-cols-2">
+        <div>
+          <dt className="text-muted-foreground text-xs">Telefone</dt>
+          <dd className="mt-0.5 font-medium">{apenado.telefone}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground text-xs">Situação trabalhista</dt>
+          <dd className="mt-1">
+            <SitTrabalhista sit={apenado.sit_trabalhista} />
+          </dd>
+        </div>
+        <div className="min-[420px]:col-span-2">
+          <dt className="text-muted-foreground text-xs">Endereço</dt>
+          <dd className="mt-0.5 font-medium break-words">{apenado.endereco}</dd>
+        </div>
+      </dl>
+
+      <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-3">
+        <Button type="button" variant="outline" size="sm" onClick={onView}>
+          <Eye /> Ver
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={onEdit}>
+          <Pencil /> Editar
+        </Button>
+        <Button type="button" variant="destructive" size="sm" onClick={onInactivate}>
+          <Ban /> Inativar
+        </Button>
+      </div>
+    </article>
   )
 }
 
