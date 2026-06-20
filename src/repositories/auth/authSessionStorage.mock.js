@@ -1,13 +1,13 @@
 const AUTH_TOKEN_STORAGE_KEY = '@sicape:token'
 
 export const getStoredToken = () => {
-  return localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+  return sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
 }
 
 export const saveStoredToken = (token) => {
-  localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
+  sessionStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
 }
 
 export const clearStoredToken = () => {
-  localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+  sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
 }

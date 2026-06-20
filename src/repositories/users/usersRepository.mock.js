@@ -2,7 +2,7 @@ import { mockUsers } from '@/mocks/usuarios.mock'
 import { findRoleById, findRoleByKey } from '@/repositories/roles/rolesRepository.mock'
 import { ROLE_KEYS } from '@/lib/userPermissions'
 
-const MOCK_USERS_STORAGE_KEY = '@sicape:mock-users-v3'
+const MOCK_USERS_STORAGE_KEY = '@sicape:mock-users'
 
 export const removeSensitiveUserFields = (user) => {
   const publicUser = { ...user }
@@ -31,9 +31,7 @@ const mapUserForReturn = async (user, { includeSensitive = false } = {}) => {
   return includeSensitive ? userWithRole : removeSensitiveUserFields(userWithRole)
 }
 
-const getStoredUsers = () => {
-  const storedUsers = localStorage.getItem(MOCK_USERS_STORAGE_KEY)
-
+const parseStoredUsers = (storedUsers) => {
   if (!storedUsers) return mockUsers.users
 
   try {
@@ -43,8 +41,33 @@ const getStoredUsers = () => {
   }
 }
 
+const getStoredUsers = () => {
+  return parseStoredUsers(localStorage.getItem(MOCK_USERS_STORAGE_KEY))
+}
+
 const saveStoredUsers = (users) => {
   localStorage.setItem(MOCK_USERS_STORAGE_KEY, JSON.stringify(users))
+}
+
+export const subscribeToUsersChanges = (listener) => {
+  if (typeof window === 'undefined' || typeof listener !== 'function') {
+    return () => {}
+  }
+
+  const handleStorageChange = (event) => {
+    if (event.key === MOCK_USERS_STORAGE_KEY) {
+      listener({
+        previousUsers: parseStoredUsers(event.oldValue),
+        currentUsers: parseStoredUsers(event.newValue),
+      })
+    }
+  }
+
+  window.addEventListener('storage', handleStorageChange)
+
+  return () => {
+    window.removeEventListener('storage', handleStorageChange)
+  }
 }
 
 export const listUsersByTenant = async (tenantId, options) => {

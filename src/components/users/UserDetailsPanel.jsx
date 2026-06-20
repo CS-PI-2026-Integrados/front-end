@@ -84,7 +84,7 @@ export function UserDetailsPanel({
       visible: canDeactivateUser(currentUser, user),
       destructive: true,
       title: 'Desativar usuário',
-      description: `Desativar o acesso de ${user.name}? A sessão ativa será encerrada.`,
+      description: `Desativar o acesso de ${user.name}, CPF ${maskCpf(user.cpf)}? A sessão ativa será encerrada.`,
       onConfirm: () => onDeactivate(user),
     },
     {

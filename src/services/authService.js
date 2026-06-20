@@ -11,7 +11,10 @@ import {
   findAuthUserByCredentials,
   findAuthUserById,
 } from '@/repositories/auth/authRepository.mock'
-import { updateUserSessionState } from '@/repositories/users/usersRepository.mock'
+import {
+  subscribeToUsersChanges,
+  updateUserSessionState,
+} from '@/repositories/users/usersRepository.mock'
 import {
   createUserPasswordResetToken,
   findUserByValidPasswordResetToken,
@@ -23,6 +26,16 @@ const buildSession = ({ user, tenant }) => ({
   user,
   tenant,
 })
+
+const AUTH_RELEVANT_USER_FIELDS = ['isActive', 'roleId', 'tenantId']
+
+const hasUserAccessChanged = (previousUser, currentUser) => {
+  if (!previousUser || !currentUser) {
+    return previousUser !== currentUser
+  }
+
+  return AUTH_RELEVANT_USER_FIELDS.some((field) => previousUser[field] !== currentUser[field])
+}
 
 const ensureActiveUser = (user) => {
   if (!user.isActive) {
@@ -92,6 +105,21 @@ export const restoreSession = async () => {
     logout()
     return null
   }
+}
+
+export const subscribeToAuthStateChanges = (listener) => {
+  return subscribeToUsersChanges(({ previousUsers, currentUsers }) => {
+    const payload = validateSessionToken(getStoredToken())
+
+    if (!payload?.sub) return
+
+    const previousUser = previousUsers.find((user) => user.id === payload.sub)
+    const currentUser = currentUsers.find((user) => user.id === payload.sub)
+
+    if (hasUserAccessChanged(previousUser, currentUser)) {
+      listener()
+    }
+  })
 }
 
 export const requestPasswordReset = async (cpf) => {
