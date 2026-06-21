@@ -38,15 +38,17 @@ const GroupViewModal = ({ group, isOpen, onOpenChange, availableParticipants, on
   const [editData, setEditData] = useState({ nomeGrupo: '', descricao: '', participantes: [] })
   const isEditable = group?.status === 'ANDAMENTO' || group?.status === 'PLANEJAMENTO'
 
-  useEffect(() => {
-    if (!group) return
-    /* setEditData({
-      nomeGrupo: group.nomeGrupo ?? '',
-      descricao: group.descricao ?? '',
-      participantes: group.participantes ?? [],
-    }) */
-  }, [group, isOpen])
+  const handleOpenChange = (open) => {
+    if (open && group) {
+      setEditData({
+        nomeGrupo: group.nomeGrupo ?? '',
+        descricao: group.descricao ?? '',
+        participantes: group.participantes ?? [],
+      })
+    }
 
+    onOpenChange(open)
+  }
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setEditData((prev) => ({ ...prev, [name]: value }))
@@ -65,7 +67,7 @@ const GroupViewModal = ({ group, isOpen, onOpenChange, availableParticipants, on
   if (!group) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>Detalhes do grupo reflexivo</DialogTitle>
