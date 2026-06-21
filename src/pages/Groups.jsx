@@ -36,7 +36,7 @@ import ParticipantSelector from '@/components/hooks/ParticipantSelector'
 
 const GroupViewModal = ({ group, isOpen, onOpenChange, availableParticipants, onUpdate }) => {
   const [editData, setEditData] = useState({ nomeGrupo: '', descricao: '', participantes: [] })
-  const isEditable = group?.status === 'EmAndamento'
+  const isEditable = group?.status === 'ANDAMENTO' || group?.status === 'PLANEJAMENTO'
 
   useEffect(() => {
     if (!group) return
@@ -75,6 +75,29 @@ const GroupViewModal = ({ group, isOpen, onOpenChange, availableParticipants, on
         </DialogHeader>
 
         <div className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="nomeGrupo">Nome do grupo</Label>
+            <Input
+              id="nomeGrupo"
+              name="nomeGrupo"
+              value={editData.nomeGrupo}
+              onChange={handleInputChange}
+              disabled={!isEditable}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="descricao">Descrição</Label>
+            <Textarea
+              id="descricao"
+              name="descricao"
+              value={editData.descricao}
+              onChange={handleInputChange}
+              disabled={!isEditable}
+              className="resize-none"
+            />
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Status</Label>
@@ -109,29 +132,6 @@ const GroupViewModal = ({ group, isOpen, onOpenChange, availableParticipants, on
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="nomeGrupo">Nome do grupo</Label>
-            <Input
-              id="nomeGrupo"
-              name="nomeGrupo"
-              value={editData.nomeGrupo}
-              onChange={handleInputChange}
-              disabled={!isEditable}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="descricao">Descrição</Label>
-            <Textarea
-              id="descricao"
-              name="descricao"
-              value={editData.descricao}
-              onChange={handleInputChange}
-              disabled={!isEditable}
-              className="resize-none"
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label>Participantes</Label>
             <ParticipantSelector
               participants={editData.participantes}
@@ -141,15 +141,13 @@ const GroupViewModal = ({ group, isOpen, onOpenChange, availableParticipants, on
             />
           </div>
 
-          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-            {isEditable ? (
-              <p>
-                O grupo está em andamento. Você pode editar apenas nome, descrição e participantes.
-              </p>
-            ) : (
-              <p>Grupo não está em andamento. Todos os campos permanecem somente leitura.</p>
-            )}
-          </div>
+          {isEditable ? (
+            <span></span>
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+              <p>O status atual do grupo não permite a alteração .</p>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
@@ -170,7 +168,7 @@ const Groups = () => {
   const [novoGrupoAberto, setNovoGrupoAberto] = useState(false)
   const [grupos, setGrupos] = useState([])
   const [searchGrupo, setSearchGrupo] = useState('')
-  const [statusFilter, setStatusFilter] = useState('todos')
+  const [statusFilter, setStatusFilter] = useState('TODOS')
   const [grupoSelecionado, setGrupoSelecionado] = useState(null)
   const [visualizarGrupoAberto, setVisualizarGrupoAberto] = useState(false)
 
@@ -183,7 +181,7 @@ const Groups = () => {
   const filteredGrupos = useMemo(() => {
     return grupos.filter((grupo) => {
       const matchesSearch = grupo.nomeGrupo?.toLowerCase().includes(searchGrupo.toLowerCase())
-      const matchesStatus = statusFilter === 'todos' || grupo.status === statusFilter
+      const matchesStatus = statusFilter === 'TODOS' || grupo.status === statusFilter
       return matchesSearch && matchesStatus
     })
   }, [grupos, searchGrupo, statusFilter])
@@ -193,7 +191,7 @@ const Groups = () => {
       const novoGrupo = {
         id: grupos.length + 1,
         ...formData,
-        status: 'Planejamento',
+        status: 'PLANEJAMENTO',
         criadoEm: new Date().toISOString(),
       }
 
@@ -257,10 +255,11 @@ const Groups = () => {
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="Planejamento">Planejamento</SelectItem>
-                  <SelectItem value="EmAndamento">Em andamento</SelectItem>
-                  <SelectItem value="Concluido">Concluído</SelectItem>
+                  <SelectItem value="TODOS">Todos</SelectItem>
+                  <SelectItem value="PLANEJAMENTO">Planejamento</SelectItem>
+                  <SelectItem value="ANDAMENTO">Em andamento</SelectItem>
+                  <SelectItem value="CONCLUIDO">Concluído</SelectItem>
+                  <SelectItem value="CANCELADO">Cancelado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -296,7 +295,7 @@ const Groups = () => {
                         </TableCell>
                         <TableCell>{grupo.dataInicio}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => handleOpenGroup(grupo)}>
+                          <Button size="sm" onClick={() => handleOpenGroup(grupo)}>
                             Ver
                           </Button>
                         </TableCell>
