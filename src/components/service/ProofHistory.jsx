@@ -1,10 +1,8 @@
 import { useState, useMemo } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { useDistrictData } from '@/hooks/useDistrictData.js'
 import { Button } from '@/components/ui/button.jsx'
-import { ChevronLeft, ChevronRight, Eye, Download } from 'lucide-react'
-import { ProofViewModal } from './ProofViewModal.jsx'
-import { downloadReceiptPDF } from '@/lib/pdfService.js'
+import { ChevronLeft, ChevronRight, Eye, Download, FileText } from 'lucide-react'
+import { downloadReceiptPDF, viewReceiptPDF } from '@/lib/pdfService.js'
 
 export function ProofHistory() {
   const { presencas, apenados } = useDistrictData()
@@ -12,24 +10,21 @@ export function ProofHistory() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5
 
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedComprovante, setSelectedComprovante] = useState(null)
-
   const comprovantes = useMemo(() => {
     return [...presencas].sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime))
   }, [presencas])
 
-  const totalPages = Math.ceil(comprovantes.length / itemsPerPage)
+  const totalPages = Math.max(1, Math.ceil(comprovantes.length / itemsPerPage))
   const comprovantesPage = comprovantes.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   )
 
-  const handleDownload = (comp) => {
+  const buildAtendimento = (comp) => {
     const apenado = apenados.find((a) => a.id === comp.apenadoId)
     const processo = apenado?.processos?.find((p) => p.id === comp.processoId) || null
 
-    downloadReceiptPDF({
+    return {
       apenado: apenado || { fullName: comp.apenadoName, cpf: comp.cpf },
       processo,
       recibo: {
@@ -38,127 +33,235 @@ export function ProofHistory() {
         dateTime: comp.dateTime,
       },
       mudancasDetectadas: comp.mudancasRastreadas || {},
-    })
+    }
+  }
+
+  const handleDownload = (comp) => {
+    downloadReceiptPDF(buildAtendimento(comp))
   }
 
   const handleView = (comp) => {
-    setSelectedComprovante(comp)
-    setModalOpen(true)
+    viewReceiptPDF(buildAtendimento(comp))
   }
 
   return (
-    <Card className="flex h-full w-full flex-col overflow-hidden rounded-xl shadow-sm md:flex-1">
-      <CardHeader className="flex flex-col space-y-1 px-4 pt-3 pb-2 md:px-6 md:pt-4 md:pb-3">
-        <CardTitle className="text-lg font-semibold md:text-xl">
-          Histórico de Comprovantes Emitidos
-        </CardTitle>
-        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <p className="text-muted-foreground flex-1 text-sm">
-            Visualize todos os comprovantes emitidos anteriormente
-          </p>
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 bg-transparent"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-muted-foreground w-[72px] text-center text-sm font-medium tabular-nums">
-              {currentPage} de {totalPages || 1}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 bg-transparent"
-              onClick={() => setCurrentPage((p) => Math.min(Math.max(1, totalPages), p + 1))}
-              disabled={currentPage >= totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+    <div className="bg-card text-card-foreground flex h-full w-full flex-col overflow-hidden rounded-xl border shadow-sm">
+      {/* ── Header ── */}
+      <div className="shrink-0 px-5 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg font-semibold tracking-tight md:text-xl">
+              Histórico de Comprovantes Emitidos
+            </h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Visualize todos os comprovantes emitidos anteriormente
+            </p>
           </div>
+          {comprovantes.length > 0 && (
+            <div className="flex shrink-0 items-center gap-1.5 self-start sm:self-auto">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 bg-transparent"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-muted-foreground w-[72px] text-center text-sm font-medium tabular-nums">
+                {currentPage} de {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 bg-transparent"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex min-h-[360px] min-w-0 flex-col p-0">
+      {/* ── Table / Content ── */}
+      <div className="flex min-h-0 flex-1 flex-col">
         {comprovantes.length > 0 ? (
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-card sticky top-0 z-10">
-                <tr className="text-muted-foreground border-b">
-                  <th className="h-12 px-4 text-left align-middle font-medium">Data/Hora</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Apenado</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">CPF</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Código</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Operador</th>
-                  <th className="h-12 px-4 text-center align-middle font-medium">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comprovantesPage.map((comp) => (
-                  <tr
-                    key={comp.id}
-                    className="hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors"
-                  >
-                    <td className="p-4 align-middle">
-                      {new Date(comp.dateTime).toLocaleDateString('pt-BR')},{' '}
-                      {new Date(comp.dateTime).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                      })}
-                    </td>
-                    <td className="text-foreground p-4 align-middle font-medium">
-                      {comp.apenadoName}
-                    </td>
-                    <td className="text-foreground p-4 align-middle">{comp.cpf}</td>
-                    <td className="p-4 align-middle">
-                      <span className="bg-muted text-muted-foreground inline-flex items-center rounded px-2 py-1 font-mono text-xs font-medium">
-                        {comp.verificationCode}
+          <>
+            {/* Desktop table */}
+            <div className="hidden min-h-0 flex-1 flex-col md:flex">
+              <div className="w-full flex-1 overflow-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50 sticky top-0 z-10">
+                    <tr className="border-b">
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                        Data/Hora
+                      </th>
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                        Apenado
+                      </th>
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                        CPF
+                      </th>
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                        Código
+                      </th>
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                        Operador
+                      </th>
+                      <th className="h-10 px-6 text-center text-xs font-semibold whitespace-nowrap">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comprovantesPage.map((comp, idx) => (
+                      <tr
+                        key={comp.id}
+                        className="hover:bg-muted/50 border-b transition-colors last:border-b-0"
+                        style={{
+                          animationDelay: `${idx * 30}ms`,
+                        }}
+                      >
+                        <td className="px-6 py-3.5 align-middle whitespace-nowrap">
+                          <span className="text-foreground text-sm">
+                            {new Date(comp.dateTime).toLocaleDateString('pt-BR')}
+                          </span>
+                          <span className="text-muted-foreground ml-1.5 text-xs">
+                            {new Date(comp.dateTime).toLocaleTimeString('pt-BR', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3.5 align-middle">
+                          <span className="text-foreground text-sm font-medium">
+                            {comp.apenadoName}
+                          </span>
+                        </td>
+                        <td className="text-muted-foreground px-6 py-3.5 align-middle text-sm whitespace-nowrap">
+                          {comp.cpf}
+                        </td>
+                        <td className="px-6 py-3.5 align-middle">
+                          <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 font-mono text-xs font-medium">
+                            {comp.verificationCode}
+                          </span>
+                        </td>
+                        <td className="text-muted-foreground px-6 py-3.5 align-middle text-sm">
+                          {comp.operatorName}
+                        </td>
+                        <td className="px-6 py-3.5 align-middle">
+                          <div className="flex items-center justify-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleView(comp)}
+                              className="h-8 gap-1.5 px-2.5"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              <span className="text-xs">Ver</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownload(comp)}
+                              className="h-8 gap-1.5 px-2.5"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              <span className="text-xs">PDF</span>
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Fill remaining rows to keep consistent height */}
+                    {comprovantesPage.length < itemsPerPage &&
+                      Array.from({ length: itemsPerPage - comprovantesPage.length }).map((_, i) => (
+                        <tr key={`empty-${i}`} className="border-b last:border-b-0">
+                          <td colSpan={6} className="px-6 py-3.5">
+                            &nbsp;
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-4 pb-4 md:hidden">
+              {comprovantesPage.map((comp, idx) => (
+                <div
+                  key={comp.id}
+                  className="bg-muted/30 hover:bg-muted/60 flex flex-col gap-2 rounded-lg border p-3 transition-colors"
+                  style={{ animationDelay: `${idx * 30}ms` }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-foreground truncate text-sm font-medium">
+                        {comp.apenadoName}
+                      </p>
+                      <p className="text-muted-foreground mt-0.5 text-xs">{comp.cpf}</p>
+                    </div>
+                    <span className="bg-muted text-muted-foreground shrink-0 rounded-md px-2 py-0.5 font-mono text-[10px] font-medium">
+                      {comp.verificationCode}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-muted-foreground text-xs">
+                      <span>{new Date(comp.dateTime).toLocaleDateString('pt-BR')}</span>
+                      <span className="mx-1.5">•</span>
+                      <span>
+                        {new Date(comp.dateTime).toLocaleTimeString('pt-BR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </span>
-                    </td>
-                    <td className="text-muted-foreground p-4 align-middle">{comp.operatorName}</td>
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleView(comp)}
-                          className="h-8 px-2 md:px-3"
-                        >
-                          <Eye className="h-4 w-4 md:mr-2" />
-                          <span className="hidden md:inline">Visualizar</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDownload(comp)}
-                          className="h-8 px-2 md:px-3"
-                        >
-                          <Download className="h-4 w-4 md:mr-2" />
-                          <span className="hidden md:inline">PDF</span>
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleView(comp)}
+                        className="h-7 w-7"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDownload(comp)}
+                        className="h-7 w-7"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
-          <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
-            <p>Nenhum comprovante gerado ainda.</p>
+          <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+            <div className="bg-muted/50 flex h-16 w-16 items-center justify-center rounded-full">
+              <FileText className="text-muted-foreground/60 h-8 w-8" />
+            </div>
+            <div>
+              <p className="text-foreground text-sm font-medium">Nenhum comprovante gerado</p>
+              <p className="mt-1 text-xs">Os comprovantes emitidos aparecerão aqui.</p>
+            </div>
           </div>
         )}
-      </CardContent>
+      </div>
 
-      <ProofViewModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        comprovante={selectedComprovante}
-      />
-    </Card>
+      {/* ── Footer ── */}
+      {comprovantes.length > 0 && (
+        <div className="text-muted-foreground shrink-0 border-t px-5 py-2.5 text-center text-xs md:px-6">
+          Exibindo {comprovantesPage.length} de {comprovantes.length} comprovante
+          {comprovantes.length !== 1 ? 's' : ''}
+        </div>
+      )}
+    </div>
   )
 }

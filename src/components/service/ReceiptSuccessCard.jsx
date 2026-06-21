@@ -8,11 +8,11 @@ export function ReceiptSuccessCard({ className, atendimento, onReset }) {
   return (
     <Card
       className={cn(
-        'border-primary/20 flex flex-col overflow-hidden rounded-xl shadow-sm',
+        'border-primary/20 flex flex-col gap-0 overflow-hidden rounded-xl py-0 shadow-sm',
         className
       )}
     >
-      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-3 pb-1 md:px-6 md:pt-4 md:pb-2">
+      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-5 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="text-primary h-5 w-5" />
           <CardTitle className="text-lg font-semibold md:text-xl">Atendimento Finalizado</CardTitle>
@@ -20,16 +20,16 @@ export function ReceiptSuccessCard({ className, atendimento, onReset }) {
         <p className="text-muted-foreground text-sm">Comprovante de presença gerado com sucesso</p>
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 md:px-6 md:pb-6">
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center space-y-4">
-          <div className="bg-primary/10 flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full p-4">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center space-y-3">
+          <div className="bg-primary/10 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl">
             {atendimento.recibo?.photoUrl ? (
               <img
                 src={atendimento.recibo.photoUrl}
                 alt="Foto do Atendimento"
-                className="h-full w-full rounded-full object-cover"
+                className="h-full w-full rounded-xl object-cover"
               />
             ) : (
-              <CheckCircle2 className="text-primary h-12 w-12" />
+              <CheckCircle2 className="text-primary h-10 w-10" />
             )}
           </div>
           <div className="shrink-0 space-y-1 text-center">
@@ -38,7 +38,7 @@ export function ReceiptSuccessCard({ className, atendimento, onReset }) {
               {atendimento.processo?.processNumber || 'Sem Processo Vinculado'}
             </p>
             {atendimento.recibo?.verificationCode && (
-              <p className="text-muted-foreground mt-2 font-mono text-xs">
+              <p className="text-muted-foreground mt-1 font-mono text-xs">
                 Protocolo: {atendimento.recibo.verificationCode}
               </p>
             )}
@@ -48,7 +48,7 @@ export function ReceiptSuccessCard({ className, atendimento, onReset }) {
           </div>
         </div>
 
-        <div className="w-full shrink-0 space-y-3 pt-4">
+        <div className="mt-auto w-full shrink-0 space-y-2 pt-3">
           <Button
             type="button"
             variant="outline"
@@ -67,9 +67,7 @@ export function ReceiptSuccessCard({ className, atendimento, onReset }) {
             <Download className="mr-2 h-4 w-4 shrink-0" />
             Baixar Comprovante (PDF)
           </Button>
-        </div>
 
-        <div className="mt-2 shrink-0 pt-4">
           <Button type="button" variant="ghost" className="h-10 w-full" onClick={onReset}>
             <PlusCircle className="mr-2 h-4 w-4 shrink-0" />
             Novo Atendimento

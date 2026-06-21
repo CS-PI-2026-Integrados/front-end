@@ -42,8 +42,10 @@ export function PhotoCaptureCard({ className }) {
   const error = fotoAtendimento.error
 
   return (
-    <Card className={cn('flex flex-col overflow-hidden rounded-xl shadow-sm', className)}>
-      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-3 pb-1 md:px-6 md:pt-4 md:pb-2">
+    <Card
+      className={cn('flex flex-col gap-0 overflow-hidden rounded-xl py-0 shadow-sm', className)}
+    >
+      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-5 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4">
         <CardTitle className="items-start text-lg font-semibold md:text-xl">
           Captura de Foto
         </CardTitle>

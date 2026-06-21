@@ -68,7 +68,7 @@ const Service = () => {
   }
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col px-4 py-4 md:h-full md:px-8 md:py-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-4 md:h-full md:overflow-hidden md:px-8 md:py-6">
       <Tabs defaultValue="novo" className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
         <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -95,7 +95,7 @@ const Service = () => {
 
         <TabsContent
           value="novo"
-          className="mt-0 flex w-full flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:flex-row md:items-stretch"
+          className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:flex-row md:items-stretch"
         >
           <form id="form-atendimento" onSubmit={handleFinalSubmit} className="contents">
             <ConvictedCard
@@ -104,7 +104,7 @@ const Service = () => {
               }`}
             />
             <div
-              className={`flex w-full flex-col transition-all duration-300 md:min-h-0 md:flex-1 ${
+              className={`flex h-full w-full flex-col transition-all duration-300 md:min-h-0 md:flex-1 ${
                 !isReadyToCapture && !isSuccess
                   ? 'pointer-events-none opacity-40 grayscale-[0.5]'
                   : ''
@@ -112,19 +112,19 @@ const Service = () => {
             >
               {isSuccess ? (
                 <ReceiptSuccessCard
-                  className="flex-1 md:h-full"
+                  className="h-full w-full flex-1"
                   atendimento={{ apenado, processo, recibo: reciboGerado }}
                   onReset={resetAtendimento}
                 />
               ) : (
-                <PhotoCaptureCard className="flex-1 md:h-full" />
+                <PhotoCaptureCard className="h-full w-full flex-1" />
               )}
             </div>
           </form>
         </TabsContent>
         <TabsContent
           value="historico"
-          className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:flex-row md:items-stretch"
+          className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:items-stretch"
         >
           <ProofHistory />
         </TabsContent>
