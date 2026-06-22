@@ -110,9 +110,15 @@ function ModalCadastro({ onSalvar, onCancelar }) {
     if (!form.endereco.trim()) erros.endereco = 'O endereço é obrigatório'
     if (!form.sitTrabalhista) erros.sitTrabalhista = 'A situação trabalhista é obrigatória'
 
-    const errosProcessos = processos.map((p) => {
+    const errosProcessos = processos.map((p, i) => {
       const e = {}
       if (!p.numeroProcesso.trim()) e.numeroProcesso = 'O número do processo é obrigatório'
+      else {
+        const duplicado = processos.some(
+          (outro, j) => j !== i && outro.numeroProcesso.trim() === p.numeroProcesso.trim()
+        )
+        if (duplicado) e.numeroProcesso = 'Número de processo já vinculado a este apenado.'
+      }
       if (!p.vara) e.vara = 'A vara é obrigatória'
       if (!p.tipoPena) e.tipoPena = 'O tipo de pena é obrigatório'
       return e
