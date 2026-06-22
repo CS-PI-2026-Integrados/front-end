@@ -15,7 +15,6 @@ const INITIAL_FORM = {
   vara: '',
   instituicao: '',
   sitTrabalhista: '',
-  status: 'Ativo',
   observacoes: '',
   foto: null,
 }
@@ -105,7 +104,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
       vara: form.vara,
       instituicao: form.instituicao,
       sit_trabalhista: form.sitTrabalhista,
-      status: form.status,
+      status: 'Ativo',
       observacoes: form.observacoes,
       foto: preview,
     }
@@ -350,33 +349,9 @@ function ModalCadastro({ onSalvar, onCancelar }) {
           </div>
 
           <p className="mb-3 text-left text-xs font-semibold tracking-widest text-gray-400 uppercase">
-            Status e Observações
+            Observações
           </p>
-          <div className="mb-4">
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
-              Status <span className="text-red-500">*</span>
-            </label>
-            <div className="flex w-fit overflow-hidden rounded-lg border border-gray-300">
-              {['Ativo', 'Inativo'].map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setForm((prev) => ({ ...prev, status: s }))}
-                  className={`px-5 py-2 text-sm font-semibold transition-colors ${
-                    form.status === s
-                      ? 'bg-primary text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
           <div className="mb-2">
-            <label className="mb-1 block text-left text-xs font-semibold text-gray-600">
-              Observações
-            </label>
             <textarea
               name="observacoes"
               value={form.observacoes}
