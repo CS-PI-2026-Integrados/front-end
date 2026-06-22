@@ -1,5 +1,11 @@
+export const normalizeCpf = (value) => {
+  return String(value || '')
+    .replace(/\D/g, '')
+    .slice(0, 11)
+}
+
 export const formatCpf = (value) => {
-  const digits = value.replace(/\D/g, '').slice(0, 11)
+  const digits = normalizeCpf(value)
   return digits
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
@@ -7,7 +13,7 @@ export const formatCpf = (value) => {
 }
 
 export const validateCPF = (cpf) => {
-  const digits = cpf.replace(/\D/g, '')
+  const digits = normalizeCpf(cpf)
   if (digits.length !== 11 || !!digits.match(/^(\d)\1+$/)) return false
 
   const calcDigit = (slice, factor) => {

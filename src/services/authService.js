@@ -1,65 +1,153 @@
 import {
   clearStoredToken,
-  createToken,
-  findUserByCredentials,
-  findUserByTokenPayload,
   getStoredToken,
   saveStoredToken,
-  validateStoredToken,
-} from '@/repositories/authRepository.mock'
+} from '@/repositories/auth/authSessionStorage.mock'
+import {
+  createSessionToken,
+  validateSessionToken,
+} from '@/repositories/auth/authTokenRepository.mock'
+import {
+  findAuthUserByCredentials,
+  findAuthUserById,
+} from '@/repositories/auth/authRepository.mock'
+import {
+  subscribeToUsersChanges,
+  updateUserPassword,
+  updateUserSessionState,
+} from '@/repositories/users/usersRepository.mock'
+import {
+  createUserPasswordResetToken,
+  findUserByValidPasswordResetToken,
+  updateUserPasswordByResetToken,
+} from '@/repositories/auth/passwordResetRepository.mock'
+import { sendPasswordResetEmail } from '@/services/authEmailService.mock'
 
-const buildSession = (userData, tenantData, token) => ({
-  user: userData,
-  tenant: tenantData,
-  token,
+const buildSession = ({ user, tenant }) => ({
+  user,
+  tenant,
 })
 
-export const authenticateUser = async (cpf, password) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      try {
-        const authenticatedUser = findUserByCredentials(cpf, password)
-        const token = createToken(authenticatedUser.userData)
+const AUTH_RELEVANT_USER_FIELDS = ['isActive', 'roleId', 'tenantId', 'mustChangePassword']
 
-        resolve(buildSession(authenticatedUser.userData, authenticatedUser.tenantData, token))
-      } catch (error) {
-        reject(error)
-      }
-    }, 1000)
+const hasUserAccessChanged = (previousUser, currentUser) => {
+  if (!previousUser || !currentUser) {
+    return previousUser !== currentUser
+  }
+
+  return AUTH_RELEVANT_USER_FIELDS.some((field) => previousUser[field] !== currentUser[field])
+}
+
+const ensureActiveUser = (user) => {
+  if (!user.isActive) {
+    throw new Error('Usuário sem acesso ativo.')
+  }
+}
+
+export const login = async ({ cpf, password }) => {
+  const authUser = await findAuthUserByCredentials(cpf, password)
+
+  ensureActiveUser(authUser.user)
+
+  const sessionUser = await updateUserSessionState({
+    userId: authUser.user.id,
+    hasActiveSession: true,
+    lastAccessAt: new Date().toISOString(),
+  })
+
+  const token = createSessionToken(sessionUser)
+
+  saveStoredToken(token)
+
+  return buildSession({
+    ...authUser,
+    user: sessionUser,
   })
 }
 
-export const persistSessionToken = (token) => {
-  saveStoredToken(token)
-}
+export const logout = () => {
+  const token = getStoredToken()
+  const payload = validateSessionToken(token)
 
-export const clearAuthSession = () => {
+  if (payload?.sub) {
+    void updateUserSessionState({
+      userId: payload.sub,
+      hasActiveSession: false,
+    }).catch(() => {})
+  }
+
   clearStoredToken()
 }
 
-export const readAuthSession = () => {
+export const restoreSession = async () => {
   const token = getStoredToken()
-  const payload = validateStoredToken(token)
+  const payload = validateSessionToken(token)
 
   if (!payload) {
+    logout()
     return null
   }
 
   try {
-    const { userData, tenantData } = findUserByTokenPayload(payload)
+    const authUser = await findAuthUserById(payload.sub)
 
-    return buildSession(userData, tenantData, token)
+    ensureActiveUser(authUser.user)
+
+    const sessionUser = await updateUserSessionState({
+      userId: authUser.user.id,
+      hasActiveSession: true,
+    })
+
+    return buildSession({
+      ...authUser,
+      user: sessionUser,
+    })
   } catch {
+    logout()
     return null
   }
 }
 
-export const restoreAuthSession = () => {
-  const authSession = readAuthSession()
+export const subscribeToAuthStateChanges = (listener) => {
+  return subscribeToUsersChanges(({ previousUsers, currentUsers }) => {
+    const payload = validateSessionToken(getStoredToken())
 
-  if (!authSession) {
-    clearAuthSession()
+    if (!payload?.sub) return
+
+    const previousUser = previousUsers.find((user) => user.id === payload.sub)
+    const currentUser = currentUsers.find((user) => user.id === payload.sub)
+
+    if (hasUserAccessChanged(previousUser, currentUser)) {
+      listener()
+    }
+  })
+}
+
+export const requestPasswordReset = async (cpf) => {
+  const resetRequest = await createUserPasswordResetToken(cpf)
+
+  if (!resetRequest) return
+
+  await sendPasswordResetEmail(resetRequest.email, resetRequest.token)
+}
+
+export const validatePasswordResetToken = async (token) => {
+  const user = await findUserByValidPasswordResetToken(token)
+
+  return Boolean(user)
+}
+
+export const resetPassword = async (token, password) => {
+  await updateUserPasswordByResetToken(token, password)
+}
+
+export const changeRequiredPassword = async (session, password) => {
+  if (!session?.user?.mustChangePassword) {
+    throw new Error('A troca obrigatória de senha não está pendente.')
   }
 
-  return authSession
+  return updateUserPassword({
+    userId: session.user.id,
+    password,
+  })
 }

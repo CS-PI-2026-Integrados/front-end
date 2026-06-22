@@ -1,33 +1,22 @@
-import { useLayoutEffect } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSession } from '@/context/sessionContext'
-import { readAuthSession } from '@/services/authService'
-import RouteGuardLoader from '@/components/guards/RouteGuardLoader'
-
-const InvalidSessionRedirect = ({ to }) => {
-  const { handleLogout } = useSession()
-
-  useLayoutEffect(() => {
-    handleLogout()
-  }, [handleLogout])
-
-  return <Navigate to={to} replace />
-}
+import { RouteLoader } from '@/components/feedback/RouteLoader'
 
 export default function AuthGuard() {
-  const { isLoading } = useSession()
+  const { isLoading, session } = useSession()
   const location = useLocation()
 
   if (isLoading) {
-    return <RouteGuardLoader />
+    return <RouteLoader />
   }
 
-  if (!readAuthSession()) {
+  if (!session) {
     return (
-      <InvalidSessionRedirect
+      <Navigate
         to={`/login?redirect=${encodeURIComponent(
           `${location.pathname}${location.search}${location.hash}`
         )}`}
+        replace
       />
     )
   }
