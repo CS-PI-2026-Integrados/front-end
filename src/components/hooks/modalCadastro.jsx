@@ -2,6 +2,7 @@ import { useSession } from '@/context/sessionContext'
 import { useState, useRef } from 'react'
 import { IMaskInput } from 'react-imask'
 import CardProcesso from './cardProcesso'
+import ModalAvisoEncerrar from './modalAvisoEncerrar'
 
 const SITUACOES = ['Trabalho Registrado', 'Trabalho Informal', 'Nao Trabalha']
 
@@ -57,6 +58,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
   const [errors, setErrors] = useState({})
   const [processosErrors, setProcessosErrors] = useState([{}])
   const [preview, setPreview] = useState(null)
+  const [indexParaEncerrar, setIndexParaEncerrar] = useState(null)
   const fileRef = useRef(null)
 
   function handleChange(e) {
@@ -94,8 +96,26 @@ function ModalCadastro({ onSalvar, onCancelar }) {
     setProcessosErrors((prev) => [...prev, {}])
   }
 
-  function handleEncerrarProcesso(index) {
+  function contarProcessosAtivos() {
+    return processos.filter((p) => p.status === 'ATIVO').length
+  }
+
+  function handlePedirEncerramento(index) {
+    const ativos = contarProcessosAtivos()
+    if (ativos === 1) {
+      setIndexParaEncerrar(index)
+    } else {
+      encerrarProcesso(index)
+    }
+  }
+
+  function encerrarProcesso(index) {
     setProcessos((prev) => prev.map((p, i) => (i === index ? { ...p, status: 'ENCERRADO' } : p)))
+  }
+
+  function handleConfirmarEncerramento() {
+    encerrarProcesso(indexParaEncerrar)
+    setIndexParaEncerrar(null)
   }
 
   function validar() {
@@ -136,6 +156,9 @@ function ModalCadastro({ onSalvar, onCancelar }) {
       setProcessosErrors(errosProcessos)
       return
     }
+
+    const statusApenado = contarProcessosAtivos() > 0 ? 'Ativo' : 'Inativo'
+
     const novoApenado = {
       id: generateUUID(),
       tenant_id: comarcaId,
@@ -146,7 +169,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
       endereco: form.endereco,
       instituicao: form.instituicao,
       sit_trabalhista: form.sitTrabalhista,
-      status: 'Ativo',
+      status: statusApenado,
       observacoes: form.observacoes,
       foto: preview,
       processos: processos,
@@ -161,6 +184,12 @@ function ModalCadastro({ onSalvar, onCancelar }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <ModalAvisoEncerrar
+        aberto={indexParaEncerrar !== null}
+        onConfirmar={handleConfirmarEncerramento}
+        onCancelar={() => setIndexParaEncerrar(null)}
+      />
+
       <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
         <div className="bg-primary flex items-start justify-between px-6 py-4">
           <div>
@@ -326,7 +355,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
                 processo={processo}
                 index={index}
                 onChange={handleProcessoChange}
-                onEncerrar={handleEncerrarProcesso}
+                onEncerrar={handlePedirEncerramento}
                 errors={processosErrors[index] || {}}
               />
             ))}
