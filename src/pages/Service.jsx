@@ -17,8 +17,12 @@ const Service = () => {
   const [isSuccess, setIsSuccess] = useState(false)
   const [mudancasDetectadas, setMudancasDetectadas] = useState({})
 
+  const processosAtivosCount = (atendimento.apenado?.processos || []).filter(
+    (p) => p.status === 'ATIVO'
+  ).length
+
   const isReadyToCapture = Boolean(
-    atendimento.apenado && (atendimento.apenado.processos?.length === 0 || atendimento.processo)
+    atendimento.apenado && (processosAtivosCount === 0 || atendimento.processo)
   )
 
   const { generateReceipt } = useGenerateReceipt({
@@ -53,7 +57,10 @@ const Service = () => {
       setErrorMessage('Selecione um apenado para continuar')
       return
     }
-    if (!atendimento.processo && atendimento.apenado.processos?.length > 0) {
+    const temProcessosAtivos = (atendimento.apenado.processos || []).some(
+      (p) => p.status === 'ATIVO'
+    )
+    if (!atendimento.processo && temProcessosAtivos) {
       setErrorMessage('Selecione um processo para continuar')
       return
     }
