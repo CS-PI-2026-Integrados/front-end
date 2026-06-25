@@ -20,7 +20,6 @@ export function PhotoCaptureCard({
     videoRef,
     fileInputRef,
     handleFileChange,
-    clearPhoto,
     discardPhoto,
     startCamera,
     stopCamera,

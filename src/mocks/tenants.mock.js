@@ -10,13 +10,13 @@ export const mockTenants = {
       email: 'paranavai@gmail.com',
     },
     {
-      id: 'maringa_01',
+      id: '2',
       uuid: 'maringa_01',
       name: 'Maringá',
       cnpj: '98.765.432/0001-10',
       address: 'Av. Central, 456 - Centro, Maringá - PR',
       phone: '(44) 8765-4321',
-      email: 'paranavai@gmail.com',
+      email: 'maringa@gmail.com',
     },
   ],
 }

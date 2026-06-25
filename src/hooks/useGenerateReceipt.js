@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { mockPresenca } from '@/mocks/presenca.mock.js'
-import { useSession } from '@/context/SessionContext.jsx'
+import { useSession } from '@/context/sessionContext'
 
 const generateRandomCode = (length = 9) => {
   return Math.random()
@@ -12,7 +12,7 @@ const generateRandomCode = (length = 9) => {
 
 export function useGenerateReceipt({ setAtendimento }) {
   const { session } = useSession()
-  const usuario = session?.tenant?.user?.name
+  const usuario = session?.user?.name
 
   const generateReceipt = useCallback(
     (params = {}) =>

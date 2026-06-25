@@ -49,7 +49,7 @@ function Button({ className, variant = 'default', size = 'default', asChild = fa
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size, className }), 'cursor-pointer')}
       {...props}
     />
   )

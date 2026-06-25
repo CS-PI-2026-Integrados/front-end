@@ -1,38 +1,49 @@
-import React, { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { useSession } from './context/SessionContext'
-import Service from './pages/Service'
-import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
-import Convicteds from './pages/Convicteds'
-import Institutions from './pages/Institutions'
-import Certificate from './pages/Certificate'
-import NotFound from './pages/NotFound'
-import DashboardLayout from './layout/DashboardLayout'
-import ApenadoProfile from './pages/ApenadoProfile'
-import Groups from './pages/Groups'
+import Service from '@/pages/Service'
+import Login from '@/pages/Login'
+import Groups from '@/pages/Groups'
+import Dashboard from '@/pages/Dashboard'
+import Convicteds from '@/pages/Convicteds'
+import Institutions from '@/pages/Institutions'
+import Certificate from '@/pages/Certificate'
+import NotFound from '@/pages/NotFound'
+import DashboardLayout from '@/layout/DashboardLayout'
+import ApenadoProfile from '@/pages/ApenadoProfile'
+import AuthGuard from '@/components/guards/AuthGuard'
+import GuestGuard from '@/components/guards/GuestGuard'
+import RecoverPassword from '@/pages/RecoverPassword'
+import ResetPassword from '@/pages/ResetPassword'
+import UsersManagement from '@/pages/UsersManagement'
+import RoleGuard from '@/components/guards/RoleGuard'
+import MustChangePasswordGuard from '@/components/guards/MustChangePasswordGuard'
+import { canAccessUsersPage } from '@/lib/userPermissions'
 
 const AppRouter = () => {
-  const { session } = useSession()
-
-  useEffect(() => {
-    if (session !== null) {
-      console.log('Usuário logado/Sessão ativa:', session)
-    }
-  }, [session])
-
   return (
     <Routes>
-      <Route path="login" element={<Login />} />
+      <Route element={<GuestGuard />}>
+        <Route path="login" element={<Login />} />
+        <Route path="recuperar-senha" element={<RecoverPassword />} />
+        <Route path="redefinir-senha" element={<ResetPassword />} />
+      </Route>
 
-      <Route element={<DashboardLayout />}>
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="grupos-reflexivos" element={<Groups />} />
-        <Route path="apenados" element={<Convicteds />} />
-        <Route path="atendimento" element={<Service />} />
-        <Route path="instituicoes" element={<Institutions />} />
-        <Route path="comprovante" element={<Certificate />} />
-        <Route path="/apenados/:id" element={<ApenadoProfile />} />
+      <Route element={<AuthGuard />}>
+        <Route element={<MustChangePasswordGuard />}>
+          <Route path="alterar-senha" element={<ResetPassword mandatory />} />
+          <Route element={<DashboardLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="grupos-reflexivos" element={<Groups />} />
+            <Route path="apenados" element={<Convicteds />} />
+            <Route path="atendimento" element={<Service />} />
+            <Route path="instituicoes" element={<Institutions />} />
+            <Route path="comprovante" element={<Certificate />} />
+            <Route path="apenados/:id" element={<ApenadoProfile />} />
+            <Route element={<RoleGuard canAccess={canAccessUsersPage} />}>
+              <Route path="usuarios" element={<UsersManagement />} />
+            </Route>
+          </Route>
+        </Route>
       </Route>
 
       <Route path="*" element={<NotFound />} />
