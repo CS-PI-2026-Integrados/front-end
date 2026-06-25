@@ -41,7 +41,7 @@ const NewGroupForm = ({ isOpen, onOpenChange, availableParticipants, onSubmit })
       ...prev,
       [name]: value,
     }))
-    // Clear error for this field when user starts typing
+
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -204,7 +204,14 @@ const NewGroupForm = ({ isOpen, onOpenChange, availableParticipants, onSubmit })
             </div>
             <div className="space-y-2">
               <Label htmlFor="dataTermino">Data prevista de término</Label>
-              <Input id="dataTermino" type="date" />
+              <Input
+                id="dataTermino"
+                name="dataTermino"
+                type="date"
+                value={formData.dataTermino}
+                onChange={handleInputChange}
+                aria-invalid={!!errors.dataTermino}
+              />
             </div>
           </div>
 
@@ -298,7 +305,6 @@ const NewGroupForm = ({ isOpen, onOpenChange, availableParticipants, onSubmit })
             </div>
           </div>
 
-          {/* Participantes */}
           <div className="space-y-2">
             <Label>Participantes</Label>
             <ParticipantSelector
