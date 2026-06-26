@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "nomeGrupo": "1asdf",
+    "descricao": "asdf",
+    "dataInicio": "2026-06-26",
+    "totalEncontros": 8,
+    "frequencia": "Semanal",
+    "diaSemana": "Terça-feira",
+    "horario": "12:03",
+    "minimoEncontros": 6,
+    "participantes": [
+      {
+        "id": 1,
+        "tenant_id": "1",
+        "nome": "João Silva Santos",
+        "cpf": "123.456.789-00",
+        "telefone": "(11) 98765-4321",
+        "endereco": "Rua das Flores, 123 - Centro, São Paulo - SP",
+        "sit_trabalhista": "Trabalho Registrado",
+        "status": "Ativo"
+      }
+    ],
+    "dataTermino": "2026-06-30",
+    "status": "PLANEJAMENTO",
+    "criadoEm": "2026-06-25T23:34:46.829Z"
+  }
+]

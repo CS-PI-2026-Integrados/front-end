@@ -14,16 +14,14 @@ import {
 } from '@/components/ui/dialog'
 
 const GroupEditModal = ({ group, isOpen, onOpenChange, availableParticipants, onUpdate }) => {
-  const [editData, setEditData] = useState(group)
+  const [editData, setEditData] = useState(
+    group ?? { nomeGrupo: '', descricao: '', participantes: [] }
+  )
   const isEditable = group?.status === 'ANDAMENTO' || group?.status === 'PLANEJAMENTO'
 
   const handleOpenChange = (open) => {
     if (open && group) {
-      setEditData({
-        nomeGrupo: group.nomeGrupo ?? '',
-        descricao: group.descricao ?? '',
-        participantes: group.participantes ?? [],
-      })
+      setEditData(group)
     }
 
     onOpenChange(open)

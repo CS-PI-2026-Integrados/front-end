@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Search, Plus } from 'lucide-react'
-import { useSession } from '@/context/SessionContext'
-import mockApenados from '@/mocks/apenados.json'
+import { useSession } from '@/context/sessionContext'
+import mockGroups from '@/mocks/grupos.mock.json'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -25,10 +25,26 @@ import {
 import NewGroupForm from '@/components/hooks/NewGroupForm'
 import GroupEditModal from '@/components/hooks/GroupEditModal'
 
+const STORAGE_KEY = 'groups_list'
+
+function getStoredList() {
+  const salvo = localStorage.getItem(STORAGE_KEY)
+
+  if (!salvo) return mockGroups
+
+  try {
+    const parsed = JSON.parse(salvo)
+
+    return Array.isArray(parsed) ? parsed : mockGroups
+  } catch {
+    return mockGroups
+  }
+}
+
 const Groups = () => {
   const { session } = useSession()
   const [novoGrupoAberto, setNovoGrupoAberto] = useState(false)
-  const [grupos, setGrupos] = useState([])
+  const [grupos, setGrupos] = useState(getStoredList)
   const [searchGrupo, setSearchGrupo] = useState('')
   const [statusFilter, setStatusFilter] = useState('TODOS')
   const [grupoSelecionado, setGrupoSelecionado] = useState(null)
@@ -37,7 +53,7 @@ const Groups = () => {
   const availableParticipants = useMemo(() => {
     const comarca = session?.tenant?.id
     if (!comarca) return []
-    return mockApenados.filter((a) => a.tenant_id === comarca && a.status === 'Ativo')
+    return mockGroups.filter((a) => a.tenant_id === comarca && a.status === 'Ativo')
   }, [session?.tenant?.id])
 
   const filteredGrupos = useMemo(() => {
@@ -98,6 +114,7 @@ const Groups = () => {
         />
 
         <GroupEditModal
+          key={grupoSelecionado?.id ?? 'none'}
           group={grupoSelecionado}
           isOpen={visualizarGrupoAberto}
           onOpenChange={setVisualizarGrupoAberto}
