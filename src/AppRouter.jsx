@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { useSession } from './context/SessionContext'
 import { ServiceProvider } from './context/ServiceContext'
 import Service from './pages/Service'
+import Settings from './pages/Settings'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Convicteds from './pages/Convicteds'
@@ -39,6 +40,7 @@ const AppRouter = () => {
         <Route path="instituicoes" element={<Institutions />} />
         <Route path="comprovante" element={<Certificate />} />
         <Route path="/apenados/:id" element={<ApenadoProfile />} />
+        <Route path="/configuracoes" element={<Settings />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

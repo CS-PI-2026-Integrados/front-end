@@ -81,6 +81,7 @@ export default function DashboardLayout() {
                   <ChartBar /> Relatorios
                 </Link>
               </Button>
+              */}
               <Button
                 asChild
                 variant={isActive('/configuracoes') ? 'default' : 'ghost'}
@@ -89,7 +90,7 @@ export default function DashboardLayout() {
                 <Link to="/configuracoes" className="flex w-full items-center gap-2">
                   <Settings /> Configuracões
                 </Link>
-              </Button> */}
+              </Button>
             </aside>
           </div>
         </div>
