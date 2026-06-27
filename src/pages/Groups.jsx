@@ -6,6 +6,7 @@ import mockGroups from '@/mocks/grupos.mock.json'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { PageHeader } from '@/components/data-display/PageHeader'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -90,21 +91,18 @@ const Groups = () => {
   }
 
   return (
-    <div className="mx-auto min-h-screen max-w-7xl">
+    <div className="min-h-screen">
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">Grupos Reflexivos</h1>
-            <p className="text-muted-foreground">
-              Gerencie grupos de reflexão e acompanhe participantes
-            </p>
-          </div>
-
-          <Button className="w-fit" type="button" onClick={() => setNovoGrupoAberto(true)}>
-            <Plus className="h-4 w-4" />
-            Novo Grupo
-          </Button>
-        </div>
+        <PageHeader
+          title="Grupos Reflexivos"
+          description="Gerencie grupos de reflexão e acompanhe participantes"
+          action={
+            <Button size="sm" onClick={() => setNovoGrupoAberto(true)}>
+              <Plus />
+              Novo grupo
+            </Button>
+          }
+        />
 
         <NewGroupForm
           isOpen={novoGrupoAberto}
@@ -177,7 +175,16 @@ const Groups = () => {
                       <TableRow key={grupo.id}>
                         <TableCell className="font-medium">{grupo.nomeGrupo}</TableCell>
                         <TableCell>
-                          <Badge>{grupo.status}</Badge>
+                          <Badge>
+                            {
+                              {
+                                PLANEJAMENTO: 'Planejamento',
+                                ANDAMENTO: 'Em andamento',
+                                CONCLUIDO: 'Concluído',
+                                CANCELADO: 'Cancelado',
+                              }[grupo.status]
+                            }
+                          </Badge>
                         </TableCell>
                         <TableCell>{grupo.participantes.length}</TableCell>
                         <TableCell>
