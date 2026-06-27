@@ -3,6 +3,7 @@ import Service from '@/pages/Service'
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
 import Convicteds from '@/pages/Convicteds'
+import Settings from '@/pages/Settings'
 import Institutions from '@/pages/Institutions'
 import Certificate from '@/pages/Certificate'
 import NotFound from '@/pages/NotFound'
@@ -40,6 +41,7 @@ const AppRouter = () => {
             <Route element={<RoleGuard canAccess={canAccessUsersPage} />}>
               <Route path="usuarios" element={<UsersManagement />} />
             </Route>
+            <Route path="configuracoes" element={<Settings />} />
           </Route>
         </Route>
       </Route>
