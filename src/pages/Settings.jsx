@@ -1,4 +1,5 @@
 import InstitutionInfo from '@/components/settings/InstitutionInfo'
+import PasswordChange from '@/components/settings/PasswordChange'
 import ReceiptFields from '@/components/settings/ReceiptFields'
 
 export const Settings = () => {
@@ -11,6 +12,7 @@ export const Settings = () => {
           <div className="grid gap-6">
             <InstitutionInfo />
             <ReceiptFields />
+            <PasswordChange />
           </div>
         </div>
       </div>
