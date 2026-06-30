@@ -43,7 +43,7 @@ export const SessionProvider = ({ children }) => {
     }
 
     const revalidateSession = () => {
-      void checkSession({ showLoader: true })
+      void checkSession({ showLoader: false })
     }
 
     const handleVisibilityChange = () => {

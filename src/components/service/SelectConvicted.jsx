@@ -44,6 +44,7 @@ export function SelectConvicted() {
         <Popover className="flex w-full" open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              type="button"
               variant="outline"
               role="combobox"
               className="h-10 w-full justify-between bg-transparent"

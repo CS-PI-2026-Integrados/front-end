@@ -68,7 +68,7 @@ const Service = () => {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-4 md:h-full md:overflow-hidden md:px-8 md:py-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-4 md:h-full md:overflow-auto md:px-8 md:py-6">
       <Tabs defaultValue="novo" className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
         <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -124,7 +124,7 @@ const Service = () => {
         </TabsContent>
         <TabsContent
           value="historico"
-          className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:items-stretch"
+          className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none"
         >
           <ProofHistory />
         </TabsContent>

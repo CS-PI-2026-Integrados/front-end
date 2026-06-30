@@ -45,7 +45,7 @@ export function ProofHistory() {
   }
 
   return (
-    <div className="bg-card text-card-foreground flex h-full w-full flex-col overflow-hidden rounded-xl border shadow-sm">
+    <div className="bg-card text-card-foreground flex w-full flex-col rounded-xl border shadow-sm">
       {/* ── Header ── */}
       <div className="shrink-0 px-5 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -90,8 +90,8 @@ export function ProofHistory() {
         {comprovantes.length > 0 ? (
           <>
             {/* Desktop table */}
-            <div className="hidden min-h-0 flex-1 flex-col md:flex">
-              <div className="w-full flex-1 overflow-auto">
+            <div className="hidden flex-col md:flex">
+              <div className="w-full overflow-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 sticky top-0 z-10">
                     <tr className="border-b">
@@ -175,15 +175,6 @@ export function ProofHistory() {
                         </td>
                       </tr>
                     ))}
-                    {/* Fill remaining rows to keep consistent height */}
-                    {comprovantesPage.length < itemsPerPage &&
-                      Array.from({ length: itemsPerPage - comprovantesPage.length }).map((_, i) => (
-                        <tr key={`empty-${i}`} className="border-b last:border-b-0">
-                          <td colSpan={6} className="px-6 py-3.5">
-                            &nbsp;
-                          </td>
-                        </tr>
-                      ))}
                   </tbody>
                 </table>
               </div>
