@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { mockPresenca } from '@/mocks/presenca.mock.js'
 import { useSession } from '@/context/sessionContext'
+import { useTenant } from '@/context/TenantContext'
 
 const generateRandomCode = (length = 9) => {
   return Math.random()
@@ -12,6 +13,7 @@ const generateRandomCode = (length = 9) => {
 
 export function useGenerateReceipt({ setAtendimento }) {
   const { session } = useSession()
+  const { state: tenantState } = useTenant()
   const usuario = session?.user?.name
 
   const generateReceipt = useCallback(
@@ -64,6 +66,15 @@ export function useGenerateReceipt({ setAtendimento }) {
                 }),
                 {}
               ),
+            // ── Configuração white-label do tenant (reativo) ───────────────
+            tenantConfig: {
+              nomeComarca: tenantState.nomeComarca,
+              unidade: tenantState.unidade,
+              endereco: tenantState.endereco,
+              logo: tenantState.logo,
+              receiptConfig: { ...tenantState.receiptConfig },
+              receiptFields: tenantState.receiptFields.map((f) => ({ ...f })),
+            },
           }
 
           //persiste o comprovante, futuramente rota /presencas ou comprovantes
@@ -71,7 +82,7 @@ export function useGenerateReceipt({ setAtendimento }) {
           resolve(novaPresenca)
         }, 500)
       }),
-    [setAtendimento, usuario]
+    [setAtendimento, usuario, tenantState]
   )
 
   return { generateReceipt }

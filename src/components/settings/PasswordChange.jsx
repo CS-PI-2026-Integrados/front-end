@@ -12,9 +12,9 @@ const PasswordField = ({ label, value, onChange, error }) => (
       type="password"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={error ? 'border-red-500' : ''}
+      className={error ? 'border-destructive focus-visible:ring-destructive' : ''}
     />
-    {error && <p className="text-sm text-red-500">{error}</p>}
+    {error && <p className="text-destructive text-sm font-medium">{error}</p>}
   </div>
 )
 
@@ -94,7 +94,10 @@ export const PasswordChange = () => {
           error={errors.confirmarSenha}
         />
 
-        <Button onClick={handleSubmit} className="bg-green-700 text-white hover:bg-green-800">
+        <Button
+          onClick={handleSubmit}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
           Alterar Senha
         </Button>
       </CardContent>
