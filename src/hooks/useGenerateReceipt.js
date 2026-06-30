@@ -48,7 +48,6 @@ export function useGenerateReceipt() {
               mudancasRastreadas: mudancasDetectadas,
             }
 
-            // Persiste o comprovante na store simulando um cache de backend
             presencasStore.addPresenca(novaPresenca)
 
             resolve(novaPresenca)

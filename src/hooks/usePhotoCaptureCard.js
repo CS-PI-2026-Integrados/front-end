@@ -42,6 +42,7 @@ export function usePhotoCaptureCard({
 
   const handleFileChange = useCallback(
     (e) => {
+      e.stopPropagation()
       const file = e.target.files?.[0]
       if (file) {
         const reader = new FileReader()
