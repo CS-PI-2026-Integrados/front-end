@@ -1,6 +1,6 @@
 import { FileText, LayoutDashboard, Users, User, Menu, UserCog, Settings } from 'lucide-react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import Logo from '@/assets/logos/to-light-background.svg'
+import LogoFallback from '@/assets/logos/to-light-background.svg'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -11,14 +11,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { useSession } from '@/context/sessionContext'
+import { useTenant } from '@/context/TenantContext'
 import { canAccessUsersPage } from '@/lib/userPermissions'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
   const { session, handleLogout } = useSession()
+  const { state: tenantState } = useTenant()
   const location = useLocation()
   const isActive = (path) => location.pathname === path
   const canManageUsers = canAccessUsersPage(session?.user)
+
+  // Valores reativos: refletem edições feitas em /configuracoes sem reload
+  const displayLogo = tenantState.logo || LogoFallback
+  const displayTenantName = tenantState.nomeComarca || session?.tenant?.name
 
   const onLogout = () => {
     handleLogout()
@@ -35,8 +41,15 @@ export default function DashboardLayout() {
           }}
         >
           <div className="bg-background flex h-full w-60 -translate-x-60 flex-col border-e transition-all group-open:-translate-x-0 group-open:shadow-lg md:static md:-translate-x-0 group-open:md:shadow-none">
-            <div className="flex h-14 border-b px-4">
-              <img src={Logo} alt="Logo marca" className="w-14" />
+            <div className="flex h-14 items-center border-b px-4">
+              <img
+                src={displayLogo}
+                alt={displayTenantName || 'Logo marca'}
+                className="h-10 w-14 object-contain"
+                onError={(e) => {
+                  e.currentTarget.src = LogoFallback
+                }}
+              />
             </div>
             <aside className="flex flex-col gap-1 p-4">
               <Button
@@ -125,9 +138,7 @@ export default function DashboardLayout() {
                         <span className="truncate text-sm font-medium text-black/75">
                           {session?.user.name}
                         </span>
-                        <span className="truncate text-xs text-black/50">
-                          {session?.tenant.name}
-                        </span>
+                        <span className="truncate text-xs text-black/50">{displayTenantName}</span>
                       </div>
                     </Button>
                   </DropdownMenuTrigger>
