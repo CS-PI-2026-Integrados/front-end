@@ -78,9 +78,7 @@ const Service = () => {
         mudancasDetectadas,
       })
       setIsSuccess(true)
-      console.log(atendimento.apenado)
     } catch (error) {
-      console.error('Falha ao gerar comprovante:', error)
       setErrorMessage(error.message || 'Falha ao gerar comprovante. Tente novamente.')
     } finally {
       setIsSubmitting(false)

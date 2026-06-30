@@ -109,130 +109,127 @@ function ModalEditar({ apenado, onSalvar, onCancelar }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <ModalAvisoEncerrar
         aberto={indexParaEncerrar !== null}
         onConfirmar={handleConfirmarEncerramento}
         onCancelar={() => setIndexParaEncerrar(null)}
       />
 
-      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-xl">
-        <div className="px-6 pt-6">
-          <h2 className="text-lg font-bold text-gray-900">Editar Apenado</h2>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="mb-1 block text-xs font-semibold text-gray-600">Nome</label>
-              <input
-                name="nome"
-                value={form.nome}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">CPF</label>
-              <input
-                name="cpf"
-                value={form.cpf}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">Telefone</label>
-              <input
-                name="telefone"
-                value={form.telefone}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-              />
-            </div>
-            <div className="col-span-2">
-              <label className="mb-1 block text-xs font-semibold text-gray-600">Endereço</label>
-              <input
-                name="endereco"
-                value={form.endereco}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">
-                Sit. Trabalhista
-              </label>
-              <select
-                name="sit_trabalhista"
-                value={form.sit_trabalhista}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
-              >
-                <option>Trabalho Registrado</option>
-                <option>Trabalho Informal</option>
-                <option>Nao Trabalha</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">Status</label>
-              <div className="flex h-[38px] items-center">
-                <span
-                  className={`inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${
-                    contarProcessosAtivos() > 0
-                      ? 'border border-green-200 bg-green-100 text-green-700'
-                      : 'border border-gray-200 bg-gray-100 text-gray-500'
-                  }`}
-                >
-                  {contarProcessosAtivos() > 0 ? 'Ativo' : 'Inativo'}
-                </span>
-              </div>
-            </div>
+      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-4 shadow-xl sm:p-6">
+        <h2 className="text-lg font-bold text-gray-900">Editar Apenado</h2>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Nome</label>
+            <input
+              name="nome"
+              value={form.nome}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            />
           </div>
-
-          <p className="mt-5 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">
-            Processos Vinculados
-          </p>
-          <div className="flex flex-col gap-3">
-            {processos.map((processo, index) => (
-              <CardProcesso
-                key={processo.id}
-                processo={processo}
-                index={index}
-                onChange={handleProcessoChange}
-                onEncerrar={handlePedirEncerramento}
-                errors={processosErrors[index] || {}}
-              />
-            ))}
-            <button
-              type="button"
-              onClick={handleAdicionarProcesso}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:border-green-600 hover:text-green-700"
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">CPF</label>
+            <input
+              name="cpf"
+              value={form.cpf}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Telefone</label>
+            <input
+              name="telefone"
+              value={form.telefone}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Endereço</label>
+            <input
+              name="endereco"
+              value={form.endereco}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">
+              Sit. Trabalhista
+            </label>
+            <select
+              name="sit_trabalhista"
+              value={form.sit_trabalhista}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
+              <option>Trabalho Registrado</option>
+              <option>Trabalho Informal</option>
+              <option>Nao Trabalha</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Status</label>
+            <div className="flex h-[38px] items-center">
+              <span
+                className={`inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${
+                  contarProcessosAtivos() > 0
+                    ? 'border border-green-200 bg-green-100 text-green-700'
+                    : 'border border-gray-200 bg-gray-100 text-gray-500'
+                }`}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Adicionar processo
-            </button>
+                {contarProcessosAtivos() > 0 ? 'Ativo' : 'Inativo'}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
+        <p className="mt-5 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">
+          Processos Vinculados
+        </p>
+        <div className="flex flex-col gap-3">
+          {processos.map((processo, index) => (
+            <CardProcesso
+              key={processo.id}
+              processo={processo}
+              index={index}
+              onChange={handleProcessoChange}
+              onEncerrar={handlePedirEncerramento}
+              errors={processosErrors[index] || {}}
+            />
+          ))}
           <button
+            type="button"
+            onClick={handleAdicionarProcesso}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:border-green-600 hover:text-green-700"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Adicionar processo
+          </button>
+        </div>
+
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+          <button
+            type="button"
             onClick={onCancelar}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+            className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 sm:w-auto"
           >
             Cancelar
           </button>
           <button
+            type="button"
             onClick={handleSalvar}
-            className="rounded-lg bg-green-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-900"
+            className="w-full rounded-lg bg-green-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-900 sm:w-auto"
           >
             Salvar
           </button>

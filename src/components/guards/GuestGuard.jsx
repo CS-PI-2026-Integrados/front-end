@@ -1,17 +1,20 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSession } from '@/context/sessionContext'
-import { readAuthSession } from '@/services/authService'
-import RouteGuardLoader from '@/components/guards/RouteGuardLoader'
+import { RouteLoader } from '@/components/feedback/RouteLoader'
 
 export default function GuestGuard() {
-  const { isLoading } = useSession()
+  const { isLoading, session } = useSession()
   const location = useLocation()
 
   if (isLoading) {
-    return <RouteGuardLoader />
+    return <RouteLoader />
   }
 
-  if (readAuthSession()) {
+  if (session) {
+    if (session.user.mustChangePassword) {
+      return <Navigate to="/alterar-senha" replace />
+    }
+
     const redirect = new URLSearchParams(location.search).get('redirect')?.trim()
 
     return <Navigate to={redirect ? redirect : '/dashboard'} replace />

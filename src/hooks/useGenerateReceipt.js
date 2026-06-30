@@ -12,7 +12,7 @@ const generateRandomCode = (length = 9) => {
 
 export function useGenerateReceipt({ setAtendimento }) {
   const { session } = useSession()
-  const usuario = session?.tenant?.user?.name
+  const usuario = session?.user?.name
 
   const generateReceipt = useCallback(
     (params = {}) =>

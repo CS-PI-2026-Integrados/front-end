@@ -1,56 +1,77 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SessionContext } from '@/context/sessionContext'
-import { clearAuthSession, persistSessionToken, restoreAuthSession } from '@/services/authService'
+import { logout, restoreSession, subscribeToAuthStateChanges } from '@/services/authService'
 
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const applySession = useCallback((authSession) => {
-    const nextSession = {
-      user: authSession.user,
-      tenant: authSession.tenant,
-    }
-
-    setSession(nextSession)
-
-    return nextSession
-  }, [])
-
-  const handleLogin = useCallback((user, tenant, token) => {
-    persistSessionToken(token)
-    setSession({ user, tenant })
+  const handleLogin = useCallback((authSession) => {
+    setSession(authSession)
   }, [])
 
   const handleLogout = useCallback(() => {
-    clearAuthSession()
+    logout()
     setSession(null)
   }, [])
 
-  const handleRestoreSession = useCallback(() => {
-    const restoredSession = restoreAuthSession()
+  const handleRestoreSession = useCallback(async () => {
+    const restoredSession = await restoreSession()
 
-    if (!restoredSession) {
-      setSession(null)
-      return null
-    }
+    setSession(restoredSession)
 
-    return applySession(restoredSession)
-  }, [applySession])
+    return restoredSession
+  }, [])
 
   useEffect(() => {
-    const checkSession = () => {
-      handleRestoreSession()
+    let shouldUpdateState = true
+    let validationId = 0
+
+    const checkSession = async ({ showLoader = false } = {}) => {
+      const currentValidationId = ++validationId
+
+      if (showLoader) {
+        setIsLoading(true)
+      }
+
+      const restoredSession = await restoreSession()
+
+      if (!shouldUpdateState || currentValidationId !== validationId) return
+
+      setSession(restoredSession)
       setIsLoading(false)
     }
-    checkSession()
-  }, [handleRestoreSession])
+
+    const revalidateSession = () => {
+      void checkSession({ showLoader: false })
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        revalidateSession()
+      }
+    }
+
+    void checkSession({ showLoader: true })
+
+    const unsubscribeFromAuthStateChanges = subscribeToAuthStateChanges(revalidateSession)
+
+    window.addEventListener('focus', revalidateSession)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      shouldUpdateState = false
+      validationId += 1
+      unsubscribeFromAuthStateChanges()
+      window.removeEventListener('focus', revalidateSession)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
 
   return (
     <SessionContext.Provider
       value={{
         session,
-        setSession,
         handleLogin,
         handleLogout,
         handleRestoreSession,
