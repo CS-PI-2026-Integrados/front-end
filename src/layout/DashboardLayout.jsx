@@ -1,15 +1,6 @@
-import {
-  ChartBar,
-  FileText,
-  FolderArchive,
-  LayoutDashboard,
-  Settings,
-  Users,
-  User,
-  Menu,
-} from 'lucide-react'
-import { Link } from 'react-router-dom'
-import Logo from '/assets/logo/to-light-background.svg'
+import { FileText, LayoutDashboard, Users, User, Menu, UserCog, Settings } from 'lucide-react'
+import { Link, Outlet, useLocation } from 'react-router-dom'
+import Logo from '@/assets/logos/to-light-background.svg'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -18,16 +9,20 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { Outlet, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { useSession } from '@/context/SessionContext'
+import { useState } from 'react'
+import { useSession } from '@/context/sessionContext'
+import { canAccessUsersPage } from '@/lib/userPermissions'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
-  const { session } = useSession()
-
+  const { session, handleLogout } = useSession()
   const location = useLocation()
   const isActive = (path) => location.pathname === path
+  const canManageUsers = canAccessUsersPage(session?.user)
+
+  const onLogout = () => {
+    handleLogout()
+  }
 
   return (
     <>
@@ -71,6 +66,17 @@ export default function DashboardLayout() {
                   <FileText /> Comprovantes
                 </Link>
               </Button>
+              {canManageUsers && (
+                <Button
+                  asChild
+                  variant={isActive('/usuarios') ? 'default' : 'ghost'}
+                  className="justify-start"
+                >
+                  <Link to="/usuarios" className="flex w-full items-center gap-2">
+                    <UserCog /> Usuários
+                  </Link>
+                </Button>
+              )}
               {/* <Button asChild variant={isActive('/documentos') ? 'default' : 'ghost'} className="justify-start">
                 <Link to="/documentos" className="flex items-center gap-2 w-full">
                   <FolderArchive /> Documentos
@@ -96,7 +102,7 @@ export default function DashboardLayout() {
         </div>
         <div className="flex h-full min-w-0 flex-col" style={{ flex: 1 }}>
           <header className="bg-background flex h-14 items-center justify-between border-b">
-            <div className="flex w-full items-center gap-3 px-4">
+            <div className="flex w-full min-w-0 items-center gap-3 px-3 sm:px-4">
               <Button
                 variant="ghost"
                 className="md:hidden"
@@ -109,22 +115,25 @@ export default function DashboardLayout() {
               <div className="ml-auto">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex gap-2 px-2 py-1">
+                    <Button
+                      variant="ghost"
+                      className="flex max-w-[calc(100vw-5rem)] gap-2 px-2 py-1"
+                    >
                       <User />
-                      <div className="flex flex-col text-start">
-                        <span className="text-sm font-medium text-black/75">
+                      <div className="flex min-w-0 flex-col text-start">
+                        <span className="truncate text-sm font-medium text-black/75">
                           {session?.user.name}
                         </span>
-                        <span className="text-xs text-black/50">{session?.tenant.name}</span>
+                        <span className="truncate text-xs text-black/50">
+                          {session?.tenant.name}
+                        </span>
                       </div>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {/* <DropdownMenuItem>Perfil</DropdownMenuItem> */}
-                    <DropdownMenuItem asChild>
-                      <Link to="/login" className="cursor-pointer">
-                        Sair
-                      </Link>
+                    <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
+                      Sair
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -132,7 +141,7 @@ export default function DashboardLayout() {
             </div>
           </header>
           <main
-            className="p-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-black/20 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-transparent dark:[&::-webkit-scrollbar-track]:bg-neutral-700"
+            className="h-dvh min-w-0 p-3 sm:p-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-black/20 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-transparent dark:[&::-webkit-scrollbar-track]:bg-neutral-700"
             style={{ flex: 1, overflow: 'auto' }}
           >
             <Outlet />

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { presencasStore } from '@/mocks/presenca.mock.js'
-import { useSession } from '@/context/SessionContext.jsx'
+import { useSession } from '@/context/sessionContext'
 
 export const generateAuthCode = () => {
   const data = new Date().toISOString().split('T')[0].replace(/-/g, '')
@@ -11,7 +11,7 @@ export const generateAuthCode = () => {
 
 export function useGenerateReceipt() {
   const { session } = useSession()
-  const usuario = session?.tenant?.user?.name
+  const usuario = session?.user?.name
 
   const generateReceipt = useCallback(
     (params = {}) =>

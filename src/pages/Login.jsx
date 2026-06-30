@@ -1,8 +1,8 @@
-import { LoginForm } from '@/components/LoginForm'
-import loginBg from '../../public/assets/logo/login-bg.jpg'
-import logoWhite from '../../public/assets/logo/to-dark-background.svg'
+import { LoginForm } from '@/components/auth/LoginForm'
+import loginBg from '@/assets/backgrounds/login-bg.jpg'
+import logoWhite from '@/assets/logos/to-dark-background.svg'
 import React from 'react'
-import logo from '../../public/assets/logo/to-light-background.svg'
+import logo from '@/assets/logos/to-light-background.svg'
 
 const Login = () => {
   return (
