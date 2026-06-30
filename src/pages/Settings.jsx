@@ -9,7 +9,7 @@ export const Settings = () => {
   const isAdmin = isPrivilegedRole(session?.user?.role)
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="w-full">
       <div className="space-y-6">
         <div>
           <h1 className="mb-2 text-3xl font-bold">Configurações</h1>
