@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Search, Plus, Users } from 'lucide-react'
 import { useSession } from '@/context/sessionContext'
 import mockGroups from '@/mocks/grupos.mock.json'
@@ -46,6 +47,7 @@ function getStoredList() {
 
 const Groups = () => {
   const { session } = useSession()
+  const navigate = useNavigate()
   const [novoGrupoAberto, setNovoGrupoAberto] = useState(false)
   const [grupos, setGrupos] = useState(getStoredList)
   const [search, setSearch] = useState('')
@@ -86,6 +88,10 @@ const Groups = () => {
   const handleEditGroup = (grupo) => {
     setGrupoSelecionado(grupo)
     setVisualizarGrupoAberto(true)
+  }
+
+  const handleRowClick = (id) => {
+    navigate(`/grupos-reflexivos/${id}`)
   }
 
   const handleUpdateGroup = (updatedGrupo) => {
@@ -184,13 +190,13 @@ const Groups = () => {
               <TableBody>
                 {filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-muted-foreground h-32 text-center">
+                    <TableCell colSpan={7} className="text-muted-foreground h-32 text-center">
                       Nenhum grupo encontrado
                     </TableCell>
                   </TableRow>
                 ) : (
                   filtered.map((grupo) => (
-                    <TableRow key={grupo.id}>
+                    <TableRow key={grupo.id} tabIndex={0} role="button">
                       <TableCell className="font-medium">{grupo.nomeGrupo}</TableCell>
                       <TableCell>
                         <Badge>
@@ -211,9 +217,12 @@ const Groups = () => {
                       <TableCell>{grupo.dataInicio}</TableCell>
                       <TableCell>{grupo.dataTermino}</TableCell>
                       <TableCell className="text-right">
+                        <Button size="xs" onClick={() => handleRowClick(grupo.id)}>
+                          Acessar
+                        </Button>
                         <Button
                           variant="secondary"
-                          size="sm"
+                          size="xs"
                           onClick={() => handleEditGroup(grupo)}
                         >
                           Editar

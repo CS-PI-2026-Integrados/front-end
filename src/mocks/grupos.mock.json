@@ -1,8 +1,8 @@
 [
   {
     "id": 1,
-    "nomeGrupo": "1asdf",
-    "descricao": "asdf",
+    "nomeGrupo": "Grupo de conversa",
+    "descricao": "Grupo reflexivo dinâmicas coletivas.",
     "dataInicio": "2026-06-26",
     "totalEncontros": 8,
     "frequencia": "Semanal",
@@ -15,10 +15,76 @@
         "tenant_id": "1",
         "nome": "João Silva Santos",
         "cpf": "123.456.789-00",
-        "telefone": "(11) 98765-4321",
-        "endereco": "Rua das Flores, 123 - Centro, São Paulo - SP",
-        "sit_trabalhista": "Trabalho Registrado",
         "status": "Ativo"
+      },
+      {
+        "id": 2,
+        "tenant_id": "1",
+        "nome": "Maria Oliveira",
+        "cpf": "234.567.890-11",
+        "status": "Ativo"
+      },
+      {
+        "id": 3,
+        "tenant_id": "1",
+        "nome": "Carlos Pereira",
+        "cpf": "345.678.901-22",
+        "status": "Ativo"
+      },
+      {
+        "id": 4,
+        "tenant_id": "1",
+        "nome": "Ana Souza",
+        "cpf": "456.789.012-33",
+        "status": "Ativo"
+      },
+      {
+        "id": 5,
+        "tenant_id": "1",
+        "nome": "Pedro Lima",
+        "cpf": "567.890.123-44",
+        "status": "Ativo"
+      },
+      {
+        "id": 6,
+        "tenant_id": "1",
+        "nome": "Lucas Costa",
+        "cpf": "678.901.234-55",
+        "status": "Ativo"
+      },
+      {
+        "id": 7,
+        "tenant_id": "1",
+        "nome": "Mariana Rocha",
+        "cpf": "789.012.345-66",
+        "status": "Ativo"
+      },
+      {
+        "id": 8,
+        "tenant_id": "1",
+        "nome": "Rafael Gomes",
+        "cpf": "890.123.456-77",
+        "status": "Ativo"
+      }
+    ],
+    "encontros": [
+      {
+        "id": 1,
+        "data": "2026-06-26 10:30:00",
+        "tema": "Apresentação do grupo",
+        "presentes": [1, 2, 3, 4, 5, 6]
+      },
+      {
+        "id": 2,
+        "data": "2026-06-27 10:30:00",
+        "tema": "Dinâmicas e acolhimento",
+        "presentes": [1, 2, 3, 4]
+      },
+      {
+        "id": 3,
+        "data": "2026-06-28 10:30:00",
+        "tema": "Discussão tema X",
+        "presentes": [1, 2, 3, 4, 5, 6, 7]
       }
     ],
     "dataTermino": "2026-06-30",
