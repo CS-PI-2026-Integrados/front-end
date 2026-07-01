@@ -3,13 +3,11 @@ import { cn } from '@/lib/utils.js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label.jsx'
 import { SelectConvicted } from './SelectConvicted.jsx'
+import { useService } from '@/context/ServiceContext'
+import { FileText } from 'lucide-react'
 
-export function ConvictedCard({
-  className,
-  atendimento,
-  onChangeAtendimento,
-  onMudancasDetectadas,
-}) {
+export function ConvictedCard({ className }) {
+  const { apenado } = useService()
   const currentDateTime = useMemo(
     () =>
       new Date().toLocaleString('pt-BR', {
@@ -24,8 +22,10 @@ export function ConvictedCard({
   )
 
   return (
-    <Card className={cn('flex flex-col overflow-hidden rounded-xl shadow-sm', className)}>
-      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-3 pb-1 md:px-6 md:pt-4 md:pb-2">
+    <Card
+      className={cn('flex flex-col gap-0 overflow-hidden rounded-xl py-0 shadow-sm', className)}
+    >
+      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-5 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4">
         <CardTitle className="items-start text-lg font-semibold md:text-xl">
           Dados do Atendimento
         </CardTitle>
@@ -34,14 +34,24 @@ export function ConvictedCard({
       <CardContent
         className={cn(
           'flex flex-col px-4 pb-4 md:min-h-0 md:flex-1 md:px-6 md:pb-6',
-          atendimento.apenado ? 'md:overflow-y-auto' : 'md:overflow-hidden'
+          apenado ? 'md:overflow-y-auto' : 'md:overflow-hidden'
         )}
       >
-        <SelectConvicted
-          atendimento={atendimento}
-          onChangeAtendimento={onChangeAtendimento}
-          onMudancasDetectadas={onMudancasDetectadas}
-        />
+        <SelectConvicted />
+
+        {!apenado && (
+          <div className="mt-4 flex flex-1 items-center justify-center md:mt-6">
+            <div className="border-muted-foreground/25 flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 md:py-8">
+              <div className="bg-muted/50 flex h-12 w-12 items-center justify-center rounded-full">
+                <FileText className="text-muted-foreground/50 h-6 w-6" />
+              </div>
+              <p className="text-muted-foreground text-center text-sm font-medium">
+                Selecione um apenado para gerar o comprovante
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="mt-auto shrink-0 space-y-2 pt-4 md:pt-6">
           <Label>Data e Hora</Label>
           <div className="bg-muted rounded-lg p-3">
