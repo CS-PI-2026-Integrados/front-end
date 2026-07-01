@@ -52,7 +52,7 @@ export const SessionProvider = ({ children }) => {
       }
     }
 
-    void checkSession()
+    void checkSession({ showLoader: true })
 
     const unsubscribeFromAuthStateChanges = subscribeToAuthStateChanges(revalidateSession)
 
