@@ -176,7 +176,7 @@ export function PhotoCaptureCard({ className }) {
                     Confirmando Presença...
                   </>
                 ) : (
-                  'Confirmar Presença e Imprimir'
+                  'Confirmar Presença'
                 )}
               </Button>
               <Button
