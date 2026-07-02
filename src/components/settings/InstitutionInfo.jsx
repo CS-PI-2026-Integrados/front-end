@@ -6,10 +6,6 @@ import { Upload, X, ImageIcon, Loader2 } from 'lucide-react'
 import { useInstitutionForm } from '@/hooks/useInstitutionForm'
 import { LOGO_ACCEPTED_EXTENSIONS } from '@/services/tenantService'
 
-/**
- * Exibe a contagem de caracteres do campo.
- * Fica alaranjado quando próximo do limite (>85%).
- */
 const CharCounter = ({ current, max }) => {
   const isNearLimit = current > max * 0.85
   return (
@@ -23,9 +19,6 @@ const CharCounter = ({ current, max }) => {
   )
 }
 
-/**
- * Campo de texto reutilizável com label, contador de caracteres e erro inline.
- */
 const FormField = ({ id, label, value, onChange, error, maxLength, placeholder }) => (
   <div className="space-y-2">
     <div className="flex items-center justify-between">
@@ -44,16 +37,6 @@ const FormField = ({ id, label, value, onChange, error, maxLength, placeholder }
   </div>
 )
 
-/**
- * Componente principal de "Dados da Unidade".
- *
- * Visível apenas para perfis ADMIN/OWNER (controlado pelo Settings.jsx).
- * Integra:
- * - Upload de logo com preview imediato, drag zone, e validação dupla
- * - Campos textuais com limite de 120 caracteres e contagem visual
- * - Botão "Salvar Alterações" que despacha para o TenantContext global
- * - Feedback via Toast (verde = sucesso, vermelho = erro)
- */
 export const InstitutionInfo = () => {
   const {
     nomeComarca,
@@ -82,12 +65,10 @@ export const InstitutionInfo = () => {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* ── Upload de Logo ─────────────────────────────────────────────────── */}
         <div className="space-y-2">
           <Label>Logo da Comarca</Label>
 
           <div className="flex items-start gap-4">
-            {/* Zona de upload / preview */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -110,13 +91,11 @@ export const InstitutionInfo = () => {
                 </div>
               )}
 
-              {/* Overlay no hover */}
               <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                 <Upload className="h-5 w-5 text-white" />
               </div>
             </button>
 
-            {/* Info + ação de remover */}
             <div className="flex flex-col gap-2 pt-1">
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Formatos: <strong>PNG, JPG, WEBP</strong>
@@ -140,7 +119,6 @@ export const InstitutionInfo = () => {
 
           {logoError && <p className="text-destructive text-sm font-medium">{logoError}</p>}
 
-          {/* Input escondido */}
           <input
             ref={fileInputRef}
             type="file"
@@ -151,7 +129,6 @@ export const InstitutionInfo = () => {
           />
         </div>
 
-        {/* ── Campos textuais ────────────────────────────────────────────────── */}
         <FormField
           id="nomeComarca"
           label="Nome da Comarca"
@@ -182,7 +159,6 @@ export const InstitutionInfo = () => {
           placeholder="Rua, número, bairro, cidade - UF"
         />
 
-        {/* ── Botão Salvar ───────────────────────────────────────────────────── */}
         <Button
           id="btn-save-institution"
           onClick={handleSave}
