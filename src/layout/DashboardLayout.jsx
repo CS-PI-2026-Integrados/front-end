@@ -114,7 +114,7 @@ export default function DashboardLayout() {
             </aside>
           </div>
         </div>
-        <div className="flex h-full min-w-0 flex-col" style={{ flex: 1 }}>
+        <div className="flex min-h-0 min-w-0 flex-col" style={{ flex: 1 }}>
           <header className="bg-background flex h-14 items-center justify-between border-b">
             <div className="flex w-full min-w-0 items-center gap-3 px-3 sm:px-4">
               <Button
@@ -153,7 +153,7 @@ export default function DashboardLayout() {
             </div>
           </header>
           <main
-            className="h-dvh min-w-0 p-3 sm:p-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-black/20 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-transparent dark:[&::-webkit-scrollbar-track]:bg-neutral-700"
+            className="min-h-0 min-w-0 p-3 sm:p-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-black/20 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-transparent dark:[&::-webkit-scrollbar-track]:bg-neutral-700"
             style={{ flex: 1, overflow: 'auto' }}
           >
             <Outlet />

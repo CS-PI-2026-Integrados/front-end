@@ -8,20 +8,8 @@ import {
 } from '@/services/tenantService'
 import toast from 'react-hot-toast'
 
-/**
- * Sentinel que indica que o logo foi intencionalmente removido pelo admin,
- * diferenciando de "nenhuma mudança" (null).
- */
 const LOGO_REMOVED_SENTINEL = '__REMOVED__'
 
-/**
- * Hook que encapsula toda a lógica do formulário de Dados da Unidade:
- * - Estado local sincronizado com o TenantContext global
- * - Upload de logo com validação dupla (client + server mock)
- * - Conversão para Base64 e preview imediato
- * - Validação de campos textuais (obrigatoriedade + máx. 120 chars)
- * - Dispatch para o estado global + feedback via Toast
- */
 export function useInstitutionForm() {
   const { state: tenantState, dispatch } = useTenant()
 
@@ -38,7 +26,6 @@ export function useInstitutionForm() {
 
   const fileInputRef = useRef(null)
 
-  //sincroniza estado local quando o tenant carrega
   useEffect(() => {
     if (!tenantState.isLoaded) return
 
@@ -47,7 +34,13 @@ export function useInstitutionForm() {
     setEndereco(tenantState.endereco || '')
     setLogoPreview(tenantState.logo || null)
     setPendingLogoBase64(null)
-  }, [tenantState.isLoaded])
+  }, [
+    tenantState.isLoaded,
+    tenantState.nomeComarca,
+    tenantState.unidade,
+    tenantState.endereco,
+    tenantState.logo,
+  ])
 
   const handleFieldChange = useCallback((field, value) => {
     if (value.length > MAX_FIELD_LENGTH) return
@@ -68,7 +61,6 @@ export function useInstitutionForm() {
     })
   }, [])
 
-  // gerencia upload da logo no campo instituições
   const handleFileSelect = useCallback(async (event) => {
     const file = event.target.files?.[0]
     if (!file) return
