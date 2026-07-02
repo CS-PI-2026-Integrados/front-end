@@ -14,7 +14,6 @@ const Service = () => {
     processo,
     fotoAtendimento,
     isSuccess,
-    isSubmitting,
     mudancas,
     isReadyToCapture,
     reciboGerado,
@@ -63,7 +62,6 @@ const Service = () => {
       setReciboGerado(recibo)
       setSuccess(true)
     } catch (error) {
-      console.error('Falha ao gerar comprovante:', error)
       setError(error.message || 'Falha ao gerar comprovante. Tente novamente.')
     } finally {
       setSubmitting(false)
