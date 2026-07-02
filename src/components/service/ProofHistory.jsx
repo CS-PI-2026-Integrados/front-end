@@ -33,8 +33,6 @@ export function ProofHistory() {
         dateTime: comp.dateTime,
         operatorName: comp.operatorName,
         tenantConfig: comp.tenantConfig,
-        operatorName: comp.operatorName,
-        tenantConfig: comp.tenantConfig,
       },
       mudancasDetectadas: comp.mudancasRastreadas || {},
     }

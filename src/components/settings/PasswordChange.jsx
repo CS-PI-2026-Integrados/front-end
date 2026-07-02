@@ -4,6 +4,8 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
+import { useSession } from '@/context/sessionContext'
+import { changePassword } from '@/services/authService'
 
 const PasswordField = ({ label, value, onChange, error }) => (
   <div className="space-y-2">
@@ -25,6 +27,7 @@ export const PasswordChange = () => {
     confirmarSenha: '',
   })
   const [errors, setErrors] = useState({})
+  const { session } = useSession()
 
   const handleChange = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -61,10 +64,22 @@ export const PasswordChange = () => {
       return
     }
 
-    // TODO: validar senha atual contra mock/API na UC02
-    setErrors({})
-    setFormData({ senhaAtual: '', novaSenha: '', confirmarSenha: '' })
-    toast.success('Senha alterada com sucesso')
+    const doChange = async () => {
+      try {
+        if (!session) throw new Error('Sessão inválida')
+
+        await changePassword(session, formData.senhaAtual, formData.novaSenha)
+
+        setErrors({})
+        setFormData({ senhaAtual: '', novaSenha: '', confirmarSenha: '' })
+        toast.success('Senha alterada com sucesso')
+      } catch (err) {
+        const msg = err?.message || 'Erro ao alterar senha'
+        toast.error(msg)
+      }
+    }
+
+    doChange()
   }, [formData])
 
   return (
