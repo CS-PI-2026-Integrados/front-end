@@ -5,6 +5,7 @@ import mockApenados from '../mocks/apenados.json'
 import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
+import ModalDocumentosApenado from '../components/hooks/modalDocumentosApenado'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import { DataTableCard } from '@/components/data-display/DataTableCard'
@@ -88,6 +89,7 @@ const Convicteds = () => {
   const [apenadoInativar, setApenadoInativar] = useState(null)
   const [apenadoEditar, setApenadoEditar] = useState(null)
   const [modalCadastroAberto, setModalCadastroAberto] = useState(false)
+  const [apenadoDocumentos, setApenadoDocumentos] = useState(null)
 
   const filtered = useMemo(() => {
     if (!comarca) return []
@@ -192,6 +194,12 @@ const Convicteds = () => {
           onCancelar={() => setModalCadastroAberto(false)}
         />
       )}
+      {apenadoDocumentos && (
+        <ModalDocumentosApenado
+          apenado={apenadoDocumentos}
+          onFechar={() => setApenadoDocumentos(null)}
+        />
+      )}
 
       <PageHeader
         title="Gestão de Apenados"
@@ -264,7 +272,7 @@ const Convicteds = () => {
               apenado={apenado}
               onEdit={() => setApenadoEditar(apenado)}
               onInactivate={() => setApenadoInativar(apenado)}
-              onView={() => navigate(`/apenados/${apenado.id}`)}
+              onView={() => setApenadoDocumentos(apenado)}
             />
           ))}
         </div>
@@ -314,7 +322,7 @@ const Convicteds = () => {
                         title="Visualizar"
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => navigate(`/apenados/${a.id}`)}
+                        onClick={() => setApenadoDocumentos(a)}
                       >
                         <Eye />
                         <span className="sr-only">Visualizar</span>
