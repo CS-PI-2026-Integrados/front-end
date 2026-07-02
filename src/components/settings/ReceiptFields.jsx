@@ -62,7 +62,6 @@ export const ReceiptFields = () => {
 
   return (
     <div className="space-y-6">
-      {/* Toggles do comprovante */}
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="font-bold">Configurações do Comprovante</CardTitle>
@@ -84,7 +83,6 @@ export const ReceiptFields = () => {
         </CardContent>
       </Card>
 
-      {/* Campos de conferência */}
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="font-bold">Campos do Comprovante</CardTitle>
@@ -103,7 +101,6 @@ export const ReceiptFields = () => {
               editable={field.editable}
               onVisibleChange={(checked) => {
                 handleFieldConfig(field.key, 'visible', checked)
-                // Se desmarcar visível, desmarcar editável também
                 if (!checked) {
                   handleFieldConfig(field.key, 'editable', false)
                 }
