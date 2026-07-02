@@ -29,10 +29,7 @@ export function SelectConvicted() {
   const handleSelectApenado = (idSelecionado) => {
     setOpen(false)
     const apenadoSelecionado = apenados?.find((a) => String(a.id) === idSelecionado)
-
-    if (apenadoSelecionado) {
-      selectApenado(apenadoSelecionado)
-    }
+    selectApenado(apenadoSelecionado || null)
   }
 
   return (

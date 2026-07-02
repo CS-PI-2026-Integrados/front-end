@@ -37,17 +37,10 @@ export function useGenerateReceipt() {
               mockApenados.apenados[index] = apenadoFinal
             }
 
-            //substituir com post para a API
-            setAtendimento((prev) => ({
-              ...prev,
-              apenado: apenadoFinal,
-              processo: processoAtivo || prev.processo,
-            }))
-
             const novaPresenca = {
               idApenado: apenadoFinal?.id,
               idTenant: apenadoFinal?.tenantId,
-              idProcesso: processoAtivo?.id,
+              idProcesso: processo?.id,
               name: apenadoFinal?.fullName,
               photo64: fotoAtendimento,
               cpf: apenadoFinal.cpf,
@@ -75,14 +68,14 @@ export function useGenerateReceipt() {
             }
 
             //persiste o comprovante, futuramente rota /presencas ou comprovantes
-            mockPresenca.presencas.push(novaPresenca)
+            presencasStore.addPresenca(novaPresenca)
             resolve(novaPresenca)
           } catch (error) {
             reject(error)
           }
         }, 500)
       }),
-    [setAtendimento, usuario, tenantState]
+    [usuario, tenantState]
   )
 
   return { generateReceipt }

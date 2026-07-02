@@ -40,7 +40,7 @@ export function ConvictedInfoCard() {
     )
   }
 
-  const processos = apenado.processos || []
+  const processosAtivos = (apenado.processos || []).filter((p) => p.status === 'ATIVO')
 
   const handlePhoneChange = (e) => {
     const formatted = formatPhone(e.target.value)
@@ -77,14 +77,14 @@ export function ConvictedInfoCard() {
 
   return (
     <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
-      {processos.length > 0 ? (
+      {processosAtivos.length > 0 ? (
         <div className="space-y-4">
           <div className="space-y-1">
             <Label>Processo Ativo</Label>
             <Select
               value={processo ? String(processo.id) : ''}
               onValueChange={(id) => {
-                const proc = processos.find((p) => String(p.id) === id)
+                const proc = processosAtivos.find((p) => String(p.id) === id)
                 if (proc) {
                   selectProcesso(proc)
                 }
@@ -94,9 +94,9 @@ export function ConvictedInfoCard() {
                 <SelectValue placeholder="Selecione um processo" />
               </SelectTrigger>
               <SelectContent>
-                {processos.map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)}>
-                    {p.processNumber}
+                {processosAtivos.map((processo) => (
+                  <SelectItem key={processo.id} value={String(processo.id)}>
+                    {processo.processNumber || processo.numeroProcesso}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -106,20 +106,25 @@ export function ConvictedInfoCard() {
           {processo && (
             <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
               <p>
-                <span className="text-muted-foreground">Processo:</span> {processo.processNumber}
+                <span className="text-muted-foreground">Processo:</span>{' '}
+                {processoAtivo.processNumber || processoAtivo.numeroProcesso}
               </p>
               <p>
-                <span className="text-muted-foreground">Situação:</span> {processo.judicialStatus}
+                <span className="text-muted-foreground">Situação:</span>{' '}
+                {processoAtivo.judicialStatus || processoAtivo.tipoPena}
               </p>
-              <p>
-                <span className="text-muted-foreground">Instituição:</span> {processo.institution}
-              </p>
+              {processoAtivo.institution && (
+                <p>
+                  <span className="text-muted-foreground">Instituição:</span>{' '}
+                  {processoAtivo.institution}
+                </p>
+              )}
             </div>
           )}
         </div>
       ) : (
         <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-center text-sm">
-          <p className="text-muted-foreground">Nenhum processo vinculado a este apenado.</p>
+          <p className="text-muted-foreground">Nenhum processo ativo vinculado a este apenado.</p>
         </div>
       )}
 

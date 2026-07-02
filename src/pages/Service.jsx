@@ -6,7 +6,6 @@ import { ProofHistory } from '@/components/service/ProofHistory.jsx'
 import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
 import { useDistrictData } from '@/hooks/useDistrictData.js'
 import { ReceiptSuccessCard } from '@/components/service/ReceiptSuccessCard.jsx'
-import { validateAtendimento } from '@/lib/atendimentoUtils'
 import { getMudancasAtivas } from '@/lib/atendimentoUtils'
 
 const Service = () => {
@@ -15,11 +14,9 @@ const Service = () => {
     processo,
     fotoAtendimento,
     isSuccess,
-    isSubmitting,
     mudancas,
     isReadyToCapture,
     reciboGerado,
-    setFoto,
     setSubmitting,
     setSuccess,
     setReciboGerado,
@@ -35,14 +32,19 @@ const Service = () => {
     e.preventDefault()
     setError('')
 
-    const { isValid, error } = validateAtendimento({
-      apenado,
-      processo,
-      foto: fotoAtendimento,
-    })
+    if (!apenado) {
+      setError('Selecione um apenado para continuar')
+      return
+    }
 
-    if (!isValid) {
-      setError(error)
+    const temProcessosAtivos = (apenado.processos || []).some((p) => p.status === 'ATIVO')
+    if (!processo && temProcessosAtivos) {
+      setError('Selecione um processo para continuar')
+      return
+    }
+
+    if (!fotoAtendimento) {
+      setError('Capture ou selecione uma foto para gerar o comprovante')
       return
     }
 
@@ -51,8 +53,8 @@ const Service = () => {
       const mudancasAtivas = getMudancasAtivas(mudancas)
 
       const recibo = await generateReceipt({
-        apenado: apenado,
-        processo: processo,
+        apenado,
+        processo,
         fotoAtendimento: fotoAtendimento.data,
         mudancasDetectadas: mudancasAtivas,
       })
@@ -60,7 +62,6 @@ const Service = () => {
       setReciboGerado(recibo)
       setSuccess(true)
     } catch (error) {
-      console.error('Falha ao gerar comprovante:', error)
       setError(error.message || 'Falha ao gerar comprovante. Tente novamente.')
     } finally {
       setSubmitting(false)
@@ -80,13 +81,13 @@ const Service = () => {
           <TabsList className="bg-muted text-muted-foreground grid h-auto w-full grid-cols-2 items-center justify-center rounded-lg p-1 shadow-sm md:inline-flex md:h-9 md:w-auto">
             <TabsTrigger
               value="novo"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-[32px] items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Novo comprovante
             </TabsTrigger>
             <TabsTrigger
               value="historico"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-[32px] items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Histórico {presencas.length > 0 ? `(${presencas.length})` : ''}
             </TabsTrigger>
