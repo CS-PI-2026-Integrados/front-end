@@ -157,10 +157,8 @@ export const changePassword = async (session, currentPassword, newPassword) => {
     throw new Error('Sessão inválida.')
   }
 
-  // valida senha atual
   await findAuthUserByCredentials(session.user.cpf, currentPassword)
 
-  // atualiza a senha no repositório (mock ou API futura)
   const updated = await updateUserPassword({
     userId: session.user.id,
     password: newPassword,

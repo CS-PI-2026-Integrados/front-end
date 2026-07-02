@@ -55,9 +55,9 @@ export function PhotoCaptureCard({ className }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-4 px-4 pb-4 md:min-h-0 md:flex-1 md:overflow-hidden md:px-6 md:pb-6">
         {preview ? (
-          <div className="flex w-full flex-row justify-center gap-4 md:min-h-0 md:flex-1">
+          <div className="flex w-full flex-col justify-center gap-4 lg:min-h-0 lg:flex-1 lg:flex-row">
             {apenado && (
-              <div className="flex flex-col space-y-2 md:min-h-0 md:flex-1">
+              <div className="flex min-w-0 flex-col space-y-2 lg:min-h-0 lg:flex-1">
                 <p className="text-muted-foreground shrink-0 text-center text-xs font-medium">
                   Foto de Referência
                 </p>
@@ -70,9 +70,9 @@ export function PhotoCaptureCard({ className }) {
                 </div>
               </div>
             )}
-            <div className="flex flex-col space-y-2 md:min-h-0 md:flex-1">
+            <div className="flex min-w-0 flex-col space-y-2 lg:min-h-0 lg:flex-1">
               <p className="text-primary shrink-0 text-center text-xs font-medium">Foto Atual</p>
-              <div className="ring-primary/30 relative mx-auto flex aspect-[3/4] w-full max-w-[160px] overflow-hidden rounded-xl border shadow-2xl ring-4 md:aspect-auto md:min-h-0 md:max-w-[200px] md:flex-1">
+              <div className="ring-primary/30 relative mx-auto flex aspect-[3/4] w-full max-w-[160px] overflow-hidden rounded-xl border shadow-2xl ring-4 lg:aspect-auto lg:min-h-0 lg:max-w-[200px] lg:flex-1">
                 <img
                   src={preview}
                   alt="Preview do Apenado"

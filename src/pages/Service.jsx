@@ -69,7 +69,7 @@ const Service = () => {
   }
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-auto">
       <Tabs defaultValue="novo" className="flex h-full min-h-0 w-full flex-1 flex-col">
         <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -96,16 +96,20 @@ const Service = () => {
 
         <TabsContent
           value="novo"
-          className="mt-0 flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 outline-none md:flex-row md:items-stretch md:gap-6"
+          className="mt-0 flex min-h-0 w-full min-w-0 flex-col gap-4 overflow-y-auto pb-4 outline-none lg:items-stretch lg:gap-6 lg:overflow-visible lg:pb-0"
         >
-          <form id="form-atendimento" onSubmit={handleFinalSubmit} className="contents">
+          <form
+            id="form-atendimento"
+            onSubmit={handleFinalSubmit}
+            className="flex min-h-0 w-full shrink-0 flex-col gap-4 lg:shrink lg:flex-row lg:gap-6"
+          >
             <ConvictedCard
-              className={`min-h-0 w-full flex-1 transition-all duration-300 md:h-full ${
+              className={`min-h-0 w-full min-w-0 transition-all duration-300 lg:h-full lg:w-1/2 lg:flex-1 lg:basis-1/2 ${
                 isSuccess ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
               }`}
             />
             <div
-              className={`flex min-h-0 w-full flex-1 flex-col transition-all duration-300 ${
+              className={`flex min-h-0 w-full min-w-0 flex-col transition-all duration-300 lg:w-1/2 lg:flex-1 lg:basis-1/2 ${
                 !isReadyToCapture && !isSuccess
                   ? 'pointer-events-none opacity-40 grayscale-[0.5]'
                   : ''
@@ -113,12 +117,12 @@ const Service = () => {
             >
               {isSuccess ? (
                 <ReceiptSuccessCard
-                  className="h-full w-full flex-1"
+                  className="w-full"
                   atendimento={{ apenado, processo, recibo: reciboGerado }}
                   onReset={resetAtendimento}
                 />
               ) : (
-                <PhotoCaptureCard className="h-full w-full flex-1" />
+                <PhotoCaptureCard className="w-full" />
               )}
             </div>
           </form>

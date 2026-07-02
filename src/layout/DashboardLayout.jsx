@@ -22,7 +22,6 @@ export default function DashboardLayout() {
   const isActive = (path) => location.pathname === path
   const canManageUsers = canAccessUsersPage(session?.user)
 
-  // Valores reativos: refletem edições feitas em /configuracoes sem reload
   const displayLogo = tenantState.logo || LogoFallback
   const displayTenantName = tenantState.nomeComarca || session?.tenant?.name
 
