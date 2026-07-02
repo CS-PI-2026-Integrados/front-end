@@ -31,6 +31,10 @@ export function ProofHistory() {
         photoUrl: comp.photoUrl,
         verificationCode: comp.verificationCode,
         dateTime: comp.dateTime,
+        operatorName: comp.operatorName,
+        tenantConfig: comp.tenantConfig,
+        operatorName: comp.operatorName,
+        tenantConfig: comp.tenantConfig,
       },
       mudancasDetectadas: comp.mudancasRastreadas || {},
     }
