@@ -2,21 +2,23 @@ import { useCallback } from 'react'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { presencasStore } from '@/mocks/presenca.mock.js'
 import { useSession } from '@/context/sessionContext'
+import { useTenant } from '@/context/TenantContext'
 
-export const generateAuthCode = () => {
-  const data = new Date().toISOString().split('T')[0].replace(/-/g, '')
-  const serial = Math.random().toString(36).substring(2, 10).toUpperCase()
-  return `COMP-${data}-${serial}`
+const generateRandomCode = (length = 9) => {
+  return Math.random()
+    .toString(36)
+    .substring(2, 2 + length)
+    .toUpperCase()
 }
 
 export function useGenerateReceipt() {
   const { session } = useSession()
+  const { state: tenantState } = useTenant()
   const usuario = session?.user?.name
 
   const generateReceipt = useCallback(
     (params = {}) =>
       new Promise((resolve, reject) => {
-        // Apenas para mock. Futuramente, implementação pra API
         setTimeout(() => {
           try {
             const { apenado, processo, fotoAtendimento, mudancasDetectadas = {} } = params
@@ -29,34 +31,49 @@ export function useGenerateReceipt() {
             const apenadoFinal = { ...apenado, lastProof: now }
 
             const index = mockApenados.apenados.findIndex((a) => a.id === apenadoFinal.id)
-
             if (index !== -1) {
               mockApenados.apenados[index] = apenadoFinal
             }
 
             const novaPresenca = {
-              id: String(presencasStore.getSnapshot().length + 1),
+              id: `${Date.now()}`,
               apenadoId: apenadoFinal?.id,
               tenantId: apenadoFinal?.tenantId,
               processoId: processo?.id,
               apenadoName: apenadoFinal?.fullName,
+              photoUrl: fotoAtendimento,
               cpf: apenadoFinal.cpf,
               dateTime: now,
-              operatorName: usuario || 'Servidor',
-              verificationCode: generateAuthCode(),
-              photoUrl: fotoAtendimento,
-              mudancasRastreadas: mudancasDetectadas,
+              operatorName: usuario,
+              verificationCode: `COMP-${new Date(now).getTime()}-${generateRandomCode()}`,
+              mudancasRastreadas: Object.entries(mudancasDetectadas)
+                .filter(([, m]) => m.mudou)
+                .reduce(
+                  (acc, [field, data]) => ({
+                    ...acc,
+                    [field]: data,
+                  }),
+                  {}
+                ),
+
+              tenantConfig: {
+                nomeComarca: tenantState.nomeComarca,
+                unidade: tenantState.unidade,
+                endereco: tenantState.endereco,
+                logo: tenantState.logo,
+                receiptConfig: { ...tenantState.receiptConfig },
+                receiptFields: tenantState.receiptFields.map((f) => ({ ...f })),
+              },
             }
 
             presencasStore.addPresenca(novaPresenca)
-
             resolve(novaPresenca)
           } catch (error) {
             reject(error)
           }
         }, 500)
       }),
-    [usuario]
+    [usuario, tenantState]
   )
 
   return { generateReceipt }
