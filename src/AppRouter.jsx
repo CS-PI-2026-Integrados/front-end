@@ -13,7 +13,7 @@ import ApenadoProfile from '@/pages/ApenadoProfile'
 import AuthGuard from '@/components/guards/AuthGuard'
 import GuestGuard from '@/components/guards/GuestGuard'
 import RecoverPassword from '@/pages/RecoverPassword'
-import ResetPassword from '@/pages/ResetPassword'
+import DefinePassword from '@/pages/DefinePassword'
 import UsersManagement from '@/pages/UsersManagement'
 import RoleGuard from '@/components/guards/RoleGuard'
 import MustChangePasswordGuard from '@/components/guards/MustChangePasswordGuard'
@@ -25,12 +25,12 @@ const AppRouter = () => {
       <Route element={<GuestGuard />}>
         <Route path="login" element={<Login />} />
         <Route path="recuperar-senha" element={<RecoverPassword />} />
-        <Route path="redefinir-senha" element={<ResetPassword />} />
       </Route>
+
+      <Route path="definir-senha" element={<DefinePassword />} />
 
       <Route element={<AuthGuard />}>
         <Route element={<MustChangePasswordGuard />}>
-          <Route path="alterar-senha" element={<ResetPassword mandatory />} />
           <Route element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />

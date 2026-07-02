@@ -19,7 +19,6 @@ import {
 import {
   createUserPasswordResetToken,
   findUserByValidPasswordResetToken,
-  updateUserPasswordByResetToken,
 } from '@/repositories/auth/passwordResetRepository.mock'
 import { sendPasswordResetEmail } from '@/services/authEmailService.mock'
 
@@ -42,6 +41,14 @@ const ensureActiveUser = (user) => {
   if (!user.isActive) {
     throw new Error('Usuário sem acesso ativo.')
   }
+}
+
+const applyDefinedPassword = async ({ userId, password }) => {
+  return updateUserPassword({
+    userId,
+    password,
+    mustChangePassword: false,
+  })
 }
 
 export const login = async ({ cpf, password }) => {
@@ -118,16 +125,25 @@ export const validatePasswordResetToken = async (token) => {
   return Boolean(user)
 }
 
-export const resetPassword = async (token, password) => {
-  await updateUserPasswordByResetToken(token, password)
+export const definePasswordWithResetToken = async (token, password) => {
+  const user = await findUserByValidPasswordResetToken(token)
+
+  if (!user) {
+    throw new Error('Este link não é mais válido.')
+  }
+
+  return applyDefinedPassword({
+    userId: user.id,
+    password,
+  })
 }
 
-export const changeRequiredPassword = async (session, password) => {
+export const definePasswordForRequiredChange = async (session, password) => {
   if (!session?.user?.mustChangePassword) {
     throw new Error('A troca obrigatória de senha não está pendente.')
   }
 
-  return updateUserPassword({
+  return applyDefinedPassword({
     userId: session.user.id,
     password,
   })

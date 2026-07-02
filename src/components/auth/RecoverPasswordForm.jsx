@@ -3,7 +3,7 @@ import { FieldGroup } from '@/components/ui/field'
 import { Button } from '@/components/ui/button'
 import { AuthFeedbackMessage } from '@/components/feedback/AuthFeedbackMessage'
 import { AuthSubmitButton } from '@/components/auth/AuthSubmitButton'
-import { CpfField } from '@/components/auth/fields/CpfField'
+import { CpfField } from '@/components/form-fields/CpfField'
 import { useRecoverPassword } from '@/hooks/useRecoverPassword'
 
 export function RecoverPasswordForm() {
@@ -20,11 +20,12 @@ export function RecoverPasswordForm() {
   return (
     <form className="space-y-6" onSubmit={handleSubmit(requestResetLink)}>
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-gray-700">Recuperar senha</h1>
+        <h1 className="text-foreground text-2xl font-bold">Recuperar senha</h1>
       </div>
 
       <FieldGroup className="gap-1 p-0">
         <CpfField
+          variant="auth"
           registration={register('cpf')}
           disabled={isSubmitting}
           error={errors.cpf?.message}

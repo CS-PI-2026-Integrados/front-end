@@ -10,7 +10,7 @@ export const recoverPasswordSchema = z.object({
   cpf: cpfSchema,
 })
 
-export const resetPasswordSchema = z
+export const definePasswordSchema = z
   .object({
     newPassword: passwordSchema('A nova senha é obrigatória.'),
     confirmPassword: passwordSchema('Confirme a nova senha.'),

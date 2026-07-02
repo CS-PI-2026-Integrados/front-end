@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 import { FieldGroup } from '@/components/ui/field'
 import { Button } from '@/components/ui/button'
 import { AuthSubmitButton } from '@/components/auth/AuthSubmitButton'
-import { CpfField } from '@/components/auth/fields/CpfField'
-import { PasswordField } from '@/components/auth/fields/PasswordField'
+import { CpfField } from '@/components/form-fields/CpfField'
+import { PasswordField } from '@/components/auth/PasswordField'
 import { useLogin } from '@/hooks/useLogin'
 
 export function LoginForm() {
@@ -20,12 +20,14 @@ export function LoginForm() {
     <form className="space-y-6" onSubmit={handleSubmit(signIn)}>
       <FieldGroup className="gap-1 p-0">
         <CpfField
+          variant="auth"
           registration={register('cpf')}
           disabled={isSubmitting}
           error={errors.cpf?.message || errors.root?.message}
         />
 
         <PasswordField
+          variant="auth"
           registration={register('password')}
           disabled={isSubmitting}
           error={errors.password?.message || errors.root?.message}
