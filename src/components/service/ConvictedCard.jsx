@@ -23,7 +23,10 @@ export function ConvictedCard({ className }) {
 
   return (
     <Card
-      className={cn('flex flex-col gap-0 overflow-hidden rounded-xl py-0 shadow-sm', className)}
+      className={cn(
+        'flex min-h-0 flex-col gap-0 overflow-hidden rounded-xl py-0 shadow-sm',
+        className
+      )}
     >
       <CardHeader className="shrink-0 flex-col items-start space-y-1 px-5 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4">
         <CardTitle className="items-start text-lg font-semibold md:text-xl">
@@ -32,17 +35,13 @@ export function ConvictedCard({ className }) {
         <p className="text-muted-foreground text-sm">Selecione o apenado e registre a foto</p>
       </CardHeader>
       <CardContent
-        className={cn(
-          'flex flex-col px-4 pb-4 md:min-h-0 md:flex-1 md:px-6 md:pb-6',
-          apenado ? 'md:overflow-y-auto' : 'md:overflow-hidden'
-        )}
+        className={cn('flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 md:px-6 md:pb-6')}
       >
         <SelectConvicted />
 
-        {/* ── Empty state placeholder ── */}
         {!apenado && (
-          <div className="mt-4 flex flex-1 items-center justify-center md:mt-6">
-            <div className="border-muted-foreground/25 flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 md:py-8">
+          <div className="mt-4 flex min-h-[120px] flex-1 items-center justify-center md:mt-6">
+            <div className="border-muted-foreground/25 flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-8">
               <div className="bg-muted/50 flex h-12 w-12 items-center justify-center rounded-full">
                 <FileText className="text-muted-foreground/50 h-6 w-6" />
               </div>

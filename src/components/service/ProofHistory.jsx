@@ -31,6 +31,8 @@ export function ProofHistory() {
         photoUrl: comp.photoUrl,
         verificationCode: comp.verificationCode,
         dateTime: comp.dateTime,
+        operatorName: comp.operatorName,
+        tenantConfig: comp.tenantConfig,
       },
       mudancasDetectadas: comp.mudancasRastreadas || {},
     }
@@ -46,7 +48,6 @@ export function ProofHistory() {
 
   return (
     <div className="bg-card text-card-foreground flex w-full flex-col rounded-xl border shadow-sm">
-      {/* ── Header ── */}
       <div className="shrink-0 px-5 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0 flex-1">
@@ -85,11 +86,9 @@ export function ProofHistory() {
         </div>
       </div>
 
-      {/* ── Table / Content ── */}
       <div className="flex min-h-0 flex-1 flex-col">
         {comprovantes.length > 0 ? (
           <>
-            {/* Desktop table */}
             <div className="hidden flex-col md:flex">
               <div className="w-full overflow-auto">
                 <table className="w-full text-sm">
@@ -180,7 +179,6 @@ export function ProofHistory() {
               </div>
             </div>
 
-            {/* Mobile card list */}
             <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-4 pb-4 md:hidden">
               {comprovantesPage.map((comp, idx) => (
                 <div
@@ -246,7 +244,6 @@ export function ProofHistory() {
         )}
       </div>
 
-      {/* ── Footer ── */}
       {comprovantes.length > 0 && (
         <div className="text-muted-foreground shrink-0 border-t px-5 py-2.5 text-center text-xs md:px-6">
           Exibindo {comprovantesPage.length} de {comprovantes.length} comprovante

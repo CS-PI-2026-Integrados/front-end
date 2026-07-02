@@ -6,7 +6,6 @@ import { ProofHistory } from '@/components/service/ProofHistory.jsx'
 import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
 import { useDistrictData } from '@/hooks/useDistrictData.js'
 import { ReceiptSuccessCard } from '@/components/service/ReceiptSuccessCard.jsx'
-import { validateAtendimento } from '@/lib/atendimentoUtils'
 import { getMudancasAtivas } from '@/lib/atendimentoUtils'
 
 const Service = () => {
@@ -15,11 +14,9 @@ const Service = () => {
     processo,
     fotoAtendimento,
     isSuccess,
-    isSubmitting,
     mudancas,
     isReadyToCapture,
     reciboGerado,
-    setFoto,
     setSubmitting,
     setSuccess,
     setReciboGerado,
@@ -35,14 +32,19 @@ const Service = () => {
     e.preventDefault()
     setError('')
 
-    const { isValid, error } = validateAtendimento({
-      apenado,
-      processo,
-      foto: fotoAtendimento,
-    })
+    if (!apenado) {
+      setError('Selecione um apenado para continuar')
+      return
+    }
 
-    if (!isValid) {
-      setError(error)
+    const temProcessosAtivos = (apenado.processos || []).length > 0
+    if (!processo && temProcessosAtivos) {
+      setError('Selecione um processo para continuar')
+      return
+    }
+
+    if (!fotoAtendimento) {
+      setError('Capture ou selecione uma foto para gerar o comprovante')
       return
     }
 
@@ -51,8 +53,8 @@ const Service = () => {
       const mudancasAtivas = getMudancasAtivas(mudancas)
 
       const recibo = await generateReceipt({
-        apenado: apenado,
-        processo: processo,
+        apenado,
+        processo,
         fotoAtendimento: fotoAtendimento.data,
         mudancasDetectadas: mudancasAtivas,
       })
@@ -60,7 +62,6 @@ const Service = () => {
       setReciboGerado(recibo)
       setSuccess(true)
     } catch (error) {
-      console.error('Falha ao gerar comprovante:', error)
       setError(error.message || 'Falha ao gerar comprovante. Tente novamente.')
     } finally {
       setSubmitting(false)
@@ -68,8 +69,8 @@ const Service = () => {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-4 md:h-full md:overflow-auto md:px-8 md:py-6">
-      <Tabs defaultValue="novo" className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-auto">
+      <Tabs defaultValue="novo" className="flex h-full min-h-0 w-full flex-1 flex-col">
         <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <h1 className="text-2xl font-bold md:text-3xl">Emissão de Comprovantes</h1>
@@ -80,13 +81,13 @@ const Service = () => {
           <TabsList className="bg-muted text-muted-foreground grid h-auto w-full grid-cols-2 items-center justify-center rounded-lg p-1 shadow-sm md:inline-flex md:h-9 md:w-auto">
             <TabsTrigger
               value="novo"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-[32px] items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Novo comprovante
             </TabsTrigger>
             <TabsTrigger
               value="historico"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-[32px] items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Histórico {presencas.length > 0 ? `(${presencas.length})` : ''}
             </TabsTrigger>
@@ -95,16 +96,20 @@ const Service = () => {
 
         <TabsContent
           value="novo"
-          className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none md:min-h-0 md:flex-1 md:flex-row md:items-stretch"
+          className="mt-0 flex min-h-0 w-full min-w-0 flex-col gap-4 overflow-y-auto pb-4 outline-none lg:items-stretch lg:gap-6 lg:overflow-visible lg:pb-0"
         >
-          <form id="form-atendimento" onSubmit={handleFinalSubmit} className="contents">
+          <form
+            id="form-atendimento"
+            onSubmit={handleFinalSubmit}
+            className="flex min-h-0 w-full shrink-0 flex-col gap-4 lg:shrink lg:flex-row lg:gap-6"
+          >
             <ConvictedCard
-              className={`w-full transition-all duration-300 md:h-full md:flex-1 ${
+              className={`min-h-0 w-full min-w-0 transition-all duration-300 lg:h-full lg:w-1/2 lg:flex-1 lg:basis-1/2 ${
                 isSuccess ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
               }`}
             />
             <div
-              className={`flex h-full w-full flex-col transition-all duration-300 md:min-h-0 md:flex-1 ${
+              className={`flex min-h-0 w-full min-w-0 flex-col transition-all duration-300 lg:w-1/2 lg:flex-1 lg:basis-1/2 ${
                 !isReadyToCapture && !isSuccess
                   ? 'pointer-events-none opacity-40 grayscale-[0.5]'
                   : ''
@@ -112,12 +117,12 @@ const Service = () => {
             >
               {isSuccess ? (
                 <ReceiptSuccessCard
-                  className="h-full w-full flex-1"
+                  className="w-full"
                   atendimento={{ apenado, processo, recibo: reciboGerado }}
                   onReset={resetAtendimento}
                 />
               ) : (
-                <PhotoCaptureCard className="h-full w-full flex-1" />
+                <PhotoCaptureCard className="w-full" />
               )}
             </div>
           </form>

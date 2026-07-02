@@ -1,13 +1,16 @@
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { SessionProvider } from './context/SessionProvider'
+import { TenantProvider } from './context/TenantContext'
 import AppRouter from './AppRouter'
 
 function App() {
   return (
     <BrowserRouter>
       <SessionProvider>
-        <AppRouter />
+        <TenantProvider>
+          <AppRouter />
+        </TenantProvider>
         <Toaster
           position="top-right"
           toastOptions={{

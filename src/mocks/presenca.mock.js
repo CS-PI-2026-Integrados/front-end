@@ -159,7 +159,6 @@ export const presencasStore = {
   },
 }
 
-// Manter export legado temporariamente para não quebrar outros imports
 export const mockPresenca = {
   get presencas() {
     return presencasCache

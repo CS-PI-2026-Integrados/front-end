@@ -19,8 +19,8 @@ export function ReceiptSuccessCard({ className, atendimento, onReset }) {
         </div>
         <p className="text-muted-foreground text-sm">Comprovante de presença gerado com sucesso</p>
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 md:px-6 md:pb-6">
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center space-y-3">
+      <CardContent className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 md:px-6 md:pb-6">
+        <div className="flex flex-1 flex-col items-center justify-center space-y-3 py-4">
           <div className="bg-primary/10 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl">
             {atendimento.recibo?.photoUrl ? (
               <img

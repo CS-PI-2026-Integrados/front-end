@@ -2,7 +2,6 @@ import pdfMake from 'pdfmake/build/pdfmake'
 import * as pdfFonts from 'pdfmake/build/vfs_fonts'
 import { generateReceiptPDF } from './pdfGenerator.js'
 
-// Inicializa fontes UMA VEZ no nível do módulo
 pdfMake.vfs = pdfFonts.pdfMake?.vfs || pdfFonts.default?.pdfMake?.vfs || pdfFonts
 
 export async function downloadReceiptPDF(atendimento) {

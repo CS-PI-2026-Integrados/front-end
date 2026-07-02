@@ -1,6 +1,6 @@
 import { FileText, LayoutDashboard, Users, User, Menu, UserCog, Settings } from 'lucide-react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import Logo from '@/assets/logos/to-light-background.svg'
+import LogoFallback from '@/assets/logos/to-light-background.svg'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -11,14 +11,19 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { useSession } from '@/context/sessionContext'
+import { useTenant } from '@/context/TenantContext'
 import { canAccessUsersPage } from '@/lib/userPermissions'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
   const { session, handleLogout } = useSession()
+  const { state: tenantState } = useTenant()
   const location = useLocation()
   const isActive = (path) => location.pathname === path
   const canManageUsers = canAccessUsersPage(session?.user)
+
+  const displayLogo = tenantState.logo || LogoFallback
+  const displayTenantName = tenantState.nomeComarca || session?.tenant?.name
 
   const onLogout = () => {
     handleLogout()
@@ -35,8 +40,15 @@ export default function DashboardLayout() {
           }}
         >
           <div className="bg-background flex h-full w-60 -translate-x-60 flex-col border-e transition-all group-open:-translate-x-0 group-open:shadow-lg md:static md:-translate-x-0 group-open:md:shadow-none">
-            <div className="flex h-14 border-b px-4">
-              <img src={Logo} alt="Logo marca" className="w-14" />
+            <div className="flex h-14 items-center border-b px-4">
+              <img
+                src={displayLogo}
+                alt={displayTenantName || 'Logo marca'}
+                className="h-10 w-14 object-contain"
+                onError={(e) => {
+                  e.currentTarget.src = LogoFallback
+                }}
+              />
             </div>
             <aside className="flex flex-col gap-1 p-4">
               <Button
@@ -94,13 +106,14 @@ export default function DashboardLayout() {
                 className="justify-start"
               >
                 <Link to="/configuracoes" className="flex w-full items-center gap-2">
-                  <Settings /> Configuracões
+                  <Settings />
+                  Configurações
                 </Link>
               </Button>
             </aside>
           </div>
         </div>
-        <div className="flex h-full min-w-0 flex-col" style={{ flex: 1 }}>
+        <div className="flex min-h-0 min-w-0 flex-col" style={{ flex: 1 }}>
           <header className="bg-background flex h-14 items-center justify-between border-b">
             <div className="flex w-full min-w-0 items-center gap-3 px-3 sm:px-4">
               <Button
@@ -124,9 +137,7 @@ export default function DashboardLayout() {
                         <span className="truncate text-sm font-medium text-black/75">
                           {session?.user.name}
                         </span>
-                        <span className="truncate text-xs text-black/50">
-                          {session?.tenant.name}
-                        </span>
+                        <span className="truncate text-xs text-black/50">{displayTenantName}</span>
                       </div>
                     </Button>
                   </DropdownMenuTrigger>
@@ -141,7 +152,7 @@ export default function DashboardLayout() {
             </div>
           </header>
           <main
-            className="h-dvh min-w-0 p-3 sm:p-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-black/20 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-transparent dark:[&::-webkit-scrollbar-track]:bg-neutral-700"
+            className="min-h-0 min-w-0 p-3 sm:p-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-black/20 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-transparent dark:[&::-webkit-scrollbar-track]:bg-neutral-700"
             style={{ flex: 1, overflow: 'auto' }}
           >
             <Outlet />
