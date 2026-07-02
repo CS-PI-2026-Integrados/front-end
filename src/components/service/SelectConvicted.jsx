@@ -29,14 +29,7 @@ export function SelectConvicted() {
   const handleSelectApenado = (idSelecionado) => {
     setOpen(false)
     const apenadoSelecionado = apenados?.find((a) => String(a.id) === idSelecionado)
-
-    if (apenado) {
-      const processosAtivos = (apenado.processos || []).filter((p) => p.status === 'ATIVO')
-      const processoPadrao = processosAtivos.length === 1 ? processosAtivos[0] : null
-      onChangeAtendimento({ apenado, processo: processoPadrao })
-    } else {
-      onChangeAtendimento({ apenado: null, processo: null })
-    }
+    selectApenado(apenadoSelecionado || null)
   }
 
   return (
