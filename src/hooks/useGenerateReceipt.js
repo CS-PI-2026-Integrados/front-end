@@ -19,7 +19,6 @@ export function useGenerateReceipt() {
   const generateReceipt = useCallback(
     (params = {}) =>
       new Promise((resolve, reject) => {
-        // Apenas para mock. Futuramente, implementação pra API
         setTimeout(() => {
           try {
             const { apenado, processo, fotoAtendimento, mudancasDetectadas = {} } = params
@@ -31,22 +30,22 @@ export function useGenerateReceipt() {
             const now = new Date().toISOString()
             const apenadoFinal = { ...apenado, lastProof: now }
 
-            //remover quando conectar o springboot
             const index = mockApenados.apenados.findIndex((a) => a.id === apenadoFinal.id)
             if (index !== -1) {
               mockApenados.apenados[index] = apenadoFinal
             }
 
             const novaPresenca = {
-              idApenado: apenadoFinal?.id,
-              idTenant: apenadoFinal?.tenantId,
-              idProcesso: processo?.id,
-              name: apenadoFinal?.fullName,
-              photo64: fotoAtendimento,
+              id: `${Date.now()}`,
+              apenadoId: apenadoFinal?.id,
+              tenantId: apenadoFinal?.tenantId,
+              processoId: processo?.id,
+              apenadoName: apenadoFinal?.fullName,
+              photoUrl: fotoAtendimento,
               cpf: apenadoFinal.cpf,
-              timestamp: now,
+              dateTime: now,
               operatorName: usuario,
-              proofCode: `COMP-${new Date(now).getTime()}-${generateRandomCode()}`,
+              verificationCode: `COMP-${new Date(now).getTime()}-${generateRandomCode()}`,
               mudancasRastreadas: Object.entries(mudancasDetectadas)
                 .filter(([, m]) => m.mudou)
                 .reduce(
@@ -67,7 +66,6 @@ export function useGenerateReceipt() {
               },
             }
 
-            //persiste o comprovante, futuramente rota /presencas ou comprovantes
             presencasStore.addPresenca(novaPresenca)
             resolve(novaPresenca)
           } catch (error) {
