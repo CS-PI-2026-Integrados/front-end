@@ -33,7 +33,7 @@ const fieldStyles = {
   labelClassName: 'text-xs font-semibold text-gray-600',
 }
 
-export function CreateOperatorDialog({ currentUser, onCreate, onOpenChange, open }) {
+export function CreateOperatorDialog({ onCreate, onOpenChange, open }) {
   const {
     form: {
       control,
@@ -45,7 +45,6 @@ export function CreateOperatorDialog({ currentUser, onCreate, onOpenChange, open
     password,
     submitOperator,
   } = useCreateOperatorForm({ onCreate, onOpenChange })
-  const canCreateAdmin = currentUser?.role?.key === ROLE_KEYS.OWNER
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -150,9 +149,7 @@ export function CreateOperatorDialog({ currentUser, onCreate, onOpenChange, open
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={ROLE_KEYS.OPERATOR}>Operador</SelectItem>
-                        {canCreateAdmin && (
-                          <SelectItem value={ROLE_KEYS.ADMIN}>Administrador</SelectItem>
-                        )}
+                        <SelectItem value={ROLE_KEYS.ADMIN}>Administrador</SelectItem>
                       </SelectContent>
                     </Select>
                     <FieldError className="min-h-5 text-xs">

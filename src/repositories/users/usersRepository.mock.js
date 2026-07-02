@@ -122,7 +122,6 @@ export const createUser = async (userData) => {
     mustChangePassword: true,
     createdAt: new Date().toISOString(),
     lastAccessAt: null,
-    hasActiveSession: false,
     ...userData,
   }
 
@@ -145,7 +144,6 @@ export const updateUserActiveState = async ({ userId, isActive }) => {
     return {
       ...user,
       isActive,
-      hasActiveSession: isActive === targetUser.isActive ? user.hasActiveSession : false,
     }
   })
 
@@ -154,7 +152,7 @@ export const updateUserActiveState = async ({ userId, isActive }) => {
   return mapUserForReturn(updatedUsers.find((user) => user.id === userId))
 }
 
-export const updateUserSessionState = async ({ userId, hasActiveSession, lastAccessAt }) => {
+export const updateUserLastAccessAt = async ({ userId, lastAccessAt }) => {
   const users = getStoredUsers()
   const targetUser = users.find((user) => user.id === userId)
 
@@ -167,7 +165,6 @@ export const updateUserSessionState = async ({ userId, hasActiveSession, lastAcc
 
     return {
       ...user,
-      hasActiveSession,
       lastAccessAt: lastAccessAt ?? user.lastAccessAt,
     }
   })
@@ -217,7 +214,6 @@ export const updateUserPassword = async ({ userId, password, mustChangePassword 
       resetToken: null,
       resetTokenExpiresAt: null,
       mustChangePassword,
-      hasActiveSession: mustChangePassword ? false : user.hasActiveSession,
     }
   })
 

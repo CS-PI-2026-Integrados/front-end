@@ -14,7 +14,7 @@ import {
 import {
   subscribeToUsersChanges,
   updateUserPassword,
-  updateUserSessionState,
+  updateUserLastAccessAt,
 } from '@/repositories/users/usersRepository.mock'
 import {
   createUserPasswordResetToken,
@@ -49,9 +49,8 @@ export const login = async ({ cpf, password }) => {
 
   ensureActiveUser(authUser.user)
 
-  const sessionUser = await updateUserSessionState({
+  const sessionUser = await updateUserLastAccessAt({
     userId: authUser.user.id,
-    hasActiveSession: true,
     lastAccessAt: new Date().toISOString(),
   })
 
@@ -66,16 +65,6 @@ export const login = async ({ cpf, password }) => {
 }
 
 export const logout = () => {
-  const token = getStoredToken()
-  const payload = validateSessionToken(token)
-
-  if (payload?.sub) {
-    void updateUserSessionState({
-      userId: payload.sub,
-      hasActiveSession: false,
-    }).catch(() => {})
-  }
-
   clearStoredToken()
 }
 
@@ -93,15 +82,7 @@ export const restoreSession = async () => {
 
     ensureActiveUser(authUser.user)
 
-    const sessionUser = await updateUserSessionState({
-      userId: authUser.user.id,
-      hasActiveSession: true,
-    })
-
-    return buildSession({
-      ...authUser,
-      user: sessionUser,
-    })
+    return buildSession(authUser)
   } catch {
     logout()
     return null
