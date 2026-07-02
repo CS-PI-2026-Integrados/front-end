@@ -6,7 +6,6 @@ import { ProofHistory } from '@/components/service/ProofHistory.jsx'
 import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
 import { useDistrictData } from '@/hooks/useDistrictData.js'
 import { ReceiptSuccessCard } from '@/components/service/ReceiptSuccessCard.jsx'
-import { validateAtendimento } from '@/lib/atendimentoUtils'
 import { getMudancasAtivas } from '@/lib/atendimentoUtils'
 
 const Service = () => {
@@ -19,7 +18,6 @@ const Service = () => {
     mudancas,
     isReadyToCapture,
     reciboGerado,
-    setFoto,
     setSubmitting,
     setSuccess,
     setReciboGerado,
@@ -35,14 +33,19 @@ const Service = () => {
     e.preventDefault()
     setError('')
 
-    const { isValid, error } = validateAtendimento({
-      apenado,
-      processo,
-      foto: fotoAtendimento,
-    })
+    if (!apenado) {
+      setError('Selecione um apenado para continuar')
+      return
+    }
 
-    if (!isValid) {
-      setError(error)
+    const temProcessosAtivos = (apenado.processos || []).some((p) => p.status === 'ATIVO')
+    if (!processo && temProcessosAtivos) {
+      setError('Selecione um processo para continuar')
+      return
+    }
+
+    if (!fotoAtendimento) {
+      setError('Capture ou selecione uma foto para gerar o comprovante')
       return
     }
 
@@ -51,8 +54,8 @@ const Service = () => {
       const mudancasAtivas = getMudancasAtivas(mudancas)
 
       const recibo = await generateReceipt({
-        apenado: apenado,
-        processo: processo,
+        apenado,
+        processo,
         fotoAtendimento: fotoAtendimento.data,
         mudancasDetectadas: mudancasAtivas,
       })
