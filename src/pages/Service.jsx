@@ -83,13 +83,13 @@ const Service = () => {
           <TabsList className="bg-muted text-muted-foreground grid h-auto w-full grid-cols-2 items-center justify-center rounded-lg p-1 shadow-sm md:inline-flex md:h-9 md:w-auto">
             <TabsTrigger
               value="novo"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-[32px] items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Novo comprovante
             </TabsTrigger>
             <TabsTrigger
               value="historico"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-[32px] items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Histórico {presencas.length > 0 ? `(${presencas.length})` : ''}
             </TabsTrigger>
