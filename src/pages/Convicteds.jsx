@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Ban, Eye, Pencil, Plus, Search, Users } from 'lucide-react'
+import { Ban, FileText, Pencil, Plus, Search, Users } from 'lucide-react'
 import { useSession } from '@/context/sessionContext'
 import mockApenados from '../mocks/apenados.json'
 import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
 import { toast } from 'sonner'
+import ModalDocumentosApenado from '../components/hooks/modalDocumentosApenado'
 import { useNavigate } from 'react-router-dom'
 import { DataTableCard } from '@/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/components/data-display/EmptyTableState'
@@ -88,6 +89,7 @@ const Convicteds = () => {
   const [apenadoInativar, setApenadoInativar] = useState(null)
   const [apenadoEditar, setApenadoEditar] = useState(null)
   const [modalCadastroAberto, setModalCadastroAberto] = useState(false)
+  const [apenadoDocumentos, setApenadoDocumentos] = useState(null)
 
   const filtered = useMemo(() => {
     if (!comarca) return []
@@ -192,6 +194,12 @@ const Convicteds = () => {
           onCancelar={() => setModalCadastroAberto(false)}
         />
       )}
+      {apenadoDocumentos && (
+        <ModalDocumentosApenado
+          apenado={apenadoDocumentos}
+          onFechar={() => setApenadoDocumentos(null)}
+        />
+      )}
 
       <PageHeader
         title="Gestão de Apenados"
@@ -264,7 +272,7 @@ const Convicteds = () => {
               apenado={apenado}
               onEdit={() => setApenadoEditar(apenado)}
               onInactivate={() => setApenadoInativar(apenado)}
-              onView={() => navigate(`/apenados/${apenado.id}`)}
+              onView={() => setApenadoDocumentos(apenado)}
             />
           ))}
         </div>
@@ -311,12 +319,12 @@ const Convicteds = () => {
                     <div className="flex items-center gap-1">
                       <Button
                         type="button"
-                        title="Visualizar"
+                        title="Documentos"
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => navigate(`/apenados/${a.id}`)}
+                        onClick={() => setApenadoDocumentos(a)}
                       >
-                        <Eye />
+                        <FileText />
                         <span className="sr-only">Visualizar</span>
                       </Button>
                       <Button
@@ -381,7 +389,7 @@ function ApenadoMobileCard({ apenado, onEdit, onInactivate, onView }) {
 
       <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-3">
         <Button type="button" variant="outline" size="sm" onClick={onView}>
-          <Eye /> Ver
+          <FileText /> Docs
         </Button>
         <Button type="button" variant="outline" size="sm" onClick={onEdit}>
           <Pencil /> Editar
