@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { AuthInputField } from '@/components/auth/fields/AuthInputField'
+import { InputField } from '@/components/form-fields/InputField'
 import { cn } from '@/lib/utils'
+
+const authInputStyles = 'h-13 rounded-[8px] border-2 px-3 py-4 text-sm'
 
 export function PasswordField({
   id = 'password',
   label = 'Senha',
+  variant = 'default',
   error,
   disabled,
   registration,
@@ -19,9 +22,10 @@ export function PasswordField({
 }) {
   const [showPassword, setShowPassword] = useState(false)
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev)
+  const shouldUseAuthStyles = variant === 'auth'
 
   return (
-    <AuthInputField
+    <InputField
       id={id}
       label={label}
       labelAction={labelAction}
@@ -31,18 +35,18 @@ export function PasswordField({
       disabled={disabled}
       error={error}
       registration={registration}
-      className={cn('pr-12', className)}
+      className={cn(shouldUseAuthStyles && authInputStyles, 'pr-12', className)}
       errorClassName={errorClassName}
       fieldClassName={fieldClassName}
       inputWrapperClassName={inputWrapperClassName}
-      labelClassName={labelClassName}
+      labelClassName={cn(shouldUseAuthStyles && 'text-lg font-normal', labelClassName)}
       rightElement={
         <button
           type="button"
           disabled={disabled}
           onClick={togglePasswordVisibility}
           aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-          className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 focus-visible:outline-none"
+          className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 p-1 focus-visible:outline-none"
         >
           {showPassword ? (
             <EyeOff size={24} strokeWidth={1.5} />

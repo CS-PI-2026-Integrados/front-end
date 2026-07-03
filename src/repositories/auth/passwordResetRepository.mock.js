@@ -1,7 +1,6 @@
 import {
   findUserByCpf,
   findUserByResetToken,
-  updateUserPassword,
   updateUserPasswordResetToken,
 } from '@/repositories/users/usersRepository.mock'
 
@@ -14,20 +13,6 @@ const createPasswordResetToken = () => {
     .replaceAll('+', '-')
     .replaceAll('/', '_')
     .replaceAll('=', '')
-}
-
-const findUserWithValidPasswordResetToken = async (token) => {
-  if (!token || typeof token !== 'string') return null
-
-  const user = await findUserByResetToken(token, { includeSensitive: true })
-
-  if (!user?.resetTokenExpiresAt) return null
-
-  const expiresAt = new Date(user.resetTokenExpiresAt).getTime()
-
-  if (Number.isNaN(expiresAt) || expiresAt <= Date.now()) return null
-
-  return user
 }
 
 export const createUserPasswordResetToken = async (cpf) => {
@@ -51,18 +36,15 @@ export const createUserPasswordResetToken = async (cpf) => {
 }
 
 export const findUserByValidPasswordResetToken = async (token) => {
-  return findUserWithValidPasswordResetToken(token)
-}
+  if (!token || typeof token !== 'string') return null
 
-export const updateUserPasswordByResetToken = async (token, password) => {
-  const user = await findUserWithValidPasswordResetToken(token)
+  const user = await findUserByResetToken(token, { includeSensitive: true })
 
-  if (!user) {
-    throw new Error('Este link não é mais válido.')
-  }
+  if (!user?.resetTokenExpiresAt) return null
 
-  await updateUserPassword({
-    userId: user.id,
-    password,
-  })
+  const expiresAt = new Date(user.resetTokenExpiresAt).getTime()
+
+  if (Number.isNaN(expiresAt) || expiresAt <= Date.now()) return null
+
+  return user
 }

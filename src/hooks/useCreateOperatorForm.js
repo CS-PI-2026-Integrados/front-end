@@ -1,4 +1,4 @@
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createUserSchema } from '@/schemas/userSchemas'
 
@@ -7,11 +7,6 @@ export function useCreateOperatorForm({ onCreate, onOpenChange }) {
     resolver: zodResolver(createUserSchema),
     mode: 'onTouched',
   })
-  const password = useWatch({
-    control: form.control,
-    name: 'password',
-  })
-
   const submitOperator = async (data) => {
     try {
       await onCreate(data)
@@ -36,7 +31,6 @@ export function useCreateOperatorForm({ onCreate, onOpenChange }) {
   return {
     form,
     handleOpenChange,
-    password,
     submitOperator,
   }
 }

@@ -1,11 +1,10 @@
 export const ROLE_KEYS = {
-  OWNER: 'owner',
   ADMIN: 'admin',
   OPERATOR: 'operator',
 }
 
 export const isPrivilegedRole = (role) => {
-  return role?.key === ROLE_KEYS.ADMIN || role?.key === ROLE_KEYS.OWNER
+  return role?.key === ROLE_KEYS.ADMIN
 }
 
 export const canAccessUsersPage = (user) => {
@@ -20,17 +19,13 @@ export const isSameUser = (actor, target) => {
   return Boolean(actor?.id && target?.id && actor.id === target.id)
 }
 
-export const isRoleAbove = (actorRole, targetRole) => {
-  return (actorRole?.level || 0) > (targetRole?.level || 0)
-}
-
 export const canManageUser = (actor, target) => {
   if (!actor || !target) return false
   if (!canAccessUsersPage(actor)) return false
   if (!isSameTenant(actor, target)) return false
   if (isSameUser(actor, target)) return false
 
-  return isRoleAbove(actor.role, target.role)
+  return true
 }
 
 export const canDeactivateUser = (actor, target) => {

@@ -2,16 +2,16 @@ import { Link } from 'react-router-dom'
 import authBg from '@/assets/backgrounds/auth-bg.png'
 import { AuthBackgroundLayout } from '@/components/auth/AuthBackgroundLayout'
 import { AuthFormCard } from '@/components/auth/AuthFormCard'
-import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm'
+import { DefinePasswordForm } from '@/components/auth/DefinePasswordForm'
 import { Button } from '@/components/ui/button'
-import { useResetPassword } from '@/hooks/useResetPassword'
+import { useDefinePassword } from '@/hooks/useDefinePassword'
 import { RouteLoader } from '@/components/feedback/RouteLoader'
 
-const ResetPassword = ({ mandatory = false }) => {
-  const resetPasswordController = useResetPassword({ mandatory })
-  const { tokenStatus } = resetPasswordController
-  const isLoading = tokenStatus === 'loading'
-  const isInvalid = tokenStatus === 'invalid'
+const DefinePassword = () => {
+  const definePasswordController = useDefinePassword()
+  const { isRequiredChangeFlow, status } = definePasswordController
+  const isLoading = status === 'loading'
+  const isInvalid = status === 'invalid'
 
   return (
     <AuthBackgroundLayout backgroundImage={authBg}>
@@ -28,11 +28,10 @@ const ResetPassword = ({ mandatory = false }) => {
             </div>
           )}
           {!isLoading && !isInvalid && (
-            <ResetPasswordForm
-              {...resetPasswordController}
-              title={mandatory ? 'Defina uma nova senha' : 'Redefinir senha'}
-              submitLabel={mandatory ? 'Salvar nova senha' : 'Redefinir'}
-              onBack={mandatory ? resetPasswordController.returnToLogin : undefined}
+            <DefinePasswordForm
+              {...definePasswordController}
+              title={isRequiredChangeFlow ? 'Defina uma nova senha' : 'Redefinir senha'}
+              onBack={isRequiredChangeFlow ? definePasswordController.returnToLogin : undefined}
             />
           )}
         </AuthFormCard>
@@ -41,4 +40,4 @@ const ResetPassword = ({ mandatory = false }) => {
   )
 }
 
-export default ResetPassword
+export default DefinePassword

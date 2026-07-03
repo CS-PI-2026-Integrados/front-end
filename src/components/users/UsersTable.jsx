@@ -1,4 +1,4 @@
-import { formatDateTime, getSessionStatusLabel, maskCpf, maskEmail } from '@/lib/userFormatters'
+import { formatDateTime, maskCpf, maskEmail } from '@/lib/userFormatters'
 import { cn } from '@/lib/utils'
 import { UserRoleBadge } from '@/components/users/UserRoleBadge'
 import { UserStatusBadge } from '@/components/users/UserStatusBadge'
@@ -30,7 +30,6 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
           {users.map((user) => {
             const isInactive = !user.isActive
             const isSelected = selectedUserId === user.id
-            const isSessionActive = user.hasActiveSession
 
             return (
               <tr
@@ -44,20 +43,6 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
               >
                 <td className="px-4 py-3">
                   <div className="text-foreground font-semibold">{user.name}</div>
-                  <div
-                    className={cn(
-                      'mt-1 flex items-center gap-1 text-xs',
-                      isSessionActive ? 'text-primary' : 'text-muted-foreground'
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'size-1.5 rounded-full',
-                        isSessionActive ? 'bg-primary' : 'bg-muted-foreground/40'
-                      )}
-                    />
-                    {getSessionStatusLabel(user.hasActiveSession)}
-                  </div>
                 </td>
                 <td className="text-muted-foreground px-4 py-3 font-medium">{maskCpf(user.cpf)}</td>
                 <td className="text-muted-foreground px-4 py-3 font-medium">
