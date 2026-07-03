@@ -25,7 +25,7 @@ export function PasswordStrengthMeter({ password = '' }) {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className={`h-1 rounded-full ${index < strength.score ? strength.color : 'bg-gray-200'}`}
+            className={`h-1 rounded-full ${index < strength.score ? strength.color : 'bg-secondary'}`}
           />
         ))}
       </div>
