@@ -30,7 +30,6 @@ export function UserProfile() {
   const { sessionTimeout } = useTenant()
   const user = session?.user
 
-  // Consumindo valor do mock via context de tenant
   const sessionTimeoutHours = sessionTimeout || 8
   const { cameras, selectedCamera, cameraLoading, cameraError, loadCameras, handleCameraChange } =
     useUserProfile()
@@ -41,7 +40,6 @@ export function UserProfile() {
 
   return (
     <div className="space-y-6">
-      {/* ── dados em leitura ───────────────────────────────────────────── */}
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="font-bold">Informações do Usuário</CardTitle>
@@ -65,7 +63,6 @@ export function UserProfile() {
         </CardContent>
       </Card>
 
-      {/* ── timeout de sessão ──────────────────────────────────────────── */}
       <Card className="w-full">
         <CardContent className="pt-5">
           <div className="flex items-center gap-3">
