@@ -3,6 +3,7 @@ import { ServiceProvider } from '@/context/ServiceContext'
 import Service from '@/pages/Service'
 import Settings from '@/pages/Settings'
 import Login from '@/pages/Login'
+import Groups from '@/pages/Groups'
 import Dashboard from '@/pages/Dashboard'
 import Convicteds from '@/pages/Convicteds'
 import Institutions from '@/pages/Institutions'
@@ -18,6 +19,7 @@ import UsersManagement from '@/pages/UsersManagement'
 import RoleGuard from '@/components/guards/RoleGuard'
 import MustChangePasswordGuard from '@/components/guards/MustChangePasswordGuard'
 import { canAccessUsersPage } from '@/lib/userPermissions'
+import GroupManagement from './pages/GroupManagement'
 
 const AppRouter = () => {
   return (
@@ -34,6 +36,8 @@ const AppRouter = () => {
           <Route element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="grupos-reflexivos" element={<Groups />} />
+            <Route path="grupos-reflexivos/:id" element={<GroupManagement />} />
             <Route path="apenados" element={<Convicteds />} />
             <Route
               path="atendimento"

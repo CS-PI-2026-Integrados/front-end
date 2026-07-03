@@ -1,4 +1,13 @@
-import { FileText, LayoutDashboard, Users, User, Menu, UserCog, Settings } from 'lucide-react'
+import {
+  FileText,
+  LayoutDashboard,
+  Users,
+  User,
+  Menu,
+  UserCog,
+  Boxes,
+  Settings,
+} from 'lucide-react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import LogoFallback from '@/assets/logos/to-light-background.svg'
 
@@ -19,7 +28,7 @@ export default function DashboardLayout() {
   const { session, handleLogout } = useSession()
   const { state: tenantState } = useTenant()
   const location = useLocation()
-  const isActive = (path) => location.pathname === path
+  const isActive = (path) => location.pathname.startsWith(path)
   const canManageUsers = canAccessUsersPage(session?.user)
 
   const displayLogo = tenantState.logo || LogoFallback
@@ -76,6 +85,15 @@ export default function DashboardLayout() {
               >
                 <Link to="/atendimento" className="flex w-full items-center gap-2">
                   <FileText /> Comprovantes
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant={isActive('/grupos-reflexivos') ? 'default' : 'ghost'}
+                className="justify-start"
+              >
+                <Link to="/grupos-reflexivos" className="flex w-full items-center gap-2">
+                  <Boxes /> Grupos reflexivos
                 </Link>
               </Button>
               {canManageUsers && (
