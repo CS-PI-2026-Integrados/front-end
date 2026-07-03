@@ -17,7 +17,7 @@ export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
   const { session, handleLogout } = useSession()
   const location = useLocation()
-  const isActive = (path) => location.pathname === path
+  const isActive = (path) => location.pathname.startsWith(path)
   const canManageUsers = canAccessUsersPage(session?.user)
 
   const onLogout = () => {
@@ -72,7 +72,7 @@ export default function DashboardLayout() {
                 className="justify-start"
               >
                 <Link to="/grupos-reflexivos" className="flex w-full items-center gap-2">
-                  <Boxes /> Grupos Reflexivos
+                  <Boxes /> Grupos reflexivos
                 </Link>
               </Button>
               {canManageUsers && (

@@ -1,16 +1,33 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Plus, Users } from 'lucide-react'
+import { Search, Plus, Users, Pencil, Trash, Settings } from 'lucide-react'
 import { useSession } from '@/context/sessionContext'
 import mockGroups from '@/mocks/grupos.mock.json'
+import mockApenados from '@/mocks/apenados.json'
 import { DataTableCard } from '@/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/components/data-display/FiltersPanel'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/data-display/PageHeader'
 import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Select,
   SelectContent,
@@ -54,12 +71,22 @@ const Groups = () => {
   const [statusFilter, setStatusFilter] = useState('TODOS')
   const [grupoSelecionado, setGrupoSelecionado] = useState(null)
   const [visualizarGrupoAberto, setVisualizarGrupoAberto] = useState(false)
+  const [grupoParaExcluir, setGrupoParaExcluir] = useState(null)
+  const [confirmExcluirAberto, setConfirmExcluirAberto] = useState(false)
 
   const availableParticipants = useMemo(() => {
     const comarca = session?.tenant?.id
     if (!comarca) return []
-    return mockGroups.filter((a) => a.tenant_id === comarca && a.status === 'Ativo')
+    return mockApenados.filter((a) => a.tenant_id === comarca && a.status === 'Ativo')
   }, [session?.tenant?.id])
+
+  const formatDate = (date) => {
+    try {
+      return new Date(date).toLocaleDateString()
+    } catch (e) {
+      return ''
+    }
+  }
 
   const filtered = useMemo(() => {
     return grupos.filter((grupo) => {
@@ -134,10 +161,7 @@ const Groups = () => {
             <Input
               placeholder="Buscar por nome ou CPF..."
               value={search}
-              onChange={(event) => {
-                setSearch(event.target.value)
-                setCurrentPage(1)
-              }}
+              onChange={(event) => setSearch(event.target.value)}
               className="pl-9"
             />
           </div>
@@ -164,7 +188,7 @@ const Groups = () => {
           isEmpty={filtered.length === 0}
           emptyState={
             <EmptyTableState
-              title="Nenhum apenado encontrado"
+              title="Nenhum grupo reflexivo encontrado"
               description={
                 search
                   ? `Não há resultados para "${search}". Tente outro termo.`
@@ -214,19 +238,44 @@ const Groups = () => {
                       <TableCell>
                         {grupo.totalEncontros} ({grupo.frequencia})
                       </TableCell>
-                      <TableCell>{grupo.dataInicio}</TableCell>
-                      <TableCell>{grupo.dataTermino}</TableCell>
+                      <TableCell>{formatDate(grupo.dataInicio)}</TableCell>
+                      <TableCell>{formatDate(grupo.dataTermino)}</TableCell>
                       <TableCell className="text-right">
-                        <Button size="xs" onClick={() => handleRowClick(grupo.id)}>
+                        <Button size="sm" onClick={() => handleRowClick(grupo.id)}>
                           Acessar
                         </Button>
-                        <Button
-                          variant="secondary"
-                          size="xs"
-                          onClick={() => handleEditGroup(grupo)}
-                        >
-                          Editar
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="secondary" size="sm">
+                              <Settings />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuGroup>
+                              <Button
+                                size="xs"
+                                variant="ghost"
+                                className="w-full justify-start font-normal"
+                                onClick={() => handleEditGroup(grupo)}
+                              >
+                                <Pencil /> Editar
+                              </Button>
+                              {session.user.role.level >= 2 ? (
+                                <Button
+                                  size="xs"
+                                  variant="destructive"
+                                  className="w-full justify-start font-normal"
+                                  onClick={() => {
+                                    setGrupoParaExcluir(grupo)
+                                    setConfirmExcluirAberto(true)
+                                  }}
+                                >
+                                  <Trash /> Excluir
+                                </Button>
+                              ) : null}
+                            </DropdownMenuGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))
@@ -235,6 +284,35 @@ const Groups = () => {
             </Table>
           </div>
         </DataTableCard>
+
+        <Dialog open={confirmExcluirAberto} onOpenChange={setConfirmExcluirAberto}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Excluir grupo reflexivo</DialogTitle>
+              <DialogDescription>
+                Tem certeza de que deseja excluir o grupo reflexivo{' '}
+                <strong>{grupoParaExcluir?.nomeGrupo}</strong>? Esta ação não pode ser desfeita.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="justify-end gap-2">
+              <Button variant="outline" onClick={() => setConfirmExcluirAberto(false)}>
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (grupoParaExcluir) {
+                    setGrupos((prev) => prev.filter((item) => item.id !== grupoParaExcluir.id))
+                  }
+                  setConfirmExcluirAberto(false)
+                  setGrupoParaExcluir(null)
+                }}
+              >
+                Excluir
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
