@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { mockPresenca } from '@/mocks/presenca.mock.js'
 import { downloadReceiptPDF } from '@/lib/pdfService.js'
 import { mockApenados } from '@/mocks/apenados.mock.js'
@@ -52,9 +53,9 @@ function ModalDocumentosApenado({ apenado, onFechar }) {
     { id: 'certificados', label: 'Certificados de conclusão', contador: 0 },
   ]
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
       onClick={onFechar}
     >
       <div
@@ -211,17 +212,9 @@ function ModalDocumentosApenado({ apenado, onFechar }) {
             </div>
           )}
         </div>
-
-        <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3">
-          <p className="text-xs text-gray-400">
-            Downloads registrados na trilha de auditoria (E06)
-          </p>
-          <p className="text-xs font-medium text-gray-500">
-            {comprovantes.length} documento(s) no total
-          </p>
-        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
