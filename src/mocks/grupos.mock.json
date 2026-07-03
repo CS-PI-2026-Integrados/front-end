@@ -1,0 +1,89 @@
+[
+  {
+    "id": 1,
+    "nomeGrupo": "Grupo de conversa",
+    "descricao": "Grupo reflexivo dinâmicas coletivas.",
+    "dataInicio": "2026-06-26",
+    "totalEncontros": 8,
+    "frequencia": "Semanal",
+    "diaSemana": "Terça-feira",
+    "horario": "12:03",
+    "minimoEncontros": 2,
+    "participantes": [
+      {
+        "id": 1,
+        "tenant_id": "1",
+        "nome": "João Silva Santos",
+        "cpf": "123.456.789-00"
+      },
+      {
+        "id": 2,
+        "tenant_id": "1",
+        "nome": "Maria Oliveira",
+        "cpf": "234.567.890-11"
+      },
+      {
+        "id": 3,
+        "tenant_id": "1",
+        "nome": "Carlos Pereira",
+        "cpf": "345.678.901-22"
+      },
+      {
+        "id": 4,
+        "tenant_id": "1",
+        "nome": "Ana Souza",
+        "cpf": "456.789.012-33"
+      },
+      {
+        "id": 5,
+        "tenant_id": "1",
+        "nome": "Pedro Lima",
+        "cpf": "567.890.123-44"
+      },
+      {
+        "id": 6,
+        "tenant_id": "1",
+        "nome": "Lucas Costa",
+        "cpf": "678.901.234-55"
+      },
+      {
+        "id": 7,
+        "tenant_id": "1",
+        "nome": "Mariana Rocha",
+        "cpf": "789.012.345-66"
+      },
+      {
+        "id": 8,
+        "tenant_id": "1",
+        "nome": "Rafael Gomes",
+        "cpf": "890.123.456-77"
+      }
+    ],
+    "encontros": [
+      {
+        "id": 1,
+        "data": "2026-06-26 10:30:00",
+        "tema": "Apresentação do grupo",
+        "presentes": [1, 2, 3, 4, 5, 6],
+        "status": "REALIZADO"
+      },
+      {
+        "id": 2,
+        "data": "2026-06-27 10:30:00",
+        "tema": "Dinâmicas e acolhimento",
+        "presentes": [1, 2, 3, 4],
+        "status": "REALIZADO"
+      },
+      {
+        "id": 3,
+        "data": "2026-06-28 10:30:00",
+        "tema": "Discussão tema X",
+        "presentes": [],
+        "status": "PENDENTE"
+      }
+    ],
+    "dataTermino": "2026-06-30",
+    "status": "PLANEJAMENTO",
+    "criadoEm": "2026-06-25T23:34:46.829Z"
+  }
+]
