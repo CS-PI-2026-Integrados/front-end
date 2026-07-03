@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { useSession } from '@/context/sessionContext'
 import { changePassword } from '@/services/authService'
+import { PasswordStrengthMeter, getStrength } from '@/components/auth/PasswordStrengthMeter'
 
 const PasswordField = ({ label, value, onChange, error }) => (
   <div className="space-y-2">
@@ -48,8 +49,11 @@ export const PasswordChange = () => {
 
     if (!formData.novaSenha.trim()) {
       newErrors.novaSenha = 'Nova senha é obrigatória'
-    } else if (formData.novaSenha.length < 6) {
-      newErrors.novaSenha = 'Mínimo de 6 caracteres'
+    } else {
+      const strength = getStrength(formData.novaSenha)
+      if (strength.score < 2) {
+        newErrors.novaSenha = 'A senha é muito fraca'
+      }
     }
 
     if (!formData.confirmarSenha.trim()) {
@@ -102,6 +106,7 @@ export const PasswordChange = () => {
           onChange={(v) => handleChange('novaSenha', v)}
           error={errors.novaSenha}
         />
+        <PasswordStrengthMeter password={formData.novaSenha} />
         <PasswordField
           label="Confirmar Nova Senha"
           value={formData.confirmarSenha}
