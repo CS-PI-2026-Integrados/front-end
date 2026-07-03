@@ -260,7 +260,7 @@ const Groups = () => {
                               >
                                 <Pencil /> Editar
                               </Button>
-                              {session.user.role.level >= 2 ? (
+                              {session?.user.role?.level >= 2 ? (
                                 <Button
                                   size="xs"
                                   variant="destructive"
