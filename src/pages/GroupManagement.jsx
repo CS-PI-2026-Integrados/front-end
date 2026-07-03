@@ -84,7 +84,7 @@ const StatusBadge = ({ status }) => (
 const STORAGE_KEY = 'groups_list'
 
 function getStoredList() {
-  return mock
+  // return mock
 
   const local = localStorage.getItem(STORAGE_KEY)
 

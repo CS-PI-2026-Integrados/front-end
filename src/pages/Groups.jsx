@@ -105,7 +105,9 @@ const Groups = () => {
         criadoEm: new Date().toISOString(),
       }
 
-      setGrupos((prev) => [novoGrupo, ...prev])
+      const newGroupsList = [novoGrupo, ...grupos]
+      setGrupos(newGroupsList)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newGroupsList))
       setNovoGrupoAberto(false)
     } catch (error) {
       throw error
@@ -122,7 +124,11 @@ const Groups = () => {
   }
 
   const handleUpdateGroup = (updatedGrupo) => {
-    setGrupos((prev) => prev.map((grupo) => (grupo.id === updatedGrupo.id ? updatedGrupo : grupo)))
+    const newGroupsList = grupos.map((grupo) =>
+      grupo.id === updatedGrupo.id ? updatedGrupo : grupo
+    )
+    setGrupos(newGroupsList)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newGroupsList))
   }
 
   return (
@@ -302,7 +308,9 @@ const Groups = () => {
                 variant="destructive"
                 onClick={() => {
                   if (grupoParaExcluir) {
-                    setGrupos((prev) => prev.filter((item) => item.id !== grupoParaExcluir.id))
+                    const newGroupsList = grupos.filter((item) => item.id !== grupoParaExcluir.id)
+                    setGrupos(newGroupsList)
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(newGroupsList))
                   }
                   setConfirmExcluirAberto(false)
                   setGrupoParaExcluir(null)

@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 
+const STORAGE_KEY = 'groups_list'
+
 const GroupEditModal = ({ group, isOpen, onOpenChange, availableParticipants, onUpdate }) => {
   const [editData, setEditData] = useState(
     group ?? { nomeGrupo: '', descricao: '', participantes: [] }
@@ -37,7 +39,8 @@ const GroupEditModal = ({ group, isOpen, onOpenChange, availableParticipants, on
 
   const handleSave = () => {
     if (!group) return
-    onUpdate({ ...group, ...editData })
+    const updatedGroup = { ...group, ...editData }
+    onUpdate(updatedGroup)
     onOpenChange(false)
   }
 

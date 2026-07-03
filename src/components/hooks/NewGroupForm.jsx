@@ -20,6 +20,60 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import ParticipantSelector from './ParticipantSelector'
 
+const dayOfWeekMap = {
+  'Segunda-feira': 1,
+  'Terça-feira': 2,
+  'Quarta-feira': 3,
+  'Quinta-feira': 4,
+  'Sexta-feira': 5,
+  Sábado: 6,
+  Domingo: 0,
+}
+
+const generateEncontros = (dataInicio, totalEncontros, diaSemana, frequencia) => {
+  const startDate = new Date(dataInicio)
+  const targetDayOfWeek = dayOfWeekMap[diaSemana]
+
+  // Find the first date that matches the selected day of week
+  let firstEncontroDate = new Date(startDate)
+  const currentDayOfWeek = firstEncontroDate.getDay()
+  const daysToAdd = (targetDayOfWeek - currentDayOfWeek + 7) % 7
+
+  if (daysToAdd > 0) {
+    firstEncontroDate.setDate(firstEncontroDate.getDate() + daysToAdd)
+  }
+
+  // Calculate the interval in days based on frequency
+  const frequencyMap = {
+    Semanal: 7,
+    Quinzenal: 14,
+    Mensal: 30,
+  }
+
+  const interval = frequencyMap[frequencia] || 7
+
+  const encontros = []
+
+  for (let i = 0; i < totalEncontros; i++) {
+    const encontroDate = new Date(firstEncontroDate)
+    encontroDate.setDate(encontroDate.getDate() + i * interval)
+
+    const encuentro = {
+      id: i + 1,
+      data: encontroDate.toISOString().split('T')[0],
+      tema: `Encontro ${i + 1}`,
+      presentes: [],
+      ausentes: [],
+      justificacoes: {},
+      status: 'PENDENTE',
+    }
+
+    encontros.push(encuentro)
+  }
+
+  return encontros
+}
+
 const NewGroupForm = ({ isOpen, onOpenChange, availableParticipants, onSubmit }) => {
   const [formData, setFormData] = useState({
     nomeGrupo: '',
@@ -126,7 +180,20 @@ const NewGroupForm = ({ isOpen, onOpenChange, availableParticipants, onSubmit })
     }
 
     try {
-      await onSubmit(formData)
+      // Generate encontros based on form data
+      const encontros = generateEncontros(
+        formData.dataInicio,
+        formData.totalEncontros,
+        formData.diaSemana,
+        formData.frequencia
+      )
+
+      const formDataWithEncontros = {
+        ...formData,
+        encontros,
+      }
+
+      await onSubmit(formDataWithEncontros)
       resetForm()
     } catch (error) {
       console.error('Erro ao criar grupo:', error)
