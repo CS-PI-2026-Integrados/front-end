@@ -244,6 +244,7 @@ export const generateReceiptPDF = async (atendimento) => {
           },
         ],
         margin: [0, 0, 0, 30],
+        alignment: 'center',
       }
     : null
 
