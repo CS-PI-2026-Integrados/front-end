@@ -95,16 +95,43 @@ export function usePhotoCaptureCard({
     if (!videoRef.current) return
 
     const video = videoRef.current
+
+    // O preview na tela usa aspect-[3/4] (retrato).
+    // Precisamos cortar a imagem real na mesma proporção para não distorcer.
+    const targetAspect = 3 / 4
+    const videoAspect = video.videoWidth / video.videoHeight
+
+    let cropWidth, cropHeight
+    if (videoAspect > targetAspect) {
+      // Vídeo é mais largo (ex: 16:9), vamos limitar pela altura
+      cropHeight = video.videoHeight
+      cropWidth = cropHeight * targetAspect
+    } else {
+      // Vídeo é mais alto, limitamos pela largura
+      cropWidth = video.videoWidth
+      cropHeight = cropWidth / targetAspect
+    }
+
+    // Garantir números inteiros para evitar problemas de "stride" (imagem corrompida)
+    cropWidth = Math.floor(cropWidth)
+    cropHeight = Math.floor(cropHeight)
+
+    const startX = Math.floor((video.videoWidth - cropWidth) / 2)
+    const startY = Math.floor((video.videoHeight - cropHeight) / 2)
+
     const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+    canvas.width = cropWidth
+    canvas.height = cropHeight
 
     const ctx = canvas.getContext('2d')
-    ctx.translate(canvas.width, 0)
+    ctx.translate(cropWidth, 0)
     ctx.scale(-1, 1)
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-    const base64Image = canvas.toDataURL('image/jpeg', 0.9)
+    ctx.drawImage(video, startX, startY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight)
+
+    // Usar PNG ao invés de JPEG. O motor do PDF (pdfmake) tem um bug conhecido
+    // com alguns tipos de JPEG gerados pelo Canvas que causam corrupção de cor e scanlines.
+    const base64Image = canvas.toDataURL('image/png')
 
     stopCamera()
     setFoto(base64Image)
