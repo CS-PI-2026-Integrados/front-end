@@ -1,12 +1,54 @@
 import { useState } from 'react'
+import { mockPresenca } from '@/mocks/presenca.mock.js'
+import { downloadReceiptPDF } from '@/lib/pdfService.js'
+import { mockApenados } from '@/mocks/apenados.mock.js'
+import { mockProcessos } from '@/mocks/processos.mock.js'
+
+function formatarDataHora(iso) {
+  return new Date(iso).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function BotaoDownload({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      title="Baixar PDF"
+      className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-green-700"
+    >
+      <svg
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+        />
+      </svg>
+    </button>
+  )
+}
 
 function ModalDocumentosApenado({ apenado, onFechar }) {
   const [abaAtiva, setAbaAtiva] = useState('comprovantes')
 
   if (!apenado) return null
 
+  const comprovantes = (mockPresenca.presencas || []).filter(
+    (p) => String(p.apenadoId) === String(apenado.id)
+  )
+
   const abas = [
-    { id: 'comprovantes', label: 'Comprovantes de comparecimento', contador: 0 },
+    { id: 'comprovantes', label: 'Comprovantes de comparecimento', contador: comprovantes.length },
     { id: 'certificados', label: 'Certificados de conclusão', contador: 0 },
   ]
 
@@ -64,26 +106,82 @@ function ModalDocumentosApenado({ apenado, onFechar }) {
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {abaAtiva === 'comprovantes' && (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-              <svg
-                className="h-10 w-10 text-gray-300"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                />
-              </svg>
-              <p className="mt-3 text-sm font-medium text-gray-500">
-                Nenhum comprovante encontrado
-              </p>
-            </div>
-          )}
+          {abaAtiva === 'comprovantes' &&
+            (comprovantes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                <svg
+                  className="h-10 w-10 text-gray-300"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                  />
+                </svg>
+                <p className="mt-3 text-sm font-medium text-gray-500">
+                  Nenhum comprovante encontrado
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">
+                        Data/Hora
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">
+                        Código de verificação
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">
+                        Operador
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">
+                        Ação
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comprovantes.map((c) => (
+                      <tr
+                        key={c.id}
+                        className="border-b border-gray-50 transition-colors hover:bg-gray-50"
+                      >
+                        <td className="px-4 py-3 font-medium whitespace-nowrap text-gray-900">
+                          {formatarDataHora(c.dateTime)}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-gray-600">
+                          {c.verificationCode}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-gray-700">
+                          {c.operatorName || 'Admin User'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <BotaoDownload
+                            onClick={() => {
+                              const apenadoCompleto = {
+                                ...apenado,
+                                fullName: apenado.nome,
+                                tenantId: apenado.tenant_id,
+                              }
+                              downloadReceiptPDF({
+                                apenado: apenadoCompleto,
+                                processo: { processNumber: c.processoId },
+                                recibo: c,
+                              })
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
 
           {abaAtiva === 'certificados' && (
             <div className="flex flex-col items-center justify-center py-12 text-gray-400">
@@ -111,7 +209,9 @@ function ModalDocumentosApenado({ apenado, onFechar }) {
           <p className="text-xs text-gray-400">
             Downloads registrados na trilha de auditoria (E06)
           </p>
-          <p className="text-xs font-medium text-gray-500">0 documento(s) no total</p>
+          <p className="text-xs font-medium text-gray-500">
+            {comprovantes.length} documento(s) no total
+          </p>
         </div>
       </div>
     </div>
