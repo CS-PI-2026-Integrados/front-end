@@ -5,7 +5,7 @@ const strengthRules = [
   (password) => /[^A-Za-z0-9]/.test(password),
 ]
 
-const getStrength = (password) => {
+export const getStrength = (password) => {
   const score = strengthRules.filter((rule) => rule(password)).length
 
   if (score <= 1) return { score, label: 'Fraca', color: 'bg-red-500', textColor: 'text-red-600' }
