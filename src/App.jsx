@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
+import { Toaster } from 'sonner'
 import { SessionProvider } from './context/SessionProvider'
 import { TenantProvider } from './context/TenantContext'
 import AppRouter from './AppRouter'
