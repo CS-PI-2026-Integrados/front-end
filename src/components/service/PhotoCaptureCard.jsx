@@ -4,19 +4,23 @@ import { Button } from '@/components/ui/button.jsx'
 import { Camera, Loader2, Upload, X } from 'lucide-react'
 import { usePhotoCaptureCard } from '@/hooks/usePhotoCaptureCard.js'
 import { Label } from '@/components/ui/label.jsx'
+import { useService } from '@/context/ServiceContext'
 
-export function PhotoCaptureCard({
-  className,
-  isReady,
-  isSubmitting,
-  photo,
-  onPhotoSelect,
-  apenado,
-}) {
+export function PhotoCaptureCard({ className }) {
   const {
-    error,
+    fotoAtendimento,
+    apenado,
+    isReadyToCapture,
+    isSubmitting,
+    setFoto,
+    setPhotoStreaming,
+    setPhotoError,
+    clearPhoto,
+  } = useService()
+
+  const {
     preview,
-    isStreaming,
+    isStreaming: _,
     videoRef,
     fileInputRef,
     handleFileChange,
@@ -25,11 +29,23 @@ export function PhotoCaptureCard({
     stopCamera,
     takePhoto,
     openFileDialog,
-  } = usePhotoCaptureCard({ photo, onPhotoSelect })
+  } = usePhotoCaptureCard({
+    photo: fotoAtendimento.data,
+    isStreaming: fotoAtendimento.isStreaming,
+    setFoto,
+    setPhotoStreaming,
+    setPhotoError,
+    clearPhoto,
+  })
+
+  const isStreaming = fotoAtendimento.isStreaming
+  const error = fotoAtendimento.error
 
   return (
-    <Card className={cn('flex flex-col overflow-hidden rounded-xl shadow-sm', className)}>
-      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-4 pt-3 pb-1 md:px-6 md:pt-4 md:pb-2">
+    <Card
+      className={cn('flex flex-col gap-0 overflow-hidden rounded-xl py-0 shadow-sm', className)}
+    >
+      <CardHeader className="shrink-0 flex-col items-start space-y-1 px-5 pt-4 pb-3 md:px-6 md:pt-5 md:pb-4">
         <CardTitle className="items-start text-lg font-semibold md:text-xl">
           Captura de Foto
         </CardTitle>
@@ -39,9 +55,9 @@ export function PhotoCaptureCard({
       </CardHeader>
       <CardContent className="flex flex-col gap-4 px-4 pb-4 md:min-h-0 md:flex-1 md:overflow-hidden md:px-6 md:pb-6">
         {preview ? (
-          <div className="flex w-full flex-row justify-center gap-4 md:min-h-0 md:flex-1">
+          <div className="flex w-full flex-col justify-center gap-4 lg:min-h-0 lg:flex-1 lg:flex-row">
             {apenado && (
-              <div className="flex flex-col space-y-2 md:min-h-0 md:flex-1">
+              <div className="flex min-w-0 flex-col space-y-2 lg:min-h-0 lg:flex-1">
                 <p className="text-muted-foreground shrink-0 text-center text-xs font-medium">
                   Foto de Referência
                 </p>
@@ -54,9 +70,9 @@ export function PhotoCaptureCard({
                 </div>
               </div>
             )}
-            <div className="flex flex-col space-y-2 md:min-h-0 md:flex-1">
+            <div className="flex min-w-0 flex-col space-y-2 lg:min-h-0 lg:flex-1">
               <p className="text-primary shrink-0 text-center text-xs font-medium">Foto Atual</p>
-              <div className="ring-primary/30 relative mx-auto flex aspect-[3/4] w-full max-w-[160px] overflow-hidden rounded-xl border shadow-2xl ring-4 md:aspect-auto md:min-h-0 md:max-w-[200px] md:flex-1">
+              <div className="ring-primary/30 relative mx-auto flex aspect-[3/4] w-full max-w-[160px] overflow-hidden rounded-xl border shadow-2xl ring-4 lg:aspect-auto lg:min-h-0 lg:max-w-[200px] lg:flex-1">
                 <img
                   src={preview}
                   alt="Preview do Apenado"
@@ -140,12 +156,12 @@ export function PhotoCaptureCard({
         )}
 
         <div className="mt-auto shrink-0 space-y-2 pt-4">
-          {!preview && !isSubmitting && isReady && (
+          {!preview && !isSubmitting && isReadyToCapture && (
             <p className="text-muted-foreground text-center text-xs">
               Tire ou envie uma foto para continuar
             </p>
           )}
-          {preview && !isReady && (
+          {preview && !isReadyToCapture && (
             <p className="text-muted-foreground text-center text-xs">
               Selecione um apenado e processo (se houver) para gerar
             </p>
@@ -153,14 +169,14 @@ export function PhotoCaptureCard({
 
           {preview ? (
             <div className="flex flex-col gap-2">
-              <Button type="submit" className="w-full" disabled={!isReady || isSubmitting}>
+              <Button type="submit" className="w-full" disabled={!isReadyToCapture || isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Confirmando Presença...
                   </>
                 ) : (
-                  'Confirmar Presença e Imprimir'
+                  'Confirmar Presença'
                 )}
               </Button>
               <Button

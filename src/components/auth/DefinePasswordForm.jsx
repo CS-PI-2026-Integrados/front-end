@@ -2,16 +2,16 @@ import { Link } from 'react-router-dom'
 import { FieldGroup } from '@/components/ui/field'
 import { Button } from '@/components/ui/button'
 import { AuthSubmitButton } from '@/components/auth/AuthSubmitButton'
-import { PasswordField } from '@/components/auth/fields/PasswordField'
-import { PasswordStrengthMeter } from '@/components/auth/fields/PasswordStrengthMeter'
+import { PasswordField } from '@/components/auth/PasswordField'
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter'
 
-export function ResetPasswordForm({
+export function DefinePasswordForm({
   form,
   newPassword,
-  redefinePassword,
+  definePassword,
   onBack,
-  submitLabel = 'Redefinir',
-  title = 'Redefinir senha',
+  submitLabel = 'Salvar nova senha',
+  title = 'Definir senha',
 }) {
   const {
     register,
@@ -20,12 +20,13 @@ export function ResetPasswordForm({
   } = form
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit(redefinePassword)}>
-      <h1 className="text-2xl font-semibold text-gray-700">{title}</h1>
+    <form className="space-y-6" onSubmit={handleSubmit(definePassword)}>
+      <h1 className="text-foreground text-2xl font-bold">{title}</h1>
 
       <FieldGroup className="gap-1 p-0">
         <div className="space-y-2">
           <PasswordField
+            variant="auth"
             id="newPassword"
             label="Nova Senha"
             registration={register('newPassword', { deps: ['confirmPassword'] })}
@@ -38,6 +39,7 @@ export function ResetPasswordForm({
         </div>
 
         <PasswordField
+          variant="auth"
           id="confirmPassword"
           label="Confirmar Senha"
           registration={register('confirmPassword')}

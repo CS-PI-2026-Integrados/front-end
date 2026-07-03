@@ -13,9 +13,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useState } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
+import { useService } from '@/context/ServiceContext'
 import { ConvictedInfoCard } from '@/components/service/ConvictedInfoCard.jsx'
 
-export function SelectConvicted({ atendimento, onChangeAtendimento }) {
+export function SelectConvicted() {
+  const { apenado, selectApenado } = useService()
+
   const { apenados } = useDistrictData()
 
   const [open, setOpen] = useState(false)
@@ -23,17 +26,10 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
 
   const apenadosFiltrados = useFilteredConvicted(apenados, search)
 
-  const handleSelectApenado = (currentValue) => {
+  const handleSelectApenado = (idSelecionado) => {
     setOpen(false)
-    const apenado = apenados?.find((a) => String(a.id) === currentValue)
-
-    if (apenado) {
-      const processoPadrao =
-        apenado.processos && apenado.processos.length > 0 ? apenado.processos[0] : null
-      onChangeAtendimento({ apenado, processo: processoPadrao })
-    } else {
-      onChangeAtendimento({ apenado: null, processo: null })
-    }
+    const apenadoSelecionado = apenados?.find((a) => String(a.id) === idSelecionado)
+    selectApenado(apenadoSelecionado || null)
   }
 
   return (
@@ -45,12 +41,13 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
         <Popover className="flex w-full" open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
+              type="button"
               variant="outline"
               role="combobox"
               className="h-10 w-full justify-between bg-transparent"
             >
-              {atendimento.apenado ? (
-                atendimento.apenado.fullName
+              {apenado ? (
+                apenado.fullName
               ) : (
                 <span className="text-muted-foreground font-normal">Selecione um apenado</span>
               )}
@@ -87,23 +84,7 @@ export function SelectConvicted({ atendimento, onChangeAtendimento }) {
         </Popover>
       </div>
 
-      {atendimento.apenado ? (
-        <ConvictedInfoCard
-          key={atendimento.apenado.id}
-          apenado={atendimento.apenado}
-          processoAtivo={atendimento.processo}
-          onChangeProcesso={(proc) => onChangeAtendimento({ ...atendimento, processo: proc })}
-          onChangeApenado={(novoApenado) =>
-            onChangeAtendimento({ ...atendimento, apenado: novoApenado })
-          }
-        />
-      ) : (
-        <div className="bg-muted/30 flex min-h-[140px] flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
-          <p className="text-muted-foreground text-sm">
-            Selecione o apenado para iniciar um atendimento
-          </p>
-        </div>
-      )}
+      {apenado && <ConvictedInfoCard key={apenado.id} />}
     </div>
   )
 }

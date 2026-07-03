@@ -43,7 +43,7 @@ export const SessionProvider = ({ children }) => {
     }
 
     const revalidateSession = () => {
-      void checkSession({ showLoader: true })
+      void checkSession({ showLoader: false })
     }
 
     const handleVisibilityChange = () => {
@@ -52,7 +52,7 @@ export const SessionProvider = ({ children }) => {
       }
     }
 
-    void checkSession()
+    void checkSession({ showLoader: true })
 
     const unsubscribeFromAuthStateChanges = subscribeToAuthStateChanges(revalidateSession)
 

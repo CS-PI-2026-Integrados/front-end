@@ -16,7 +16,6 @@ import {
   canDeactivateUser,
   canReactivateUser,
   canResetUserPassword,
-  isRoleAbove,
 } from '@/lib/userPermissions'
 import { formatCpf, validateCPF } from '@/lib/validadorCpf'
 
@@ -54,7 +53,7 @@ const generateTemporaryPassword = () => {
   return `Comarca@${String(randomValue).padStart(4, '0')}`
 }
 
-const getCreatableRole = async ({ actor, roleKey }) => {
+const getCreatableRole = async (roleKey) => {
   if (![ROLE_KEYS.OPERATOR, ROLE_KEYS.ADMIN].includes(roleKey)) {
     throw createFormError('roleKey', 'Nível de acesso inválido.')
   }
@@ -63,10 +62,6 @@ const getCreatableRole = async ({ actor, roleKey }) => {
 
   if (!role) {
     throw createFormError('roleKey', 'Cargo não encontrado.')
-  }
-
-  if (!isRoleAbove(actor.role, role)) {
-    throw createFormError('roleKey', 'Usuário sem permissão para cadastrar este nível de acesso.')
   }
 
   return role
@@ -88,10 +83,9 @@ export const createTenantOperator = async ({ session, operatorData }) => {
   const name = operatorData.name?.trim()
   const cpf = formatCpf(operatorData.cpf || '')
   const email = operatorData.email?.trim().toLowerCase()
-  const password = operatorData.password || ''
   const roleKey = operatorData.roleKey || ROLE_KEYS.OPERATOR
 
-  if (!name || !cpf || !email || !password) {
+  if (!name || !cpf || !email) {
     throw new Error('Preencha todos os campos obrigatórios.')
   }
 
@@ -114,7 +108,8 @@ export const createTenantOperator = async ({ session, operatorData }) => {
     throw createFormError('email', 'E-mail já cadastrado.')
   }
 
-  const role = await getCreatableRole({ actor, roleKey })
+  const role = await getCreatableRole(roleKey)
+  const temporaryPassword = generateTemporaryPassword()
 
   const createdUser = await createUser({
     tenantId: actor.tenantId,
@@ -123,8 +118,8 @@ export const createTenantOperator = async ({ session, operatorData }) => {
     email,
     roleId: role.id,
     isActive: true,
-    hasActiveSession: false,
-    password,
+    password: temporaryPassword,
+    mustChangePassword: true,
   })
 
   await registerUserAuditAction({
@@ -133,7 +128,7 @@ export const createTenantOperator = async ({ session, operatorData }) => {
     target: createdUser,
   })
 
-  await sendWelcomeEmail(email)
+  await sendWelcomeEmail(email, temporaryPassword)
 
   return createdUser
 }

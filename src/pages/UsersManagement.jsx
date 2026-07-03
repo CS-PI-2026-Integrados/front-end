@@ -54,7 +54,7 @@ export default function UsersManagement() {
             onClick={() => setIsCreateDialogOpen(true)}
           >
             <UserPlus />
-            Novo Operador
+            Novo Usuário
           </Button>
         }
       />
@@ -152,7 +152,6 @@ export default function UsersManagement() {
       />
 
       <CreateOperatorDialog
-        currentUser={currentUser}
         onCreate={createOperator}
         onOpenChange={setIsCreateDialogOpen}
         open={isCreateDialogOpen}

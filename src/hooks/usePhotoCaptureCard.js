@@ -1,8 +1,13 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useRef, useEffect, useCallback, useMemo } from 'react'
 
-export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [error, setError] = useState(null)
+export function usePhotoCaptureCard({
+  photo,
+  isStreaming,
+  setFoto,
+  setPhotoStreaming,
+  setPhotoError,
+  clearPhoto,
+}) {
   const fileInputRef = useRef(null)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
@@ -12,8 +17,8 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
       streamRef.current.getTracks().forEach((track) => track.stop())
       streamRef.current = null
     }
-    setIsStreaming(false)
-  }, [])
+    setPhotoStreaming(false)
+  }, [setPhotoStreaming])
 
   const preview = useMemo(() => {
     if (!photo) return null
@@ -37,35 +42,36 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
 
   const handleFileChange = useCallback(
     (e) => {
+      e.stopPropagation()
       const file = e.target.files?.[0]
       if (file) {
         const reader = new FileReader()
         reader.onload = (event) => {
-          onPhotoSelect?.(event.target.result)
+          setFoto(event.target.result)
         }
         reader.readAsDataURL(file)
       }
     },
-    [onPhotoSelect]
+    [setFoto]
   )
 
   const startCamera = useCallback(async () => {
-    setError(null)
+    setPhotoError(null)
     stopCamera()
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
       streamRef.current = stream
-      setIsStreaming(true)
-    } catch {
-      setError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
+      setPhotoStreaming(true)
+    } catch (err) {
+      setPhotoError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
     }
-  }, [stopCamera])
+  }, [stopCamera, setPhotoStreaming, setPhotoError])
 
   const discardPhoto = useCallback(() => {
     if (fileInputRef.current) fileInputRef.current.value = ''
-    onPhotoSelect?.(null)
+    clearPhoto()
     startCamera()
-  }, [onPhotoSelect, startCamera])
+  }, [clearPhoto, startCamera])
 
   const takePhoto = useCallback(() => {
     if (!videoRef.current) return
@@ -83,12 +89,13 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
     const base64Image = canvas.toDataURL('image/jpeg', 0.9)
 
     stopCamera()
-    onPhotoSelect?.(base64Image)
-  }, [onPhotoSelect, stopCamera])
+    setFoto(base64Image)
+  }, [stopCamera, setFoto])
 
   const openFileDialog = () => {
     fileInputRef.current?.click()
   }
+
   useEffect(() => {
     return () => {
       stopCamera()
@@ -97,8 +104,6 @@ export function usePhotoCaptureCard({ photo, onPhotoSelect }) {
 
   return {
     preview,
-    error,
-    isStreaming,
     videoRef,
     fileInputRef,
     handleFileChange,
