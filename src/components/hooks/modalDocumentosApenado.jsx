@@ -163,14 +163,21 @@ function ModalDocumentosApenado({ apenado, onFechar }) {
                         <td className="px-4 py-3">
                           <BotaoDownload
                             onClick={() => {
-                              const apenadoCompleto = {
+                              const apenadoCompleto = mockApenados.apenados.find(
+                                (a) => String(a.id) === String(c.apenadoId)
+                              ) || {
                                 ...apenado,
                                 fullName: apenado.nome,
                                 tenantId: apenado.tenant_id,
                               }
+
+                              const processoCompleto = mockProcessos.processos.find(
+                                (p) => String(p.id) === String(c.processoId)
+                              ) || { processNumber: c.processoId }
+
                               downloadReceiptPDF({
                                 apenado: apenadoCompleto,
-                                processo: { processNumber: c.processoId },
+                                processo: processoCompleto,
                                 recibo: c,
                               })
                             }}
