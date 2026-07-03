@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useMemo } from 'react'
+import { useSession } from '@/context/sessionContext'
 
 export function usePhotoCaptureCard({
   photo,
@@ -11,6 +12,7 @@ export function usePhotoCaptureCard({
   const fileInputRef = useRef(null)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
+  const { session } = useSession()
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -58,14 +60,30 @@ export function usePhotoCaptureCard({
   const startCamera = useCallback(async () => {
     setPhotoError(null)
     stopCamera()
+
+    const userId = session?.user?.id
+    const savedCameraId = userId ? localStorage.getItem(`sicape:camera:${userId}`) : null
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      let stream
+      if (savedCameraId) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: savedCameraId } },
+          })
+        } catch (err) {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        }
+      } else {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      }
+
       streamRef.current = stream
       setPhotoStreaming(true)
     } catch (err) {
       setPhotoError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
     }
-  }, [stopCamera, setPhotoStreaming, setPhotoError])
+  }, [stopCamera, setPhotoStreaming, setPhotoError, session?.user?.id])
 
   const discardPhoto = useCallback(() => {
     if (fileInputRef.current) fileInputRef.current.value = ''
