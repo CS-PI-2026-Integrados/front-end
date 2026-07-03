@@ -52,10 +52,6 @@ export const getActiveStatusLabel = (isActive) => {
   return isActive ? 'Ativo' : 'Inativo'
 }
 
-export const getSessionStatusLabel = (hasActiveSession) => {
-  return hasActiveSession ? 'Sessão ativa' : 'Sessão inativa'
-}
-
 export const normalizeSearch = (value) => {
   return String(value || '')
     .normalize('NFD')

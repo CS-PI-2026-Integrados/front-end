@@ -14,12 +14,11 @@ import {
 import {
   subscribeToUsersChanges,
   updateUserPassword,
-  updateUserSessionState,
+  updateUserLastAccessAt,
 } from '@/repositories/users/usersRepository.mock'
 import {
   createUserPasswordResetToken,
   findUserByValidPasswordResetToken,
-  updateUserPasswordByResetToken,
 } from '@/repositories/auth/passwordResetRepository.mock'
 import { sendPasswordResetEmail } from '@/services/authEmailService.mock'
 
@@ -44,14 +43,21 @@ const ensureActiveUser = (user) => {
   }
 }
 
+const applyDefinedPassword = async ({ userId, password }) => {
+  return updateUserPassword({
+    userId,
+    password,
+    mustChangePassword: false,
+  })
+}
+
 export const login = async ({ cpf, password }) => {
   const authUser = await findAuthUserByCredentials(cpf, password)
 
   ensureActiveUser(authUser.user)
 
-  const sessionUser = await updateUserSessionState({
+  const sessionUser = await updateUserLastAccessAt({
     userId: authUser.user.id,
-    hasActiveSession: true,
     lastAccessAt: new Date().toISOString(),
   })
 
@@ -66,16 +72,6 @@ export const login = async ({ cpf, password }) => {
 }
 
 export const logout = () => {
-  const token = getStoredToken()
-  const payload = validateSessionToken(token)
-
-  if (payload?.sub) {
-    void updateUserSessionState({
-      userId: payload.sub,
-      hasActiveSession: false,
-    }).catch(() => {})
-  }
-
   clearStoredToken()
 }
 
@@ -93,15 +89,7 @@ export const restoreSession = async () => {
 
     ensureActiveUser(authUser.user)
 
-    const sessionUser = await updateUserSessionState({
-      userId: authUser.user.id,
-      hasActiveSession: true,
-    })
-
-    return buildSession({
-      ...authUser,
-      user: sessionUser,
-    })
+    return buildSession(authUser)
   } catch {
     logout()
     return null
@@ -137,16 +125,25 @@ export const validatePasswordResetToken = async (token) => {
   return Boolean(user)
 }
 
-export const resetPassword = async (token, password) => {
-  await updateUserPasswordByResetToken(token, password)
+export const definePasswordWithResetToken = async (token, password) => {
+  const user = await findUserByValidPasswordResetToken(token)
+
+  if (!user) {
+    throw new Error('Este link não é mais válido.')
+  }
+
+  return applyDefinedPassword({
+    userId: user.id,
+    password,
+  })
 }
 
-export const changeRequiredPassword = async (session, password) => {
+export const definePasswordForRequiredChange = async (session, password) => {
   if (!session?.user?.mustChangePassword) {
     throw new Error('A troca obrigatória de senha não está pendente.')
   }
 
-  return updateUserPassword({
+  return applyDefinedPassword({
     userId: session.user.id,
     password,
   })

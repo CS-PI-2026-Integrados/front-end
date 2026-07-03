@@ -2,13 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { CalendarDays, Clock3, KeyRound, Mail, Power, RotateCcw, IdCard, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { canDeactivateUser, canReactivateUser, canResetUserPassword } from '@/lib/userPermissions'
-import {
-  formatDate,
-  formatDateTime,
-  getSessionStatusLabel,
-  maskCpf,
-  maskEmail,
-} from '@/lib/userFormatters'
+import { formatDate, formatDateTime, maskCpf, maskEmail } from '@/lib/userFormatters'
 import { UserActionConfirmDialog } from '@/components/users/UserActionConfirmDialog'
 import { ResetUserPasswordDialog } from '@/components/users/ResetUserPasswordDialog'
 import { UserRoleBadge } from '@/components/users/UserRoleBadge'
@@ -82,7 +76,7 @@ export function UserDetailsPanel({
       visible: canDeactivateUser(currentUser, user),
       destructive: true,
       title: 'Desativar usuário',
-      description: `Desativar o acesso de ${user.name}, CPF ${maskCpf(user.cpf)}? A sessão ativa será encerrada.`,
+      description: `Desativar o acesso de ${user.name}, CPF ${maskCpf(user.cpf)}? O acesso será bloqueado.`,
       onConfirm: () => onDeactivate(user),
     },
     {
@@ -146,11 +140,6 @@ export function UserDetailsPanel({
                 icon={Clock3}
                 label="Último acesso"
                 value={formatDateTime(user.lastAccessAt)}
-              />
-              <DetailItem
-                icon={Power}
-                label="Status da sessão"
-                value={getSessionStatusLabel(user.hasActiveSession)}
               />
             </div>
 

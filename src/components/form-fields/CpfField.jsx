@@ -1,9 +1,13 @@
-import { AuthInputField } from '@/components/auth/fields/AuthInputField'
+import { InputField } from '@/components/form-fields/InputField'
+import { cn } from '@/lib/utils'
 import { formatCpf } from '@/lib/validadorCpf'
+
+const authInputStyles = 'h-13 rounded-[8px] border-2 px-3 py-4 text-sm'
 
 export function CpfField({
   id = 'cpf',
   label = 'CPF',
+  variant = 'default',
   error,
   disabled,
   registration,
@@ -14,9 +18,10 @@ export function CpfField({
   labelClassName,
 }) {
   const { onChange, ...restRegistration } = registration || {}
+  const shouldUseAuthStyles = variant === 'auth'
 
   return (
-    <AuthInputField
+    <InputField
       id={id}
       label={label}
       type="text"
@@ -24,11 +29,11 @@ export function CpfField({
       placeholder="000.000.000-00"
       disabled={disabled}
       error={error}
-      className={className}
+      className={cn(shouldUseAuthStyles && authInputStyles, className)}
       errorClassName={errorClassName}
       fieldClassName={fieldClassName}
       inputWrapperClassName={inputWrapperClassName}
-      labelClassName={labelClassName}
+      labelClassName={cn(shouldUseAuthStyles && 'text-lg font-normal', labelClassName)}
       registration={{
         ...restRegistration,
         onChange: (event) => {
