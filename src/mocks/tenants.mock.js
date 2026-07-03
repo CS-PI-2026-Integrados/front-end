@@ -24,6 +24,7 @@ export const mockTenants = {
       address: 'Rua Principal, 123 - Centro, Paranavaí - PR',
       phone: '(44) 1234-5678',
       email: 'paranavai@gmail.com',
+      sessionTimeout: 8,
     },
     {
       id: '2',
@@ -49,6 +50,7 @@ export const mockTenants = {
       address: 'Av. Central, 456 - Centro, Maringá - PR',
       phone: '(44) 8765-4321',
       email: 'maringa@gmail.com',
+      sessionTimeout: 12,
     },
   ],
 }
