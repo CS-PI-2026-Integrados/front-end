@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Ban, Eye, Pencil, Plus, Search, Users } from 'lucide-react'
+import { Ban, FileText, Pencil, Plus, Search, Users } from 'lucide-react'
 import { useSession } from '@/context/sessionContext'
 import mockApenados from '../mocks/apenados.json'
 import ModalInative from '../components/hooks/modalInative'
@@ -319,12 +319,12 @@ const Convicteds = () => {
                     <div className="flex items-center gap-1">
                       <Button
                         type="button"
-                        title="Visualizar"
+                        title="Documentos"
                         variant="ghost"
                         size="icon-sm"
                         onClick={() => setApenadoDocumentos(a)}
                       >
-                        <Eye />
+                        <FileText />
                         <span className="sr-only">Visualizar</span>
                       </Button>
                       <Button
@@ -389,7 +389,7 @@ function ApenadoMobileCard({ apenado, onEdit, onInactivate, onView }) {
 
       <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-3">
         <Button type="button" variant="outline" size="sm" onClick={onView}>
-          <Eye /> Ver
+          <FileText /> Docs
         </Button>
         <Button type="button" variant="outline" size="sm" onClick={onEdit}>
           <Pencil /> Editar
