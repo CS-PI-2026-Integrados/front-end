@@ -54,10 +54,15 @@ export function SelectConvicted() {
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
+          <PopoverContent
+            align="start"
+            side="bottom"
+            avoidCollisions={false}
+            className="w-(--radix-popover-trigger-width) p-0"
+          >
             <Command shouldFilter={false}>
               <CommandInput placeholder="Buscar por nome ou CPF" onValueChange={setSearch} />
-              <CommandList>
+              <CommandList className="max-h-[200px]">
                 <CommandEmpty>Nenhum apenado encontrado.</CommandEmpty>
                 <CommandGroup>
                   {apenadosFiltrados.map((a) => (

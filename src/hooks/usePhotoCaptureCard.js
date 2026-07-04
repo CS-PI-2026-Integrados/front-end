@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useMemo } from 'react'
+import { useSession } from '@/context/sessionContext'
 
 export function usePhotoCaptureCard({
   photo,
@@ -11,6 +12,7 @@ export function usePhotoCaptureCard({
   const fileInputRef = useRef(null)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
+  const { session } = useSession()
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -47,7 +49,37 @@ export function usePhotoCaptureCard({
       if (file) {
         const reader = new FileReader()
         reader.onload = (event) => {
-          setFoto(event.target.result)
+          const img = new Image()
+          img.onload = () => {
+            const targetAspect = 3 / 4
+            const imgAspect = img.width / img.height
+
+            let cropWidth, cropHeight
+            if (imgAspect > targetAspect) {
+              cropHeight = img.height
+              cropWidth = cropHeight * targetAspect
+            } else {
+              cropWidth = img.width
+              cropHeight = cropWidth / targetAspect
+            }
+
+            cropWidth = Math.floor(cropWidth)
+            cropHeight = Math.floor(cropHeight)
+
+            const startX = Math.floor((img.width - cropWidth) / 2)
+            const startY = Math.floor((img.height - cropHeight) / 2)
+
+            const canvas = document.createElement('canvas')
+            canvas.width = cropWidth
+            canvas.height = cropHeight
+
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(img, startX, startY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight)
+
+            const base64Image = canvas.toDataURL('image/png')
+            setFoto(base64Image)
+          }
+          img.src = event.target.result
         }
         reader.readAsDataURL(file)
       }
@@ -58,14 +90,30 @@ export function usePhotoCaptureCard({
   const startCamera = useCallback(async () => {
     setPhotoError(null)
     stopCamera()
+
+    const userId = session?.user?.id
+    const savedCameraId = userId ? localStorage.getItem(`sicape:camera:${userId}`) : null
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      let stream
+      if (savedCameraId) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: savedCameraId } },
+          })
+        } catch (err) {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        }
+      } else {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      }
+
       streamRef.current = stream
       setPhotoStreaming(true)
     } catch (err) {
       setPhotoError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
     }
-  }, [stopCamera, setPhotoStreaming, setPhotoError])
+  }, [stopCamera, setPhotoStreaming, setPhotoError, session?.user?.id])
 
   const discardPhoto = useCallback(() => {
     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -77,16 +125,36 @@ export function usePhotoCaptureCard({
     if (!videoRef.current) return
 
     const video = videoRef.current
+
+    const targetAspect = 3 / 4
+    const videoAspect = video.videoWidth / video.videoHeight
+
+    let cropWidth, cropHeight
+    if (videoAspect > targetAspect) {
+      cropHeight = video.videoHeight
+      cropWidth = cropHeight * targetAspect
+    } else {
+      cropWidth = video.videoWidth
+      cropHeight = cropWidth / targetAspect
+    }
+
+    cropWidth = Math.floor(cropWidth)
+    cropHeight = Math.floor(cropHeight)
+
+    const startX = Math.floor((video.videoWidth - cropWidth) / 2)
+    const startY = Math.floor((video.videoHeight - cropHeight) / 2)
+
     const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+    canvas.width = cropWidth
+    canvas.height = cropHeight
 
     const ctx = canvas.getContext('2d')
-    ctx.translate(canvas.width, 0)
+    ctx.translate(cropWidth, 0)
     ctx.scale(-1, 1)
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-    const base64Image = canvas.toDataURL('image/jpeg', 0.9)
+    ctx.drawImage(video, startX, startY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight)
+
+    const base64Image = canvas.toDataURL('image/png')
 
     stopCamera()
     setFoto(base64Image)

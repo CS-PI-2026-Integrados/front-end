@@ -126,13 +126,42 @@ body {
 }
 
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  *::-webkit-scrollbar {
+    width: 0.56rem;
+    height: 0.56rem;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.38);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.55);
+  }
+
+  .dark *::-webkit-scrollbar-track {
+    background-color: rgba(15, 23, 42, 0.8);
   }
 }

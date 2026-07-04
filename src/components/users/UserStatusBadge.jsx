@@ -2,8 +2,10 @@ import { getActiveStatusLabel } from '@/lib/userFormatters'
 import { cn } from '@/lib/utils'
 
 const statusClasses = {
-  active: 'bg-emerald-100 text-emerald-600 ring-emerald-200',
-  inactive: 'bg-gray-200 text-gray-600 ring-gray-300',
+  active:
+    'bg-emerald-100 text-emerald-600 ring-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:ring-emerald-800',
+  inactive:
+    'bg-gray-200 text-gray-600 ring-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:ring-gray-600',
 }
 
 export function UserStatusBadge({ isActive }) {

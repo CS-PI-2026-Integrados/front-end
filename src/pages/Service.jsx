@@ -81,13 +81,13 @@ const Service = () => {
           <TabsList className="bg-muted text-muted-foreground grid h-auto w-full grid-cols-2 items-center justify-center rounded-lg p-1 shadow-sm md:inline-flex md:h-9 md:w-auto">
             <TabsTrigger
               value="novo"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary data-[state=active]:text-primary-foreground inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-transparent data-[state=active]:shadow-none md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Novo comprovante
             </TabsTrigger>
             <TabsTrigger
               value="historico"
-              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-white data-[state=active]:shadow-sm md:px-3 md:text-sm md:whitespace-nowrap"
+              className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary data-[state=active]:text-primary-foreground inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-transparent data-[state=active]:shadow-none md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Histórico {presencas.length > 0 ? `(${presencas.length})` : ''}
             </TabsTrigger>
@@ -96,20 +96,20 @@ const Service = () => {
 
         <TabsContent
           value="novo"
-          className="mt-0 flex min-h-0 w-full min-w-0 flex-col gap-4 overflow-y-auto pb-4 outline-none lg:items-stretch lg:gap-6 lg:overflow-visible lg:pb-0"
+          className="mt-0 flex min-h-0 w-full min-w-0 flex-col gap-4 overflow-y-auto pb-4 outline-none lg:flex-1 lg:items-stretch lg:gap-6 lg:overflow-visible lg:pb-0"
         >
           <form
             id="form-atendimento"
             onSubmit={handleFinalSubmit}
-            className="flex min-h-0 w-full shrink-0 flex-col gap-4 lg:shrink lg:flex-row lg:gap-6"
+            className="grid min-h-0 w-full shrink-0 grid-cols-1 gap-4 p-[2px] lg:h-full lg:flex-1 lg:grid-cols-2 lg:gap-6"
           >
             <ConvictedCard
-              className={`min-h-0 w-full min-w-0 transition-all duration-300 lg:h-full lg:w-1/2 lg:flex-1 lg:basis-1/2 ${
+              className={`min-h-0 w-full min-w-0 transition-all duration-300 lg:h-full ${
                 isSuccess ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
               }`}
             />
             <div
-              className={`flex min-h-0 w-full min-w-0 flex-col transition-all duration-300 lg:w-1/2 lg:flex-1 lg:basis-1/2 ${
+              className={`flex min-h-0 w-full min-w-0 flex-col transition-all duration-300 lg:h-full ${
                 !isReadyToCapture && !isSuccess
                   ? 'pointer-events-none opacity-40 grayscale-[0.5]'
                   : ''
@@ -117,12 +117,12 @@ const Service = () => {
             >
               {isSuccess ? (
                 <ReceiptSuccessCard
-                  className="w-full"
+                  className="w-full lg:h-full"
                   atendimento={{ apenado, processo, recibo: reciboGerado }}
                   onReset={resetAtendimento}
                 />
               ) : (
-                <PhotoCaptureCard className="w-full" />
+                <PhotoCaptureCard className="w-full lg:h-full" />
               )}
             </div>
           </form>

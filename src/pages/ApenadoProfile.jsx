@@ -40,15 +40,15 @@ export default function ApenadoProfile() {
 
   if (loading)
     return (
-      <div className="flex h-screen items-center justify-center bg-white text-gray-500">
+      <div className="bg-background text-card-foreground flex h-screen items-center justify-center">
         Carregando informações...
       </div>
     )
 
   if (!apenado)
     return (
-      <div className="min-h-screen bg-white p-4">
-        <p className="font-medium text-gray-600">
+      <div className="bg-background text-card-foreground min-h-screen p-4">
+        <p className="text-muted-foreground font-medium">
           Apenado não encontrado ou acesso restrito a esta comarca.
         </p>
         <button
@@ -61,42 +61,44 @@ export default function ApenadoProfile() {
     )
 
   return (
-    <div className="min-h-screen bg-white p-1 sm:p-4">
+    <div className="bg-background text-card-foreground min-h-screen p-1 sm:p-4">
       <div className="mb-8">
         <button
           onClick={() => navigate(-1)}
-          className="mb-4 flex items-center text-sm text-gray-400 transition-colors hover:text-green-800"
+          className="text-muted-foreground mb-4 flex items-center text-sm transition-colors hover:text-green-800"
         >
           ← Voltar para listagem
         </button>
-        <h1 className="text-2xl leading-tight font-bold tracking-tight text-gray-900 sm:text-3xl">
+        <h1 className="text-foreground text-2xl leading-tight font-bold tracking-tight sm:text-3xl">
           Perfil do Apenado
         </h1>
-        <p className="mt-1 text-sm text-gray-400">Dados essenciais e situação processual</p>
+        <p className="text-muted-foreground mt-1 text-sm">Dados essenciais e situação processual</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6">
-          <div className="rounded-xl border border-gray-100 bg-white p-4 text-center shadow-sm sm:p-6">
-            <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-2xl border-2 border-green-800 bg-gray-50 sm:h-40 sm:w-40">
+          <div className="border-border bg-card rounded-xl border p-4 text-center shadow-sm sm:p-6">
+            <div className="bg-card text-muted-foreground mx-auto mb-4 h-32 w-32 overflow-hidden rounded-2xl border-2 border-green-800 sm:h-40 sm:w-40">
               {apenado.foto ? (
                 <img src={apenado.foto} alt="Foto" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full items-center justify-center text-gray-300">
+                <div className="text-muted-foreground flex h-full items-center justify-center">
                   Sem Foto
                 </div>
               )}
             </div>
-            <h2 className="text-xl leading-tight font-bold break-words text-gray-900">
+            <h2 className="text-foreground text-xl leading-tight font-bold break-words">
               {apenado.nome}
             </h2>
-            <p className="mt-1 text-sm font-medium break-words text-gray-400">CPF: {apenado.cpf}</p>
+            <p className="text-muted-foreground mt-1 text-sm font-medium break-words">
+              CPF: {apenado.cpf}
+            </p>
             <div className="mt-4">
               <span
                 className={`inline-block rounded-full border px-4 py-1 text-xs font-bold ${
                   apenado.status === 'Inativo'
-                    ? 'border-gray-200 bg-gray-100 text-gray-500'
-                    : 'border-green-200 bg-green-100 text-green-700'
+                    ? 'border-border dark:border-border dark:text-muted-foreground bg-slate-200 text-slate-700 ring-slate-300 dark:bg-slate-950 dark:ring-slate-700'
+                    : 'border-border dark:border-border bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700'
                 }`}
               >
                 {apenado.status}
@@ -104,77 +106,79 @@ export default function ApenadoProfile() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
-            <h3 className="mb-4 text-xs font-bold tracking-widest text-gray-400 uppercase">
+          <div className="border-border bg-card rounded-xl border p-4 shadow-sm sm:p-6">
+            <h3 className="text-muted-foreground mb-4 text-xs font-bold tracking-widest uppercase">
               Módulos Adicionais
             </h3>
             <button
               disabled
-              className="w-full cursor-not-allowed rounded-lg border border-gray-100 bg-gray-50 py-3 text-sm font-semibold text-gray-300"
+              className="border-border bg-card text-muted-foreground w-full cursor-not-allowed rounded-lg border py-3 text-sm font-semibold"
             >
               Captura de Comparecimento
             </button>
-            <p className="mt-2 text-center text-[10px] text-gray-400 italic">Implementar...</p>
+            <p className="text-muted-foreground mt-2 text-center text-[10px] italic">
+              Implementar...
+            </p>
           </div>
         </div>
 
         <div className="space-y-6 lg:col-span-2">
-          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-8">
-            <h3 className="mb-6 border-b border-gray-50 pb-4 text-lg font-bold text-green-800">
+          <div className="border-border bg-card rounded-xl border p-4 shadow-sm sm:p-8">
+            <h3 className="border-border text-foreground mb-6 border-b pb-4 text-lg font-bold">
               Painel Civil
             </h3>
 
             <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Telefone de Contato
                 </label>
-                <p className="text-sm font-medium text-gray-700">{apenado.telefone}</p>
+                <p className="text-foreground text-sm font-medium">{apenado.telefone}</p>
               </div>
               <div>
-                <label className="mb-1 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Data de Nascimento
                 </label>
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-foreground text-sm font-medium">
                   {apenado.data_nascimento || 'Não informada'}
                 </p>
               </div>
               <div className="md:col-span-2">
-                <label className="mb-1 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Endereço Completo
                 </label>
-                <p className="text-sm leading-relaxed font-medium break-words text-gray-700">
+                <p className="text-foreground text-sm leading-relaxed font-medium break-words">
                   {apenado.endereco}
                 </p>
               </div>
 
-              <div className="border-t border-gray-50 pt-4 md:col-span-2">
-                <h4 className="mb-4 text-sm font-bold tracking-tight text-gray-900 uppercase">
+              <div className="border-border border-t pt-4 md:col-span-2">
+                <h4 className="text-foreground mb-4 text-sm font-bold tracking-tight uppercase">
                   Dados Processuais
                 </h4>
               </div>
 
               <div>
-                <label className="mb-1 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Número do Processo
                 </label>
-                <p className="text-sm font-medium break-words text-gray-700">
+                <p className="text-foreground text-sm font-medium break-words">
                   {apenado.numero_processo}
                 </p>
               </div>
               <div>
-                <label className="mb-1 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Vara de Execução
                 </label>
-                <p className="text-sm font-medium text-gray-700">{apenado.vara}</p>
+                <p className="text-foreground text-sm font-medium">{apenado.vara}</p>
               </div>
             </div>
 
-            <div className="mt-8 border-t border-gray-50 pt-6">
-              <label className="mb-2 block text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+            <div className="border-border mt-8 border-t pt-6">
+              <label className="text-muted-foreground mb-2 block text-[10px] font-bold tracking-wider uppercase">
                 Observações do Prontuário
               </label>
-              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm leading-relaxed break-words text-gray-600 italic">
+              <div className="border-border text-muted-foreground bg-card rounded-lg border p-4 text-sm leading-relaxed break-words italic">
                 {apenado.observacoes || 'Nenhuma observação registrada até o momento.'}
               </div>
             </div>

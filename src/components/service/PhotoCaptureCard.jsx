@@ -53,15 +53,15 @@ export function PhotoCaptureCard({ className }) {
           A foto é obrigatória para emissão do comprovante
         </p>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4 px-4 pb-4 md:min-h-0 md:flex-1 md:overflow-hidden md:px-6 md:pb-6">
+      <CardContent className="flex flex-col gap-4 overflow-y-auto px-4 pb-4 md:min-h-0 md:flex-1 md:px-6 md:pb-6">
         {preview ? (
-          <div className="flex w-full flex-col justify-center gap-4 lg:min-h-0 lg:flex-1 lg:flex-row">
+          <div className="flex w-full shrink-0 flex-col items-center justify-center gap-6 pb-4 lg:flex-row lg:flex-wrap lg:items-start">
             {apenado && (
-              <div className="flex min-w-0 flex-col space-y-2 lg:min-h-0 lg:flex-1">
+              <div className="flex shrink-0 flex-col items-center space-y-2 lg:flex-1">
                 <p className="text-muted-foreground shrink-0 text-center text-xs font-medium">
                   Foto de Referência
                 </p>
-                <div className="relative mx-auto flex aspect-[3/4] w-full max-w-[160px] overflow-hidden rounded-xl border shadow-2xl md:aspect-auto md:min-h-0 md:max-w-[200px] md:flex-1">
+                <div className="relative mx-auto flex aspect-[3/4] w-full max-w-[160px] shrink-0 overflow-hidden rounded-xl border shadow-2xl lg:max-w-[200px]">
                   <img
                     src={apenado.referencePhotoUrl || ''}
                     alt="Referência"
@@ -70,9 +70,9 @@ export function PhotoCaptureCard({ className }) {
                 </div>
               </div>
             )}
-            <div className="flex min-w-0 flex-col space-y-2 lg:min-h-0 lg:flex-1">
+            <div className="flex shrink-0 flex-col items-center space-y-2 lg:flex-1">
               <p className="text-primary shrink-0 text-center text-xs font-medium">Foto Atual</p>
-              <div className="ring-primary/30 relative mx-auto flex aspect-[3/4] w-full max-w-[160px] overflow-hidden rounded-xl border shadow-2xl ring-4 lg:aspect-auto lg:min-h-0 lg:max-w-[200px] lg:flex-1">
+              <div className="ring-primary/30 relative mx-auto flex aspect-[3/4] w-full max-w-[160px] shrink-0 overflow-hidden rounded-xl border shadow-2xl ring-4 lg:max-w-[200px]">
                 <img
                   src={preview}
                   alt="Preview do Apenado"
@@ -82,8 +82,8 @@ export function PhotoCaptureCard({ className }) {
             </div>
           </div>
         ) : isStreaming ? (
-          <div className="flex flex-col items-center justify-center space-y-4 md:min-h-0 md:flex-1">
-            <div className="relative mx-auto flex aspect-[3/4] w-full max-w-[280px] items-center justify-center overflow-hidden rounded-xl border bg-black shadow-2xl md:aspect-auto md:min-h-0 md:flex-1">
+          <div className="flex shrink-0 flex-col items-center justify-center space-y-4 pb-2">
+            <div className="relative mx-auto flex aspect-[3/4] w-full max-w-[280px] shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-black shadow-2xl md:max-w-[320px]">
               <video
                 ref={videoRef}
                 autoPlay
@@ -114,7 +114,7 @@ export function PhotoCaptureCard({ className }) {
             </div>
           </div>
         ) : (
-          <div className="flex w-full flex-col items-center justify-center md:min-h-0 md:flex-1">
+          <div className="flex w-full shrink-0 flex-col items-center justify-center pb-2">
             <div className="w-full max-w-sm space-y-3">
               <div className="space-y-1">
                 <Label className="pointer-events-none invisible opacity-0 select-none">Ação</Label>

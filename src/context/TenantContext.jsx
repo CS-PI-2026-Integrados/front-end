@@ -24,6 +24,7 @@ const initialState = {
   unidade: '',
   endereco: '',
   logo: null,
+  sessionTimeout: 8,
   receiptConfig: { ...DEFAULT_RECEIPT_CONFIG },
   receiptFields: DEFAULT_RECEIPT_FIELDS.map((f) => ({ ...f })),
   isLoaded: false,
@@ -39,6 +40,7 @@ function tenantReducer(state, action) {
         unidade: tenant.unidade || '',
         endereco: tenant.address || '',
         logo: tenant.logo || null,
+        sessionTimeout: tenant.sessionTimeout || 8,
         receiptConfig: tenant.receiptConfig
           ? { ...DEFAULT_RECEIPT_CONFIG, ...tenant.receiptConfig }
           : { ...DEFAULT_RECEIPT_CONFIG },

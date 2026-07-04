@@ -2,9 +2,9 @@ function ModalInative({ apenado, onConfirmar, onCancelar }) {
   if (!apenado) return null
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-xl bg-white p-5 shadow-xl sm:p-6">
-        <h2 className="text-lg font-bold text-gray-900">Inativar Apenado</h2>
-        <p className="mt-2 text-sm text-gray-600">
+      <div className="bg-card text-card-foreground border-border w-full max-w-sm rounded-xl border p-5 shadow-xl sm:p-6">
+        <h2 className="text-foreground text-lg font-bold">Inativar Apenado</h2>
+        <p className="text-muted-foreground mt-2 text-sm">
           Deseja inativar <strong>{apenado.nome}</strong>? O status será alterado para{' '}
           <span className="font-semibold text-gray-500">Inativo</span>.
         </p>
@@ -12,7 +12,7 @@ function ModalInative({ apenado, onConfirmar, onCancelar }) {
           <button
             type="button"
             onClick={onCancelar}
-            className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 sm:w-auto"
+            className="border-border bg-card text-muted-foreground w-full rounded-lg border px-4 py-2 text-sm transition-colors hover:bg-slate-100 sm:w-auto dark:hover:bg-slate-950"
           >
             Cancelar
           </button>

@@ -13,12 +13,10 @@ export async function getBase64ImageFromUrl(imageUrl) {
         ctx.drawImage(img, 0, 0)
         resolve(canvas.toDataURL('image/png'))
       } catch (error) {
-        console.warn('Erro ao processar imagem no Canvas:', error)
         resolve(null)
       }
     }
     img.onerror = () => {
-      console.warn('Não foi possível carregar a imagem de referência para o PDF:', imageUrl)
       resolve(null)
     }
     img.src = imageUrl
@@ -246,6 +244,7 @@ export const generateReceiptPDF = async (atendimento) => {
           },
         ],
         margin: [0, 0, 0, 30],
+        alignment: 'center',
       }
     : null
 
@@ -261,17 +260,6 @@ export const generateReceiptPDF = async (atendimento) => {
             { text: 'COMPROVANTE DE COMPARECIMENTO', style: 'headerTitle', alignment: 'right' },
             {
               text: `${tenantConfig.nomeComarca || 'Comarca não informada'} — ${tenantConfig.unidade || ''}`,
-              style: 'headerSecretaria',
-              alignment: 'right',
-            },
-            {
-              text: tenantConfig.nomeComarca || '',
-              style: 'headerSecretaria',
-              alignment: 'right',
-              margin: [0, 4, 0, 0],
-            },
-            {
-              text: tenantConfig.unidade || '',
               style: 'headerSecretaria',
               alignment: 'right',
             },

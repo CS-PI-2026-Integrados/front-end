@@ -45,8 +45,10 @@ function maskCPF(cpf) {
 
 function StatusBadge({ status }) {
   const variants = {
-    Ativo: 'bg-emerald-100 text-emerald-700 ring-emerald-200',
-    Inativo: 'bg-gray-100 text-gray-500 ring-gray-200',
+    Ativo:
+      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700',
+    Inativo:
+      'bg-slate-200 text-slate-700 ring-slate-300 dark:bg-slate-950 dark:text-muted-foreground dark:ring-slate-700',
   }
   return (
     <span
@@ -59,9 +61,12 @@ function StatusBadge({ status }) {
 
 function SitTrabalhista({ sit }) {
   const variants = {
-    'Trabalho Registrado': 'bg-blue-100 text-blue-700 ring-blue-200',
-    'Trabalho Informal': 'bg-orange-100 text-orange-700 ring-orange-200',
-    'Nao Trabalha': 'bg-gray-100 text-gray-500 ring-gray-200',
+    'Trabalho Registrado':
+      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700',
+    'Trabalho Informal':
+      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700',
+    'Nao Trabalha':
+      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-muted-foreground dark:ring-slate-700',
   }
   return (
     <span
@@ -176,7 +181,7 @@ const Convicteds = () => {
     ) : null
 
   return (
-    <div className="space-y-5">
+    <div className="bg-background min-h-screen space-y-5 px-4 py-5 sm:px-6">
       <ModalInative
         apenado={apenadoInativar}
         onConfirmar={handleInativar}
@@ -361,7 +366,7 @@ const Convicteds = () => {
 
 function ApenadoMobileCard({ apenado, onEdit, onInactivate, onView }) {
   return (
-    <article className="space-y-4 p-4">
+    <article className="border-border bg-card space-y-4 rounded-xl border p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-foreground truncate font-semibold">{apenado.nome}</h3>
