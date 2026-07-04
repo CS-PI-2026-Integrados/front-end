@@ -3,8 +3,6 @@ import { useSession } from '@/context/sessionContext'
 
 const CAMERA_KEY = (userId) => `sicape:camera:${userId}`
 
-// ─── câmera ──────────────────────────────────────────────────────────────────
-
 async function fetchVideoDevices() {
   if (!navigator?.mediaDevices?.enumerateDevices) return []
 
@@ -20,19 +18,14 @@ async function fetchVideoDevices() {
   }
 }
 
-// ─── tema ─────────────────────────────────────────────────────────────────────
-
 function applyTheme(isDark) {
   document.documentElement.classList.toggle('dark', isDark)
 }
-
-// ─── hook ─────────────────────────────────────────────────────────────────────
 
 export function useUserProfile() {
   const { session } = useSession()
   const userId = session?.user?.id
 
-  // câmera
   const [cameras, setCameras] = useState([])
   const [selectedCamera, setSelectedCamera] = useState(() => {
     return userId ? localStorage.getItem(CAMERA_KEY(userId)) || '' : ''
@@ -40,7 +33,6 @@ export function useUserProfile() {
   const [cameraLoading, setCameraLoading] = useState(false)
   const [cameraError, setCameraError] = useState(null)
 
-  // ── enumera câmeras ──────────────────────────────────────────────────────
   const loadCameras = useCallback(async () => {
     setCameraLoading(true)
     setCameraError(null)
@@ -55,7 +47,6 @@ export function useUserProfile() {
     setCameraLoading(false)
   }, [])
 
-  // ── salva câmera escolhida ───────────────────────────────────────────────
   const handleCameraChange = useCallback(
     (deviceId) => {
       setSelectedCamera(deviceId)
@@ -66,7 +57,6 @@ export function useUserProfile() {
     [userId]
   )
 
-  // ── salva tema ───────────────────────────────────────────────────────────
   return {
     cameras,
     selectedCamera,
