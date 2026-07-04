@@ -191,7 +191,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
       />
 
       <div className="bg-card text-card-foreground border-border flex h-dvh max-h-none w-full max-w-2xl flex-col overflow-hidden rounded-none border shadow-2xl sm:h-auto sm:max-h-[90dvh] sm:rounded-xl">
-        <div className="flex items-start justify-between gap-4 bg-slate-950 px-4 py-3 sm:px-6 sm:py-4">
+        <div className="bg-primary flex items-start justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
           <div>
             <h2 className="text-lg font-bold text-white">Cadastrar Novo Apenado</h2>
             <p className="text-muted-foreground text-sm">
@@ -430,7 +430,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
               onChange={handleChange}
               rows={3}
               placeholder="Adicione observações relevantes sobre o apenado..."
-              className="border-border bg-card text-card-foreground dark:text-card-foreground w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-green-500"
+              className="border-border bg-card text-card-foreground dark:text-card-foreground w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none dark:border-slate-700 dark:focus:ring-green-500"
             />
           </div>
         </div>

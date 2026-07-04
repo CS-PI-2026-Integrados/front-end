@@ -12,7 +12,7 @@ function ModalInative({ apenado, onConfirmar, onCancelar }) {
           <button
             type="button"
             onClick={onCancelar}
-            className="border-border bg-card text-muted-foreground w-full rounded-lg border px-4 py-2 text-sm transition-colors hover:bg-slate-950 sm:w-auto"
+            className="border-border bg-card text-muted-foreground w-full rounded-lg border px-4 py-2 text-sm transition-colors hover:bg-slate-100 sm:w-auto dark:hover:bg-slate-950"
           >
             Cancelar
           </button>

@@ -78,11 +78,11 @@ export default function ApenadoProfile() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6">
           <div className="border-border bg-card rounded-xl border p-4 text-center shadow-sm sm:p-6">
-            <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-2xl border-2 border-green-800 bg-slate-950 sm:h-40 sm:w-40">
+            <div className="bg-card text-muted-foreground mx-auto mb-4 h-32 w-32 overflow-hidden rounded-2xl border-2 border-green-800 sm:h-40 sm:w-40">
               {apenado.foto ? (
                 <img src={apenado.foto} alt="Foto" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full items-center justify-center text-gray-300">
+                <div className="text-muted-foreground flex h-full items-center justify-center">
                   Sem Foto
                 </div>
               )}
@@ -112,7 +112,7 @@ export default function ApenadoProfile() {
             </h3>
             <button
               disabled
-              className="border-border text-muted-foreground w-full cursor-not-allowed rounded-lg border bg-slate-950 py-3 text-sm font-semibold"
+              className="border-border bg-card text-muted-foreground w-full cursor-not-allowed rounded-lg border py-3 text-sm font-semibold"
             >
               Captura de Comparecimento
             </button>
@@ -178,7 +178,7 @@ export default function ApenadoProfile() {
               <label className="text-muted-foreground mb-2 block text-[10px] font-bold tracking-wider uppercase">
                 Observações do Prontuário
               </label>
-              <div className="border-border text-muted-foreground rounded-lg border bg-slate-950 p-4 text-sm leading-relaxed break-words italic">
+              <div className="border-border text-muted-foreground bg-card rounded-lg border p-4 text-sm leading-relaxed break-words italic">
                 {apenado.observacoes || 'Nenhuma observação registrada até o momento.'}
               </div>
             </div>

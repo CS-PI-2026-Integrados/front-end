@@ -29,7 +29,7 @@ function ModalAvisoEncerrar({ aberto, onConfirmar, onCancelar }) {
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onCancelar}
-            className="border-border bg-card text-muted-foreground rounded-lg border px-4 py-2 text-sm transition-colors hover:bg-slate-950"
+            className="border-border bg-card text-muted-foreground rounded-lg border px-4 py-2 text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-950"
           >
             Cancelar
           </button>
