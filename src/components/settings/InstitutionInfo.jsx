@@ -72,10 +72,10 @@ export const InstitutionInfo = () => {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className={`group relative flex h-28 w-28 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-colors ${
+              className={`group relative flex h-28 w-28 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border transition-colors ${
                 logoError
                   ? 'border-destructive/50 bg-destructive/10'
-                  : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-accent/50'
+                  : 'border-border hover:border-primary/50 hover:bg-accent/50'
               }`}
             >
               {logoPreview ? (

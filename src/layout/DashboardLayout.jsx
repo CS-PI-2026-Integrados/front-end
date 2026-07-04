@@ -7,6 +7,8 @@ import {
   UserCog,
   Boxes,
   Settings,
+  Moon,
+  Sun,
 } from 'lucide-react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import LogoFallback from '@/assets/logos/to-light-background.svg'
@@ -21,12 +23,14 @@ import {
 import { useState } from 'react'
 import { useSession } from '@/context/sessionContext'
 import { useTenant } from '@/context/TenantContext'
+import { useTheme } from '@/hooks/useTheme'
 import { canAccessUsersPage } from '@/lib/userPermissions'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
   const { session, handleLogout } = useSession()
   const { state: tenantState } = useTenant()
+  const { isDarkMode, toggleTheme } = useTheme()
   const location = useLocation()
   const isActive = (path) => location.pathname.startsWith(path)
   const canManageUsers = canAccessUsersPage(session?.user)
@@ -48,7 +52,7 @@ export default function DashboardLayout() {
             setisMenuVisible(false)
           }}
         >
-          <div className="bg-background flex h-full w-60 -translate-x-60 flex-col border-e transition-all group-open:-translate-x-0 group-open:shadow-lg md:static md:-translate-x-0 group-open:md:shadow-none">
+          <div className="bg-background flex h-full w-60 -translate-x-60 flex-col border-e transition-transform duration-200 ease-out group-open:-translate-x-0 group-open:shadow-lg md:static md:-translate-x-0 group-open:md:shadow-none">
             <div className="flex h-14 items-center border-b px-4">
               <img
                 src={displayLogo}
@@ -143,7 +147,16 @@ export default function DashboardLayout() {
               >
                 <Menu />
               </Button>
-              <div className="ml-auto">
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleTheme}
+                  className="text-foreground"
+                  title={isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
+                >
+                  {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -152,10 +165,12 @@ export default function DashboardLayout() {
                     >
                       <User />
                       <div className="flex min-w-0 flex-col text-start">
-                        <span className="truncate text-sm font-medium text-black/75">
+                        <span className="text-foreground/75 truncate text-sm font-medium">
                           {session?.user.name}
                         </span>
-                        <span className="truncate text-xs text-black/50">{displayTenantName}</span>
+                        <span className="text-foreground/50 truncate text-xs">
+                          {displayTenantName}
+                        </span>
                       </div>
                     </Button>
                   </DropdownMenuTrigger>

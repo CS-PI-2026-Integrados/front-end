@@ -1,12 +1,16 @@
 import { LoginForm } from '@/components/auth/LoginForm'
+import { AuthFormCard } from '@/components/auth/AuthFormCard'
+import { useTheme } from '@/hooks/useTheme'
 import loginBg from '@/assets/backgrounds/login-bg.jpg'
 import logoWhite from '@/assets/logos/to-dark-background.svg'
 import React from 'react'
 import logo from '@/assets/logos/to-light-background.svg'
 
 const Login = () => {
+  const { isDarkMode } = useTheme()
+
   return (
-    <div className="flex min-h-screen">
+    <div className="text-card-foreground bg-background flex min-h-screen">
       <div className="relative z-0 hidden w-1/2 flex-col justify-between bg-zinc-900 p-15 text-white lg:flex">
         <img
           src={loginBg}
@@ -27,13 +31,19 @@ const Login = () => {
         </div>
       </div>
 
-      <div className="flex w-full items-center justify-center bg-white lg:w-1/2">
-        <div className="w-full max-w-120 space-y-8 px-6">
+      <div className="bg-background flex w-full items-center justify-center lg:w-1/2">
+        <div className="w-full max-w-120 space-y-8 px-6 py-10">
           <div className="m-0 flex justify-center">
-            <img src={logo} alt="Logo" className="h-28 w-28 object-contain" />
+            <img
+              src={isDarkMode ? logoWhite : logo}
+              alt="Logo"
+              className="h-28 w-28 object-contain"
+            />
           </div>
 
-          <LoginForm />
+          <AuthFormCard>
+            <LoginForm />
+          </AuthFormCard>
         </div>
       </div>
     </div>

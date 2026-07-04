@@ -116,54 +116,58 @@ function ModalEditar({ apenado, onSalvar, onCancelar }) {
         onCancelar={() => setIndexParaEncerrar(null)}
       />
 
-      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-4 shadow-xl sm:p-6">
-        <h2 className="text-lg font-bold text-gray-900">Editar Apenado</h2>
+      <div className="bg-card text-card-foreground border-border max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-xl border p-4 shadow-xl sm:p-6">
+        <h2 className="text-foreground text-lg font-bold">Editar Apenado</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-gray-600">Nome</label>
+            <label className="text-muted-foreground mb-1 block text-xs font-semibold">Nome</label>
             <input
               name="nome"
               value={form.nome}
               onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+              className="border-border bg-card text-card-foreground w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">CPF</label>
+            <label className="text-muted-foreground mb-1 block text-xs font-semibold">CPF</label>
             <input
               name="cpf"
               value={form.cpf}
               onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+              className="border-border bg-card text-card-foreground w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">Telefone</label>
+            <label className="text-muted-foreground mb-1 block text-xs font-semibold">
+              Telefone
+            </label>
             <input
               name="telefone"
               value={form.telefone}
               onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+              className="border-border bg-card text-card-foreground w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-gray-600">Endereço</label>
+            <label className="text-muted-foreground mb-1 block text-xs font-semibold">
+              Endereço
+            </label>
             <input
               name="endereco"
               value={form.endereco}
               onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+              className="border-border bg-card text-card-foreground w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
+            <label className="text-muted-foreground mb-1 block text-xs font-semibold">
               Sit. Trabalhista
             </label>
             <select
               name="sit_trabalhista"
               value={form.sit_trabalhista}
               onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+              className="border-border bg-card text-card-foreground w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
             >
               <option>Trabalho Registrado</option>
               <option>Trabalho Informal</option>
@@ -171,13 +175,13 @@ function ModalEditar({ apenado, onSalvar, onCancelar }) {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">Status</label>
+            <label className="text-muted-foreground mb-1 block text-xs font-semibold">Status</label>
             <div className="flex h-[38px] items-center">
               <span
                 className={`inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${
                   contarProcessosAtivos() > 0
-                    ? 'border border-green-200 bg-green-100 text-green-700'
-                    : 'border border-gray-200 bg-gray-100 text-gray-500'
+                    ? 'border border-green-200 bg-green-100 text-green-700 dark:border-green-800 dark:bg-emerald-950 dark:text-emerald-300'
+                    : 'border-border text-muted-foreground border bg-slate-950'
                 }`}
               >
                 {contarProcessosAtivos() > 0 ? 'Ativo' : 'Inativo'}
@@ -186,7 +190,7 @@ function ModalEditar({ apenado, onSalvar, onCancelar }) {
           </div>
         </div>
 
-        <p className="mt-5 mb-3 text-xs font-semibold tracking-widest text-gray-400 uppercase">
+        <p className="text-muted-foreground mt-5 mb-3 text-xs font-semibold tracking-widest uppercase">
           Processos Vinculados
         </p>
         <div className="flex flex-col gap-3">
@@ -203,7 +207,7 @@ function ModalEditar({ apenado, onSalvar, onCancelar }) {
           <button
             type="button"
             onClick={handleAdicionarProcesso}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:border-green-600 hover:text-green-700"
+            className="border-border bg-card text-muted-foreground hover:text-foreground flex w-full items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-medium transition-colors hover:border-emerald-500 hover:bg-green-50 dark:hover:bg-slate-950"
           >
             <svg
               className="h-4 w-4"
@@ -222,7 +226,7 @@ function ModalEditar({ apenado, onSalvar, onCancelar }) {
           <button
             type="button"
             onClick={onCancelar}
-            className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 sm:w-auto"
+            className="border-border bg-card text-muted-foreground w-full rounded-lg border px-4 py-2 text-sm transition-colors hover:bg-slate-50 sm:w-auto dark:hover:bg-slate-950"
           >
             Cancelar
           </button>

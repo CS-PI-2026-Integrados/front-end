@@ -178,8 +178,8 @@ function ModalCadastro({ onSalvar, onCancelar }) {
   }
 
   const inputClass = (field) =>
-    `w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-700 ${
-      errors[field] ? 'border-red-400 focus:ring-red-400' : 'border-gray-300'
+    `w-full rounded-lg border px-3 py-2 text-sm bg-card text-card-foreground focus:outline-none focus:ring-2 focus:ring-green-700 ${
+      errors[field] ? 'border-red-400 focus:ring-red-400' : 'border-border'
     }`
 
   return (
@@ -190,11 +190,11 @@ function ModalCadastro({ onSalvar, onCancelar }) {
         onCancelar={() => setIndexParaEncerrar(null)}
       />
 
-      <div className="flex h-dvh max-h-none w-full max-w-2xl flex-col overflow-hidden rounded-none bg-white shadow-2xl sm:h-auto sm:max-h-[90dvh] sm:rounded-xl">
-        <div className="bg-primary flex items-start justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
+      <div className="bg-card text-card-foreground border-border flex h-dvh max-h-none w-full max-w-2xl flex-col overflow-hidden rounded-none border shadow-2xl sm:h-auto sm:max-h-[90dvh] sm:rounded-xl">
+        <div className="flex items-start justify-between gap-4 bg-slate-950 px-4 py-3 sm:px-6 sm:py-4">
           <div>
             <h2 className="text-lg font-bold text-white">Cadastrar Novo Apenado</h2>
-            <p className="text-primary-foreground text-sm">
+            <p className="text-muted-foreground text-sm">
               Preencha os dados do apenado no formulário abaixo
             </p>
           </div>
@@ -217,7 +217,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 text-left sm:px-6 sm:py-5">
-          <p className="mb-3 text-left text-xs font-semibold tracking-widest text-gray-400 uppercase">
+          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
             Identificação Pessoal
           </p>
 
@@ -226,8 +226,8 @@ function ModalCadastro({ onSalvar, onCancelar }) {
               <button
                 type="button"
                 onClick={() => fileRef.current.click()}
-                className={`flex h-24 w-24 flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors hover:bg-gray-50 ${
-                  errors.foto ? 'border-red-400' : 'border-gray-300'
+                className={`bg-card text-card-foreground flex h-24 w-24 flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors hover:bg-slate-950 ${
+                  errors.foto ? 'border-red-400' : 'border-border dark:border-slate-700'
                 }`}
               >
                 {preview ? (
@@ -239,7 +239,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
                 ) : (
                   <>
                     <svg
-                      className="h-8 w-8 text-gray-400"
+                      className="text-muted-foreground h-8 w-8"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth={1.5}
@@ -251,13 +251,15 @@ function ModalCadastro({ onSalvar, onCancelar }) {
                         d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                       />
                     </svg>
-                    <span className="mt-1 px-1 text-center text-xs leading-tight text-gray-400">
+                    <span className="text-muted-foreground mt-1 px-1 text-center text-xs leading-tight">
                       Clique para adicionar
                     </span>
                   </>
                 )}
               </button>
-              <span className="text-[10px] leading-tight text-gray-400">JPG, PNG — máx. 5 MB</span>
+              <span className="text-muted-foreground text-[10px] leading-tight">
+                JPG, PNG — máx. 5 MB
+              </span>
               {errors.foto && (
                 <span className="text-[10px] font-medium text-red-500">{errors.foto}</span>
               )}
@@ -272,7 +274,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
 
             <div className="grid w-full flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-xs font-semibold text-gray-600">
+                <label className="text-muted-foreground mb-1 block text-xs font-semibold">
                   Nome completo <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -285,7 +287,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
                 {errors.nome && <p className="mt-0.5 text-xs text-red-500">{errors.nome}</p>}
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-gray-600">
+                <label className="text-muted-foreground mb-1 block text-xs font-semibold">
                   CPF <span className="text-red-500">*</span>
                 </label>
                 <IMaskInput
@@ -298,7 +300,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
                 {errors.cpf && <p className="mt-0.5 text-xs text-red-500">{errors.cpf}</p>}
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-gray-600">
+                <label className="text-muted-foreground mb-1 block text-xs font-semibold">
                   Data de nascimento <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -313,7 +315,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
                 )}
               </div>
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-xs font-semibold text-gray-600">
+                <label className="text-muted-foreground mb-1 block text-xs font-semibold">
                   Telefone <span className="text-red-500">*</span>
                 </label>
                 <IMaskInput
@@ -330,11 +332,11 @@ function ModalCadastro({ onSalvar, onCancelar }) {
             </div>
           </div>
 
-          <p className="mb-3 text-left text-xs font-semibold tracking-widest text-gray-400 uppercase">
+          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
             Endereço
           </p>
           <div className="mb-4">
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
+            <label className="text-muted-foreground mb-1 block text-xs font-semibold">
               Endereço completo <span className="text-red-500">*</span>
             </label>
             <input
@@ -347,7 +349,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
             {errors.endereco && <p className="mt-0.5 text-xs text-red-500">{errors.endereco}</p>}
           </div>
 
-          <p className="mb-3 text-left text-xs font-semibold tracking-widest text-gray-400 uppercase">
+          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
             Processos Vinculados
           </p>
           <div className="mb-4 flex flex-col gap-3">
@@ -364,7 +366,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
             <button
               type="button"
               onClick={handleAdicionarProcesso}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:border-green-600 hover:text-green-700"
+              className="border-border bg-card text-muted-foreground hover:text-foreground flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed py-2.5 text-sm font-medium transition-colors hover:border-green-600 hover:bg-green-50 dark:hover:bg-slate-950"
             >
               <svg
                 className="h-4 w-4"
@@ -379,12 +381,12 @@ function ModalCadastro({ onSalvar, onCancelar }) {
             </button>
           </div>
 
-          <p className="mb-3 text-left text-xs font-semibold tracking-widest text-gray-400 uppercase">
+          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
             Situação Laboral
           </p>
           <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">
+              <label className="text-muted-foreground mb-1 block text-xs font-semibold">
                 Instituição / Unidade
               </label>
               <input
@@ -396,7 +398,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">
+              <label className="text-muted-foreground mb-1 block text-xs font-semibold">
                 Situação trabalhista <span className="text-red-500">*</span>
               </label>
               <select
@@ -418,7 +420,7 @@ function ModalCadastro({ onSalvar, onCancelar }) {
             </div>
           </div>
 
-          <p className="mb-3 text-left text-xs font-semibold tracking-widest text-gray-400 uppercase">
+          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
             Observações
           </p>
           <div className="mb-2">
@@ -428,18 +430,18 @@ function ModalCadastro({ onSalvar, onCancelar }) {
               onChange={handleChange}
               rows={3}
               placeholder="Adicione observações relevantes sobre o apenado..."
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none"
+              className="border-border bg-card text-card-foreground dark:text-card-foreground w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-green-500"
             />
           </div>
         </div>
 
-        <div className="mt-auto flex flex-col gap-3 border-t border-gray-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
-          <p className="text-xs text-gray-400">* campos obrigatórios</p>
+        <div className="border-border mt-auto flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
+          <p className="text-muted-foreground text-xs">* campos obrigatórios</p>
           <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row sm:gap-3">
             <button
               type="button"
               onClick={onCancelar}
-              className="w-full rounded-lg border border-gray-200 px-5 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 sm:w-auto"
+              className="border-border bg-card text-muted-foreground w-full rounded-lg border px-5 py-2 text-sm transition-colors hover:bg-slate-50 sm:w-auto dark:hover:bg-slate-950"
             >
               Cancelar
             </button>

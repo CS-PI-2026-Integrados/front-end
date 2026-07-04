@@ -89,7 +89,7 @@ export function UserProfile() {
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2">
             <Select
-              value={selectedCamera}
+              value={selectedCamera || undefined}
               onValueChange={handleCameraChange}
               disabled={cameraLoading || cameras.length === 0}
             >
@@ -108,11 +108,13 @@ export function UserProfile() {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                {cameras.map((device, i) => (
-                  <SelectItem key={device.deviceId} value={device.deviceId}>
-                    {device.label || `Câmera ${i + 1}`}
-                  </SelectItem>
-                ))}
+                {cameras
+                  .filter((device) => device.deviceId)
+                  .map((device, i) => (
+                    <SelectItem key={device.deviceId} value={device.deviceId}>
+                      {device.label || `Câmera ${i + 1}`}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
 

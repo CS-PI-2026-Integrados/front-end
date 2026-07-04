@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from '@/context/sessionContext'
 
 const CAMERA_KEY = (userId) => `sicape:camera:${userId}`
-const THEME_KEY = (userId) => `sicape:theme:${userId}`
 
 // ─── câmera ──────────────────────────────────────────────────────────────────
 
@@ -41,18 +40,6 @@ export function useUserProfile() {
   const [cameraLoading, setCameraLoading] = useState(false)
   const [cameraError, setCameraError] = useState(null)
 
-  // tema
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return userId ? localStorage.getItem(THEME_KEY(userId)) === 'dark' : false
-  })
-
-  // ── restaura preferências de DOM ao montar ──────────────────────────────
-  useEffect(() => {
-    if (!userId) return
-    const savedTheme = localStorage.getItem(THEME_KEY(userId)) === 'dark'
-    applyTheme(savedTheme)
-  }, [userId])
-
   // ── enumera câmeras ──────────────────────────────────────────────────────
   const loadCameras = useCallback(async () => {
     setCameraLoading(true)
@@ -80,23 +67,12 @@ export function useUserProfile() {
   )
 
   // ── salva tema ───────────────────────────────────────────────────────────
-  const handleThemeToggle = useCallback(
-    (checked) => {
-      setIsDarkMode(checked)
-      applyTheme(checked)
-      if (userId) localStorage.setItem(THEME_KEY(userId), checked ? 'dark' : 'light')
-    },
-    [userId]
-  )
-
   return {
     cameras,
     selectedCamera,
     cameraLoading,
     cameraError,
-    isDarkMode,
     loadCameras,
     handleCameraChange,
-    handleThemeToggle,
   }
 }
