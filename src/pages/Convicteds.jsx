@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Ban, FileText, Pencil, Plus, Search, Users } from 'lucide-react'
 import { useSession } from '@/context/sessionContext'
-import mockApenados from '../mocks/apenados.json'
+import { mockApenados } from '@/mocks/apenados.mock.js'
 import ModalInative from '../components/hooks/modalInative'
 import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
@@ -25,17 +25,55 @@ import {
 const ITEMS_PER_PAGE = 10
 const STORAGE_KEY = 'apenados_data_v4'
 
+function normalizeApenado(a) {
+  return {
+    id: a.id != null ? String(a.id) : crypto.randomUUID(),
+    tenant_id: a.tenant_id || a.tenantId || null,
+    nome: a.nome || a.fullName || '',
+    cpf: a.cpf || '',
+    telefone: a.telefone || a.phone || '',
+    endereco: a.endereco || a.address || '',
+    sit_trabalhista:
+      a.sit_trabalhista ||
+      (a.workingStatus === 'working_formal'
+        ? 'Trabalho Registrado'
+        : a.workingStatus === 'working_informal'
+          ? 'Trabalho Informal'
+          : a.workingStatus === 'not_working'
+            ? 'Nao Trabalha'
+            : '') ||
+      '',
+    status: a.status || 'Ativo',
+    foto: a.foto || a.referencePhotoUrl || '',
+    processos: a.processos || a.processos || [],
+    numero_processo:
+      a.numero_processo ||
+      a.numeroProcesso ||
+      (a.processos && a.processos.length ? a.processos[0].numeroProcesso : '') ||
+      '',
+  }
+}
+
 function getStoredApenados() {
   const salvo = localStorage.getItem(STORAGE_KEY)
 
-  if (!salvo) return mockApenados
+  const sourceFromMock =
+    mockApenados && mockApenados.apenados
+      ? mockApenados.apenados
+      : Array.isArray(mockApenados)
+        ? mockApenados
+        : []
+
+  if (!salvo) return sourceFromMock.map(normalizeApenado)
 
   try {
     const parsed = JSON.parse(salvo)
-
-    return Array.isArray(parsed) ? parsed : mockApenados
+    const source = Array.isArray(parsed) ? parsed : parsed?.apenados || sourceFromMock
+    return Array.isArray(source)
+      ? source.map(normalizeApenado)
+      : sourceFromMock.map(normalizeApenado)
   } catch {
-    return mockApenados
+    return sourceFromMock.map(normalizeApenado)
   }
 }
 
@@ -108,13 +146,15 @@ const Convicteds = () => {
 
         if (!term) return true
 
-        const matchNome = a.nome.toLowerCase().includes(term)
+        const matchNome = (a.nome || '').toLowerCase().includes(term)
 
-        const cleanCPF = a.cpf.replace(/\D/g, '')
+        const cleanCPF = (a.cpf || '').replace(/\D/g, '')
         const cleanTerm = term.replace(/\D/g, '')
         const matchCPF = cleanTerm !== '' && cleanCPF.includes(cleanTerm)
 
-        return matchNome || matchCPF
+        const matchProcesso = (a.numero_processo || '').toLowerCase().includes(term)
+
+        return matchNome || matchCPF || matchProcesso
       })
   }, [comarca, search, statusFilter, apenados])
 
@@ -286,33 +326,51 @@ const Convicteds = () => {
           <table className="w-full min-w-210 text-sm">
             <thead>
               <tr className="bg-secondary border-y">
-                {['Nome', 'Telefone', 'Endereço', 'Sit. Trabalhista', 'Status', 'Ações'].map(
-                  (col) => (
-                    <th
-                      key={col}
-                      className="text-foreground px-4 py-3 text-left text-xs font-semibold whitespace-nowrap"
-                    >
-                      {col}
-                    </th>
-                  )
-                )}
+                {[
+                  'Foto',
+                  'Nome',
+                  'Processo',
+                  'Telefone',
+                  'Endereço',
+                  'Sit. Trabalhista',
+                  'Ações',
+                ].map((col) => (
+                  <th
+                    key={col}
+                    className="text-foreground px-4 py-3 text-left text-xs font-semibold whitespace-nowrap"
+                  >
+                    {col}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {paginated.map((a) => (
                 <tr key={a.id} className="hover:bg-muted/50 border-b transition-colors">
+                  <td className="px-4 py-3.5">
+                    <img
+                      src={a.foto || a.referencePhotoUrl || `https://i.pravatar.cc/40?u=${a.id}`}
+                      alt={a.nome}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  </td>
                   <td className="min-w-40 px-4 py-3.5">
-                    <p className="text-foreground font-semibold">{a.nome}</p>
-                    <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(a.cpf)}</p>
+                    <p className="text-foreground font-semibold">{a.nome || a.fullName}</p>
+                    <p className="text-muted-foreground mt-0.5 text-xs">
+                      {maskCPF(a.cpf || a.cpf)}
+                    </p>
                   </td>
                   <td className="text-muted-foreground px-4 py-3.5 whitespace-nowrap">
-                    {a.telefone}
+                    {a.numero_processo || a.numeroProcesso || ''}
+                  </td>
+                  <td className="text-muted-foreground px-4 py-3.5 whitespace-nowrap">
+                    {a.telefone || a.phone}
                   </td>
                   <td
                     className="text-muted-foreground max-w-64 truncate px-4 py-3.5"
-                    title={a.endereco}
+                    title={a.endereco || a.address}
                   >
-                    {a.endereco}
+                    {a.endereco || a.address}
                   </td>
                   <td className="px-4 py-3.5">
                     <SitTrabalhista sit={a.sit_trabalhista} />
