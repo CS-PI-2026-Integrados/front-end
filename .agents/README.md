@@ -38,3 +38,53 @@ Use nomes em minúsculas e separados por hífen, exceto quando o formato exigir 
 - Instructions: `*-instructions.md`.
 - Rules: `*-rules.md`.
 - Skills: diretórios com nomes curtos e descritivos.
+
+# Graphify para novos colaboradores
+
+O Graphify é um projeto open-source que transforma o repositório em um grafo navegável de arquivos, símbolos e
+relações. Ele ajuda agentes e colaboradores a localizar fluxos, dependências e
+limites arquiteturais sem percorrer o código de forma manual e ampla.
+
+A skill já está disponível em `skills/graphify/`.
+
+Repositório no GitHub: https://github.com/Graphify-Labs/graphify
+
+### Configuração rápida
+
+No diretório raiz do repositório, confirme que a CLI está disponível:
+
+```bash
+graphify --version
+```
+
+Se o comando não existir, instale-o com `uv`:
+
+```bash
+uv tool install graphifyy
+```
+
+Para gerar o primeiro grafo sem configurar um agente,
+execute:
+
+```bash
+graphify . --code-only
+graphify cluster-only .
+```
+
+### Uso diário
+
+Depois que o grafo existir, consulte-o antes de fazer buscas amplas no código:
+
+```bash
+graphify query "Como funciona a autenticação?"
+graphify path "useSession" "authService"
+graphify explain "usersService"
+```
+
+Após modificar código, mantenha o mapa atualizado com:
+
+```bash
+graphify update .
+```
+
+Não edite manualmente os arquivos em `graphify-out/`; eles são artefatos gerados.
