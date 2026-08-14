@@ -1,358 +1,239 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Ban, FileText, Pencil, Plus, Search, Users } from 'lucide-react'
-import { useSession } from '@/context/sessionContext'
-import mockApenados from '../mocks/apenados.json'
-import ModalInative from '../components/hooks/modalInative'
-import ModalEditar from '../components/hooks/modalEditar'
-import ModalCadastro from '../components/hooks/modalCadastro'
-import { toast } from 'sonner'
-import ModalDocumentosApenado from '../components/hooks/modalDocumentosApenado'
-import { useNavigate } from 'react-router-dom'
-import { DataTableCard } from '@/components/data-display/DataTableCard'
-import { EmptyTableState } from '@/components/data-display/EmptyTableState'
-import { FiltersPanel } from '@/components/data-display/FiltersPanel'
-import { PageHeader } from '@/components/data-display/PageHeader'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import toast from 'react-hot-toast'
+
+import { useSession } from '@/features/autenticacao/context/sessionContext'
+import { ApenadoCreateDialog } from '@/features/apenados/components/ApenadoCreateDialog'
+import { ApenadoDeactivateDialog } from '@/features/apenados/components/ApenadoDeactivateDialog'
+import { ApenadoDocumentsDialog } from '@/features/apenados/components/ApenadoDocumentsDialog'
+import { ApenadoEditDialog } from '@/features/apenados/components/ApenadoEditDialog'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  normalizarApenado,
+  rotuloSituacaoApenado,
+  rotuloSituacaoTrabalhista,
+} from '@/features/apenados/model/apenado'
+import dadosIniciais from '@/mocks/apenados.json'
+import { Button } from '@/shared/ui/button'
+import { DataTableCard } from '@/shared/ui/data-display/DataTableCard'
+import { EmptyTableState } from '@/shared/ui/data-display/EmptyTableState'
+import { FiltersPanel } from '@/shared/ui/data-display/FiltersPanel'
+import { PageHeader } from '@/shared/ui/data-display/PageHeader'
+import { Input } from '@/shared/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 
-const ITEMS_PER_PAGE = 10
 const STORAGE_KEY = 'apenados_data_v4'
+const POR_PAGINA = 10
 
-function getStoredApenados() {
-  const salvo = localStorage.getItem(STORAGE_KEY)
-
-  if (!salvo) return mockApenados
-
+function carregarApenados() {
   try {
-    const parsed = JSON.parse(salvo)
-
-    return Array.isArray(parsed) ? parsed : mockApenados
+    const salvo = localStorage.getItem(STORAGE_KEY)
+    const registros = salvo ? JSON.parse(salvo) : dadosIniciais
+    return (Array.isArray(registros) ? registros : dadosIniciais).map(normalizarApenado)
   } catch {
-    return mockApenados
+    return dadosIniciais.map(normalizarApenado)
   }
 }
-
-function maskCPF(cpf) {
+function cpfMascarado(cpf) {
   return cpf.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**')
 }
 
-function StatusBadge({ status }) {
-  const variants = {
-    Ativo:
-      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700',
-    Inativo:
-      'bg-slate-200 text-slate-700 ring-slate-300 dark:bg-slate-950 dark:text-muted-foreground dark:ring-slate-700',
-  }
-  return (
-    <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold ring-1 ${variants[status] || variants.Inativo}`}
-    >
-      {status === 'Inativo' ? 'Inativo' : 'Ativo'}
-    </span>
-  )
-}
-
-function SitTrabalhista({ sit }) {
-  const variants = {
-    'Trabalho Registrado':
-      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700',
-    'Trabalho Informal':
-      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700',
-    'Nao Trabalha':
-      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-muted-foreground dark:ring-slate-700',
-  }
-  return (
-    <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold ring-1 ${variants[sit] || variants['Nao Trabalha']}`}
-    >
-      {sit}
-    </span>
-  )
-}
-
-const Convicteds = () => {
+export default function Convicteds() {
   const { session } = useSession()
-  const navigate = useNavigate()
-  const comarca = session?.tenant?.id
-
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('Todos')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [apenados, setApenados] = useState(getStoredApenados)
+  const [apenados, setApenados] = useState(carregarApenados)
+  const [busca, setBusca] = useState('')
+  const [situacao, setSituacao] = useState('todos')
+  const [pagina, setPagina] = useState(1)
+  const [novoAberto, setNovoAberto] = useState(false)
+  const [editar, setEditar] = useState(null)
+  const [inativar, setInativar] = useState(null)
+  const [documentos, setDocumentos] = useState(null)
+  const tenantId = String(session?.tenant?.id || '')
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(apenados))
   }, [apenados])
-
-  const [apenadoInativar, setApenadoInativar] = useState(null)
-  const [apenadoEditar, setApenadoEditar] = useState(null)
-  const [modalCadastroAberto, setModalCadastroAberto] = useState(false)
-  const [apenadoDocumentos, setApenadoDocumentos] = useState(null)
-
-  const filtered = useMemo(() => {
-    if (!comarca) return []
-    const term = search.toLowerCase().trim()
-
+  const filtrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase()
+    const cpfTermo = termo.replace(/\D/g, '')
     return apenados
-      .filter((item) => item.tenant_id === comarca)
-      .filter((a) => {
-        const matchStatus = statusFilter === 'Todos' || a.status === statusFilter
-        if (!matchStatus) return false
-
-        if (!term) return true
-
-        const matchNome = a.nome.toLowerCase().includes(term)
-
-        const cleanCPF = a.cpf.replace(/\D/g, '')
-        const cleanTerm = term.replace(/\D/g, '')
-        const matchCPF = cleanTerm !== '' && cleanCPF.includes(cleanTerm)
-
-        return matchNome || matchCPF
-      })
-  }, [comarca, search, statusFilter, apenados])
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
-  const visiblePage = Math.min(currentPage, totalPages)
-  const paginated = filtered.slice((visiblePage - 1) * ITEMS_PER_PAGE, visiblePage * ITEMS_PER_PAGE)
-
-  function handleInativar() {
-    setApenados((prev) =>
-      prev.map((a) => (a.id === apenadoInativar.id ? { ...a, status: 'Inativo' } : a))
-    )
-    setApenadoInativar(null)
-    toast.success('Apenado inativado com sucesso!')
+      .filter((apenado) => apenado.tenantId === tenantId)
+      .filter(
+        (apenado) =>
+          (situacao === 'todos' || apenado.situacao === situacao) &&
+          (!termo ||
+            apenado.nomeCompleto.toLowerCase().includes(termo) ||
+            (cpfTermo && apenado.cpf.replace(/\D/g, '').includes(cpfTermo)))
+      )
+  }, [apenados, busca, situacao, tenantId])
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA))
+  const paginaVisivel = Math.min(pagina, totalPaginas)
+  const exibidos = filtrados.slice((paginaVisivel - 1) * POR_PAGINA, paginaVisivel * POR_PAGINA)
+  const atualizarFiltros = (acao) => {
+    acao()
+    setPagina(1)
   }
-
-  function handleSalvar(form) {
-    setApenados((prev) => prev.map((a) => (a.id === form.id ? { ...form } : a)))
-    setApenadoEditar(null)
-  }
-
-  function handleCadastrar(novoApenado) {
-    setApenados((prev) => [...prev, novoApenado])
-    setModalCadastroAberto(false)
-    toast.success('Apenado cadastrado com sucesso!')
-  }
-
-  const paginationFooter =
-    totalPages > 1 ? (
-      <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <span>
-          Página {visiblePage} de {totalPages}
-        </span>
-        <div className="flex w-full justify-between gap-1.5 sm:w-auto sm:justify-start">
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => setCurrentPage((p) => Math.max(1, Math.min(p, totalPages) - 1))}
-            disabled={visiblePage === 1}
-          >
-            Anterior
-          </Button>
-          <div className="hidden gap-1.5 sm:flex">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <Button
-                key={page}
-                variant={page === visiblePage ? 'default' : 'outline'}
-                size="xs"
-                onClick={() => setCurrentPage(page)}
-              >
-                {page}
-              </Button>
-            ))}
-          </div>
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, Math.min(p, totalPages) + 1))}
-            disabled={visiblePage === totalPages}
-          >
-            Próxima
-          </Button>
-        </div>
-      </div>
-    ) : null
 
   return (
     <div className="bg-background min-h-screen space-y-5 px-4 py-5 sm:px-6">
-      <ModalInative
-        apenado={apenadoInativar}
-        onConfirmar={handleInativar}
-        onCancelar={() => setApenadoInativar(null)}
-      />
-      <ModalEditar
-        key={apenadoEditar?.id}
-        apenado={apenadoEditar}
-        onSalvar={handleSalvar}
-        onCancelar={() => setApenadoEditar(null)}
-      />
-      {modalCadastroAberto && (
-        <ModalCadastro
-          onSalvar={handleCadastrar}
-          onCancelar={() => setModalCadastroAberto(false)}
+      {novoAberto && (
+        <ApenadoCreateDialog
+          open
+          tenantId={tenantId}
+          onOpenChange={setNovoAberto}
+          onSave={(apenado) => {
+            setApenados((lista) => [...lista, apenado])
+            toast.success('Apenado cadastrado com sucesso.')
+          }}
         />
       )}
-      {apenadoDocumentos && (
-        <ModalDocumentosApenado
-          apenado={apenadoDocumentos}
-          onFechar={() => setApenadoDocumentos(null)}
+      {editar && (
+        <ApenadoEditDialog
+          key={editar.id}
+          apenado={editar}
+          onOpenChange={(aberto) => {
+            if (!aberto) setEditar(null)
+          }}
+          onSave={(apenado) =>
+            setApenados((lista) => lista.map((item) => (item.id === apenado.id ? apenado : item)))
+          }
         />
       )}
-
+      <ApenadoDeactivateDialog
+        apenado={inativar}
+        onOpenChange={(aberto) => {
+          if (!aberto) setInativar(null)
+        }}
+        onConfirm={() => {
+          setApenados((lista) =>
+            lista.map((item) => (item.id === inativar.id ? { ...item, situacao: 'inativo' } : item))
+          )
+          setInativar(null)
+          toast.success('Apenado inativado com sucesso.')
+        }}
+      />
+      <ApenadoDocumentsDialog
+        apenado={documentos}
+        onOpenChange={(aberto) => {
+          if (!aberto) setDocumentos(null)
+        }}
+      />
       <PageHeader
         title="Gestão de Apenados"
         description="Cadastro e gerenciamento de apenados"
         action={
-          <Button
-            size="sm"
-            className="bg-primary hover:bg-primary/90 w-full cursor-pointer gap-2 px-4 text-sm font-medium shadow-sm sm:w-auto sm:min-w-40"
-            onClick={() => setModalCadastroAberto(true)}
-          >
+          <Button size="sm" onClick={() => setNovoAberto(true)}>
             <Plus />
-            Novo Apenado
+            Novo apenado
           </Button>
         }
       />
-
       <FiltersPanel description="Pesquise e filtre os apenados cadastrados">
         <div className="relative min-w-0 flex-1">
-          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
-            placeholder="Buscar por nome ou CPF..."
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value)
-              setCurrentPage(1)
-            }}
             className="pl-9"
+            placeholder="Buscar por nome ou CPF"
+            value={busca}
+            onChange={(event) => atualizarFiltros(() => setBusca(event.target.value))}
           />
         </div>
-
         <Select
-          value={statusFilter}
-          onValueChange={(value) => {
-            setStatusFilter(value)
-            setCurrentPage(1)
-          }}
+          value={situacao}
+          onValueChange={(valor) => atualizarFiltros(() => setSituacao(valor))}
         >
-          <SelectTrigger className="hover:bg-muted w-full cursor-pointer lg:w-44">
-            <SelectValue placeholder="Status" />
+          <SelectTrigger className="w-full lg:w-44">
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Todos">Todos os Status</SelectItem>
-            <SelectItem value="Ativo">Ativo</SelectItem>
-            <SelectItem value="Inativo">Inativo</SelectItem>
+            <SelectItem value="todos">Todos os status</SelectItem>
+            <SelectItem value="ativo">Ativo</SelectItem>
+            <SelectItem value="inativo">Inativo</SelectItem>
           </SelectContent>
         </Select>
       </FiltersPanel>
-
       <DataTableCard
-        title="Apenados Cadastrados"
-        count={filtered.length}
+        title="Apenados cadastrados"
+        count={filtrados.length}
         icon={<Users className="text-muted-foreground size-5" />}
-        isEmpty={filtered.length === 0}
+        isEmpty={filtrados.length === 0}
         emptyState={
           <EmptyTableState
             title="Nenhum apenado encontrado"
             description={
-              search
-                ? `Não há resultados para "${search}". Tente outro termo.`
+              busca
+                ? `Não há resultados para "${busca}".`
                 : 'Não há apenados cadastrados com esses filtros.'
             }
           />
         }
-        footer={paginationFooter}
+        footer={
+          totalPaginas > 1 && (
+            <div className="flex justify-end gap-2 border-t p-3">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={paginaVisivel === 1}
+                onClick={() => setPagina((atual) => atual - 1)}
+              >
+                Anterior
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={paginaVisivel === totalPaginas}
+                onClick={() => setPagina((atual) => atual + 1)}
+              >
+                Próxima
+              </Button>
+            </div>
+          )
+        }
       >
         <div className="divide-y md:hidden">
-          {paginated.map((apenado) => (
+          {exibidos.map((apenado) => (
             <ApenadoMobileCard
               key={apenado.id}
               apenado={apenado}
-              onEdit={() => setApenadoEditar(apenado)}
-              onInactivate={() => setApenadoInativar(apenado)}
-              onView={() => setApenadoDocumentos(apenado)}
+              onEdit={() => setEditar(apenado)}
+              onDeactivate={() => setInativar(apenado)}
+              onDocuments={() => setDocumentos(apenado)}
             />
           ))}
         </div>
-
         <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-210 text-sm">
             <thead>
               <tr className="bg-secondary border-y">
-                {['Nome', 'Telefone', 'Endereço', 'Sit. Trabalhista', 'Status', 'Ações'].map(
-                  (col) => (
-                    <th
-                      key={col}
-                      className="text-foreground px-4 py-3 text-left text-xs font-semibold whitespace-nowrap"
-                    >
-                      {col}
+                {['Nome', 'Telefone', 'Endereço', 'Situação trabalhista', 'Status', 'Ações'].map(
+                  (coluna) => (
+                    <th key={coluna} className="px-4 py-3 text-left text-xs font-semibold">
+                      {coluna}
                     </th>
                   )
                 )}
               </tr>
             </thead>
             <tbody>
-              {paginated.map((a) => (
-                <tr key={a.id} className="hover:bg-muted/50 border-b transition-colors">
-                  <td className="min-w-40 px-4 py-3.5">
-                    <p className="text-foreground font-semibold">{a.nome}</p>
-                    <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(a.cpf)}</p>
+              {exibidos.map((apenado) => (
+                <tr key={apenado.id} className="hover:bg-muted/50 border-b">
+                  <td className="px-4 py-3">
+                    <strong>{apenado.nomeCompleto}</strong>
+                    <span className="text-muted-foreground block text-xs">
+                      {cpfMascarado(apenado.cpf)}
+                    </span>
                   </td>
-                  <td className="text-muted-foreground px-4 py-3.5 whitespace-nowrap">
-                    {a.telefone}
+                  <td className="px-4 py-3">{apenado.telefone}</td>
+                  <td className="max-w-64 truncate px-4 py-3">{apenado.endereco}</td>
+                  <td className="px-4 py-3">
+                    {rotuloSituacaoTrabalhista(apenado.situacaoTrabalhista)}
                   </td>
-                  <td
-                    className="text-muted-foreground max-w-64 truncate px-4 py-3.5"
-                    title={a.endereco}
-                  >
-                    {a.endereco}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <SitTrabalhista sit={a.sit_trabalhista} />
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <StatusBadge status={a.status} />
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        title="Documentos"
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => setApenadoDocumentos(a)}
-                      >
-                        <FileText />
-                        <span className="sr-only">Visualizar</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        title="Editar"
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => setApenadoEditar(a)}
-                      >
-                        <Pencil />
-                        <span className="sr-only">Editar</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        title="Inativar"
-                        variant="destructive"
-                        size="icon-sm"
-                        onClick={() => setApenadoInativar(a)}
-                      >
-                        <Ban />
-                        <span className="sr-only">Inativar</span>
-                      </Button>
-                    </div>
+                  <td className="px-4 py-3">{rotuloSituacaoApenado(apenado.situacao)}</td>
+                  <td className="px-4 py-3">
+                    <Acoes
+                      onDocuments={() => setDocumentos(apenado)}
+                      onEdit={() => setEditar(apenado)}
+                      onDeactivate={() => setInativar(apenado)}
+                    />
                   </td>
                 </tr>
               ))}
@@ -364,47 +245,42 @@ const Convicteds = () => {
   )
 }
 
-function ApenadoMobileCard({ apenado, onEdit, onInactivate, onView }) {
+function Acoes({ onDocuments, onEdit, onDeactivate }) {
   return (
-    <article className="border-border bg-card space-y-4 rounded-xl border p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="text-foreground truncate font-semibold">{apenado.nome}</h3>
-          <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(apenado.cpf)}</p>
-        </div>
-        <StatusBadge status={apenado.status} />
+    <div className="flex gap-1">
+      <Button title="Documentos" variant="ghost" size="icon-sm" onClick={onDocuments}>
+        <FileText />
+      </Button>
+      <Button title="Editar" variant="ghost" size="icon-sm" onClick={onEdit}>
+        <Pencil />
+      </Button>
+      <Button title="Inativar" variant="destructive" size="icon-sm" onClick={onDeactivate}>
+        <Ban />
+      </Button>
+    </div>
+  )
+}
+function ApenadoMobileCard({ apenado, onEdit, onDeactivate, onDocuments }) {
+  return (
+    <article className="space-y-3 p-4">
+      <div>
+        <strong>{apenado.nomeCompleto}</strong>
+        <span className="text-muted-foreground block text-xs">{cpfMascarado(apenado.cpf)}</span>
       </div>
-
-      <dl className="grid grid-cols-1 gap-3 text-sm min-[420px]:grid-cols-2">
-        <div>
-          <dt className="text-muted-foreground text-xs">Telefone</dt>
-          <dd className="mt-0.5 font-medium">{apenado.telefone}</dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground text-xs">Situação trabalhista</dt>
-          <dd className="mt-1">
-            <SitTrabalhista sit={apenado.sit_trabalhista} />
-          </dd>
-        </div>
-        <div className="min-[420px]:col-span-2">
-          <dt className="text-muted-foreground text-xs">Endereço</dt>
-          <dd className="mt-0.5 font-medium break-words">{apenado.endereco}</dd>
-        </div>
-      </dl>
-
-      <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-3">
-        <Button type="button" variant="outline" size="sm" onClick={onView}>
-          <FileText /> Docs
+      <p className="text-sm">
+        {apenado.telefone} · {rotuloSituacaoApenado(apenado.situacao)}
+      </p>
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" onClick={onDocuments}>
+          Documentos
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onEdit}>
-          <Pencil /> Editar
+        <Button size="sm" variant="outline" onClick={onEdit}>
+          Editar
         </Button>
-        <Button type="button" variant="destructive" size="sm" onClick={onInactivate}>
-          <Ban /> Inativar
+        <Button size="sm" variant="destructive" onClick={onDeactivate}>
+          Inativar
         </Button>
       </div>
     </article>
   )
 }
-
-export default Convicteds
