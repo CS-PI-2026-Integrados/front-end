@@ -1,6 +1,6 @@
 import { LoginForm } from '@/components/auth/LoginForm'
 import { AuthFormCard } from '@/components/auth/AuthFormCard'
-import { useTheme } from '@/hooks/useTheme'
+import { useTheme } from '@/shared/hooks/useTheme'
 import loginBg from '@/assets/backgrounds/login-bg.jpg'
 import logoWhite from '@/assets/logos/to-dark-background.svg'
 import React from 'react'

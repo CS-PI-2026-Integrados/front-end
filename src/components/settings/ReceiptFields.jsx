@@ -1,7 +1,7 @@
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Switch } from '@/components/ui/switch'
+import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/shared/ui/card'
+import { Label } from '@/shared/ui/label'
+import { Checkbox } from '@/shared/ui/checkbox'
+import { Switch } from '@/shared/ui/switch'
 import { useReceiptConfig } from '@/hooks/useReceiptConfig'
 
 const TOGGLE_LABELS = {

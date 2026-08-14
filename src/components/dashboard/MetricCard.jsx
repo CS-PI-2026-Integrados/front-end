@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { cn } from '@/lib/utils.js'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { cn } from '@/shared/lib/utils.js'
 
 export function MetricCard({ data, icon, title, description, className }) {
   return (

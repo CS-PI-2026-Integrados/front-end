@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { useTenant } from '@/context/TenantContext'
+import { useTenant } from '@/features/instituicoes/context/tenantContext'
 import {
   validateLogoFile,
   validateLogoOnServer,

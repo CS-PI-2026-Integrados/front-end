@@ -1,5 +1,5 @@
 import { CheckCircle2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 const variantStyles = {
   success: 'border-emerald-200 bg-emerald-50 text-emerald-800',

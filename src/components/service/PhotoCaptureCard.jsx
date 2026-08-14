@@ -1,10 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
-import { cn } from '@/lib/utils.js'
-import { Button } from '@/components/ui/button.jsx'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card.jsx'
+import { cn } from '@/shared/lib/utils.js'
+import { Button } from '@/shared/ui/button.jsx'
 import { Camera, Loader2, Upload, X } from 'lucide-react'
 import { usePhotoCaptureCard } from '@/hooks/usePhotoCaptureCard.js'
-import { Label } from '@/components/ui/label.jsx'
-import { useService } from '@/context/ServiceContext'
+import { Label } from '@/shared/ui/label.jsx'
+import { useAtendimento } from '@/features/atendimento'
 
 export function PhotoCaptureCard({ className }) {
   const {
@@ -16,11 +16,10 @@ export function PhotoCaptureCard({ className }) {
     setPhotoStreaming,
     setPhotoError,
     clearPhoto,
-  } = useService()
+  } = useAtendimento()
 
   const {
     preview,
-    isStreaming: _,
     videoRef,
     fileInputRef,
     handleFileChange,
@@ -61,7 +60,7 @@ export function PhotoCaptureCard({ className }) {
                 <p className="text-muted-foreground shrink-0 text-center text-xs font-medium">
                   Foto de Referência
                 </p>
-                <div className="relative mx-auto flex aspect-[3/4] w-full max-w-[160px] shrink-0 overflow-hidden rounded-xl border shadow-2xl lg:max-w-[200px]">
+                <div className="relative mx-auto flex aspect-3/4 w-full max-w-40 shrink-0 overflow-hidden rounded-xl border shadow-2xl lg:max-w-[200px]">
                   <img
                     src={apenado.referencePhotoUrl || ''}
                     alt="Referência"
@@ -72,7 +71,7 @@ export function PhotoCaptureCard({ className }) {
             )}
             <div className="flex shrink-0 flex-col items-center space-y-2 lg:flex-1">
               <p className="text-primary shrink-0 text-center text-xs font-medium">Foto Atual</p>
-              <div className="ring-primary/30 relative mx-auto flex aspect-[3/4] w-full max-w-[160px] shrink-0 overflow-hidden rounded-xl border shadow-2xl ring-4 lg:max-w-[200px]">
+              <div className="ring-primary/30 relative mx-auto flex aspect-3/4 w-full max-w-40 shrink-0 overflow-hidden rounded-xl border shadow-2xl ring-4 lg:max-w-[200px]">
                 <img
                   src={preview}
                   alt="Preview do Apenado"
@@ -83,7 +82,7 @@ export function PhotoCaptureCard({ className }) {
           </div>
         ) : isStreaming ? (
           <div className="flex shrink-0 flex-col items-center justify-center space-y-4 pb-2">
-            <div className="relative mx-auto flex aspect-[3/4] w-full max-w-[280px] shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-black shadow-2xl md:max-w-[320px]">
+            <div className="relative mx-auto flex aspect-3/4 w-full max-w-70 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-black shadow-2xl md:max-w-[320px]">
               <video
                 ref={videoRef}
                 autoPlay

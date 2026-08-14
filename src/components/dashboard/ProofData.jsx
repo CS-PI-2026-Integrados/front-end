@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card.jsx'
+import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/shared/ui/card.jsx'
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
-import { useTheme } from '@/hooks/useTheme'
+import { useTheme } from '@/shared/hooks/useTheme'
 
 export function ProofData({ ultimosMesesGrafico = [], contagemMeses = [] }) {
   const { isDarkMode } = useTheme()

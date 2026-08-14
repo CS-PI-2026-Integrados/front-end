@@ -16,8 +16,8 @@ import {
   canDeactivateUser,
   canReactivateUser,
   canResetUserPassword,
-} from '@/lib/userPermissions'
-import { formatCpf, validateCPF } from '@/lib/validadorCpf'
+} from '@/features/usuarios/model/userPermissions'
+import { formatCpf, validateCPF } from '@/shared/lib/cpf'
 
 const getActorFromSession = (session) => {
   if (!session?.user || !session?.tenant) {

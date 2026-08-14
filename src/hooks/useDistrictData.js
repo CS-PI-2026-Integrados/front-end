@@ -2,7 +2,7 @@ import { useMemo, useSyncExternalStore } from 'react'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { presencasStore } from '@/mocks/presenca.mock.js'
 import { mockProcessos } from '@/mocks/processos.mock.js'
-import { useSession } from '@/context/sessionContext'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
 
 export const useDistrictData = () => {
   const { session } = useSession()

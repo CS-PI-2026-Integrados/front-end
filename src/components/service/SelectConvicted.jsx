@@ -1,4 +1,4 @@
-import { Label } from '@/components/ui/label.jsx'
+import { Label } from '@/shared/ui/label.jsx'
 import { useDistrictData } from '@/hooks/useDistrictData.js'
 import { useFilteredConvicted } from '@/hooks/useFilteredConvicted.js'
 import {
@@ -8,16 +8,16 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+} from '@/shared/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button.jsx'
+import { Button } from '@/shared/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
-import { useService } from '@/context/ServiceContext'
+import { useAtendimento } from '@/features/atendimento'
 import { ConvictedInfoCard } from '@/components/service/ConvictedInfoCard.jsx'
 
 export function SelectConvicted() {
-  const { apenado, selectApenado } = useService()
+  const { apenado, selectApenado } = useAtendimento()
 
   const { apenados } = useDistrictData()
 

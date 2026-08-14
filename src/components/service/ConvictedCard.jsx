@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
-import { cn } from '@/lib/utils.js'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label.jsx'
+import { cn } from '@/shared/lib/utils.js'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Label } from '@/shared/ui/label.jsx'
 import { SelectConvicted } from './SelectConvicted.jsx'
-import { useService } from '@/context/ServiceContext'
+import { useAtendimento } from '@/features/atendimento'
 import { FileText } from 'lucide-react'
 
 export function ConvictedCard({ className }) {
-  const { apenado } = useService()
+  const { apenado } = useAtendimento()
   const currentDateTime = useMemo(
     () =>
       new Date().toLocaleString('pt-BR', {
@@ -40,7 +40,7 @@ export function ConvictedCard({ className }) {
         <SelectConvicted />
 
         {!apenado && (
-          <div className="mt-4 flex min-h-[120px] flex-1 items-center justify-center md:mt-6">
+          <div className="mt-4 flex min-h-30 flex-1 items-center justify-center md:mt-6">
             <div className="border-muted-foreground/25 flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-8">
               <div className="bg-muted/50 flex h-12 w-12 items-center justify-center rounded-full">
                 <FileText className="text-muted-foreground/50 h-6 w-6" />

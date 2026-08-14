@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CalendarDays, Clock3, KeyRound, Mail, Power, RotateCcw, IdCard, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { canDeactivateUser, canReactivateUser, canResetUserPassword } from '@/lib/userPermissions'
-import { formatDate, formatDateTime, maskCpf, maskEmail } from '@/lib/userFormatters'
+import { Button } from '@/shared/ui/button'
+import {
+  canDeactivateUser,
+  canReactivateUser,
+  canResetUserPassword,
+} from '@/features/usuarios/model/userPermissions'
+import {
+  formatDate,
+  formatDateTime,
+  maskCpf,
+  maskEmail,
+} from '@/features/usuarios/model/userFormatters'
 import { UserActionConfirmDialog } from '@/components/users/UserActionConfirmDialog'
 import { ResetUserPasswordDialog } from '@/components/users/ResetUserPasswordDialog'
 import { UserRoleBadge } from '@/components/users/UserRoleBadge'
 import { UserStatusBadge } from '@/components/users/UserStatusBadge'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 const PANEL_ANIMATION_MS = 200
 

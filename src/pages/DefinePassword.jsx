@@ -3,9 +3,9 @@ import authBg from '@/assets/backgrounds/auth-bg.png'
 import { AuthBackgroundLayout } from '@/components/auth/AuthBackgroundLayout'
 import { AuthFormCard } from '@/components/auth/AuthFormCard'
 import { DefinePasswordForm } from '@/components/auth/DefinePasswordForm'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/shared/ui/button'
 import { useDefinePassword } from '@/hooks/useDefinePassword'
-import { RouteLoader } from '@/components/feedback/RouteLoader'
+import { RouteLoader } from '@/shared/ui/RouteLoader'
 
 const DefinePassword = () => {
   const definePasswordController = useDefinePassword()

@@ -1,5 +1,5 @@
-import { getActiveStatusLabel } from '@/lib/userFormatters'
-import { cn } from '@/lib/utils'
+import { getActiveStatusLabel } from '@/features/usuarios/model/userFormatters'
+import { cn } from '@/shared/lib/utils'
 
 const statusClasses = {
   active:

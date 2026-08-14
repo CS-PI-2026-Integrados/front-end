@@ -7,19 +7,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { InputField } from '@/components/form-fields/InputField'
-import { CpfField } from '@/components/form-fields/CpfField'
-import { ROLE_KEYS } from '@/lib/userPermissions'
+} from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button'
+import { Field, FieldError, FieldLabel } from '@/shared/ui/field'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { InputField } from '@/shared/ui/form-fields/InputField'
+import { CpfField } from '@/shared/ui/form-fields/CpfField'
+import { ROLE_KEYS } from '@/features/usuarios/model/userPermissions'
 import { useCreateOperatorForm } from '@/hooks/useCreateOperatorForm'
 
 const fieldStyles = {

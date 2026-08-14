@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { validateCPF } from '@/lib/validadorCpf'
+import { validateCPF } from '@/shared/lib/cpf'
 
 export const cpfSchema = z
   .string()

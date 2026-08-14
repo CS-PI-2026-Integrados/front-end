@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
-import { useSession } from '@/context/sessionContext'
+import toast from 'react-hot-toast'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
 import {
   createTenantOperator,
   deactivateTenantUser,
@@ -8,7 +8,7 @@ import {
   reactivateTenantUser,
   resetTenantUserPassword,
 } from '@/services/usersService'
-import { normalizeSearch } from '@/lib/userFormatters'
+import { normalizeSearch } from '@/features/usuarios/model/userFormatters'
 
 export const USERS_STATUS_FILTERS = {
   ALL: 'all',

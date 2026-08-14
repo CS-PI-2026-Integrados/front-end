@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog.jsx'
+} from '@/shared/ui/dialog.jsx'
 
 export function ProofViewModal({ open, onOpenChange, comprovante }) {
   if (!comprovante) return null

@@ -9,7 +9,7 @@ import {
   definePasswordWithResetToken,
   validatePasswordResetToken,
 } from '@/services/authService'
-import { useSession } from '@/context/sessionContext'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
 
 const FLOW_STATUS = {
   LOADING: 'loading',

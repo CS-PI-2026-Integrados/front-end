@@ -1,22 +1,16 @@
 import { Search, UserCheck, UserCog, UserPlus, UserX, Users } from 'lucide-react'
 import { useState } from 'react'
-import { DataTableCard } from '@/components/data-display/DataTableCard'
-import { EmptyTableState } from '@/components/data-display/EmptyTableState'
-import { FiltersPanel } from '@/components/data-display/FiltersPanel'
-import { PageHeader } from '@/components/data-display/PageHeader'
+import { DataTableCard } from '@/shared/ui/data-display/DataTableCard'
+import { EmptyTableState } from '@/shared/ui/data-display/EmptyTableState'
+import { FiltersPanel } from '@/shared/ui/data-display/FiltersPanel'
+import { PageHeader } from '@/shared/ui/data-display/PageHeader'
 import { MetricCard } from '@/components/dashboard/MetricCard'
 import { CreateOperatorDialog } from '@/components/users/CreateOperatorDialog'
 import { UserDetailsPanel } from '@/components/users/UserDetailsPanel'
 import { UsersTable } from '@/components/users/UsersTable'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { useUsersManagement, USERS_STATUS_FILTERS } from '@/hooks/useUsersManagement'
 
 export default function UsersManagement() {

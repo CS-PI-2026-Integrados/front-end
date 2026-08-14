@@ -1,7 +1,7 @@
 import logo from '@/assets/logos/to-light-background.svg'
 import logoWhite from '@/assets/logos/to-dark-background.svg'
-import { cn } from '@/lib/utils'
-import { useTheme } from '@/hooks/useTheme'
+import { cn } from '@/shared/lib/utils'
+import { useTheme } from '@/shared/hooks/useTheme'
 
 export function AuthBackgroundLayout({
   backgroundImage,

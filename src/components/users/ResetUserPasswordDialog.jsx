@@ -7,9 +7,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+} from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
 
 export function ResetUserPasswordDialog({ onConfirm, onOpenChange, open, user }) {
   const [temporaryPassword, setTemporaryPassword] = useState('')

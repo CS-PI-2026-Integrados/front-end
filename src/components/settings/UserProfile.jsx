@@ -1,18 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { Button } from '@/shared/ui/button'
+import { Label } from '@/shared/ui/label'
 import { Video, RefreshCw, Loader2, AlertCircle, Clock, ShieldCheck } from 'lucide-react'
 import { useEffect } from 'react'
-import { useSession } from '@/context/sessionContext'
-import { useTenant } from '@/context/TenantContext'
-import { maskCpf, getRoleLabel } from '@/lib/userFormatters'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
+import { useTenant } from '@/features/instituicoes/context/tenantContext'
+import { maskCpf, getRoleLabel } from '@/features/usuarios/model/userFormatters'
 import { useUserProfile } from '@/hooks/useUserProfile'
 import PasswordChange from '@/components/settings/PasswordChange'
 

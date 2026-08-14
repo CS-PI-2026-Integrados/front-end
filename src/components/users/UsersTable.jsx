@@ -1,5 +1,5 @@
-import { formatDateTime, maskCpf, maskEmail } from '@/lib/userFormatters'
-import { cn } from '@/lib/utils'
+import { formatDateTime, maskCpf, maskEmail } from '@/features/usuarios/model/userFormatters'
+import { cn } from '@/shared/lib/utils'
 import { UserRoleBadge } from '@/components/users/UserRoleBadge'
 import { UserStatusBadge } from '@/components/users/UserStatusBadge'
 

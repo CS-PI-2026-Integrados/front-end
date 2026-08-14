@@ -1,12 +1,12 @@
 import { ConvictedCard } from '@/components/service/ConvictedCard.jsx'
-import { useService } from '@/context/ServiceContext'
-import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
+import { useAtendimento } from '@/features/atendimento'
+import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/shared/ui/tabs.jsx'
 import { PhotoCaptureCard } from '@/components/service/PhotoCaptureCard.jsx'
 import { ProofHistory } from '@/components/service/ProofHistory.jsx'
 import { useGenerateReceipt } from '@/hooks/useGenerateReceipt.js'
 import { useDistrictData } from '@/hooks/useDistrictData.js'
 import { ReceiptSuccessCard } from '@/components/service/ReceiptSuccessCard.jsx'
-import { getMudancasAtivas } from '@/lib/atendimentoUtils'
+import { getMudancasAtivas } from '@/features/atendimento/model/atendimentoUtils'
 
 const Service = () => {
   const {
@@ -22,7 +22,7 @@ const Service = () => {
     setReciboGerado,
     setError,
     resetAtendimento,
-  } = useService()
+  } = useAtendimento()
 
   const { presencas } = useDistrictData()
 

@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { presencasStore } from '@/mocks/presenca.mock.js'
-import { useSession } from '@/context/sessionContext'
-import { useTenant } from '@/context/TenantContext'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
+import { useTenant } from '@/features/instituicoes/context/tenantContext'
 
 const generateRandomCode = (length = 9) => {
   return Math.random()

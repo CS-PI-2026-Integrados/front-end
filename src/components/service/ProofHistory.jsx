@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useDistrictData } from '@/hooks/useDistrictData.js'
-import { Button } from '@/components/ui/button.jsx'
+import { Button } from '@/shared/ui/button.jsx'
 import { ChevronLeft, ChevronRight, Eye, Download, FileText } from 'lucide-react'
-import { downloadReceiptPDF, viewReceiptPDF } from '@/lib/pdfService.js'
+import { downloadReceiptPDF, viewReceiptPDF } from '@/features/atendimento/services/pdfService.js'
 
 export function ProofHistory() {
   const { presencas, apenados } = useDistrictData()

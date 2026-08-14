@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ROLE_KEYS } from '@/lib/userPermissions'
+import { ROLE_KEYS } from '@/features/usuarios/model/userPermissions'
 import { cpfSchema } from './fieldSchemas'
 
 export const createUserSchema = z.object({

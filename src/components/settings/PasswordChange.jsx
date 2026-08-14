@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react'
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/shared/ui/card'
+import { Label } from '@/shared/ui/label'
+import { Input } from '@/shared/ui/input'
+import { Button } from '@/shared/ui/button'
 import toast from 'react-hot-toast'
-import { useSession } from '@/context/sessionContext'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
 import { changePassword } from '@/services/authService'
-import { PasswordStrengthMeter, getStrength } from '@/components/auth/PasswordStrengthMeter'
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter'
+import { obterForcaSenha } from '@/components/auth/passwordStrength'
 
 const PasswordField = ({ label, value, onChange, error }) => (
   <div className="space-y-2">
@@ -50,7 +51,7 @@ export const PasswordChange = () => {
     if (!formData.novaSenha.trim()) {
       newErrors.novaSenha = 'Nova senha é obrigatória'
     } else {
-      const strength = getStrength(formData.novaSenha)
+      const strength = obterForcaSenha(formData.novaSenha)
       if (strength.score < 2) {
         newErrors.novaSenha = 'A senha é muito fraca'
       }
@@ -84,7 +85,7 @@ export const PasswordChange = () => {
     }
 
     doChange()
-  }, [formData])
+  }, [formData, session])
 
   return (
     <Card className="w-full">

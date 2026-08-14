@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { InputField } from '@/components/form-fields/InputField'
-import { cn } from '@/lib/utils'
+import { InputField } from '@/shared/ui/form-fields/InputField'
+import { cn } from '@/shared/lib/utils'
 
 const authInputStyles = 'h-13 rounded-[8px] border-2 px-3 py-4 text-sm'
 

@@ -1,5 +1,5 @@
-import { getRoleLabel } from '@/lib/userFormatters'
-import { cn } from '@/lib/utils'
+import { getRoleLabel } from '@/features/usuarios/model/userFormatters'
+import { cn } from '@/shared/lib/utils'
 
 const roleClasses = {
   admin:

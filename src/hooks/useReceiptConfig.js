@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useTenant } from '@/context/TenantContext'
+import { useTenant } from '@/features/instituicoes/context/tenantContext'
 
 export function useReceiptConfig() {
   const { state, dispatch } = useTenant()

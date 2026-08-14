@@ -1,20 +1,14 @@
 import { useState, useMemo } from 'react'
 import { Pencil, AlertCircle } from 'lucide-react'
 
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Label } from '@/shared/ui/label'
+import { Input } from '@/shared/ui/input'
+import { Checkbox } from '@/shared/ui/checkbox'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 
-import { useService } from '@/context/ServiceContext'
-import { useTenant } from '@/context/TenantContext'
-import { formatPhone } from '@/lib/atendimentoUtils'
+import { useAtendimento } from '@/features/atendimento'
+import { useTenant } from '@/features/instituicoes/context/tenantContext'
+import { formatPhone } from '@/features/atendimento/model/atendimentoUtils'
 
 export function ConvictedInfoCard() {
   const {
@@ -26,7 +20,7 @@ export function ConvictedInfoCard() {
     updateField,
     selectProcesso,
     toggleEdit,
-  } = useService()
+  } = useAtendimento()
 
   const { state: tenantState } = useTenant()
 
@@ -51,7 +45,7 @@ export function ConvictedInfoCard() {
 
   if (!apenado) {
     return (
-      <div className="bg-muted/30 flex min-h-[140px] flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
+      <div className="bg-muted/30 flex min-h-35 flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
         <p className="text-muted-foreground text-sm">
           Selecione o apenado para iniciar um atendimento
         </p>

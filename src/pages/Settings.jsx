@@ -1,9 +1,9 @@
 import InstitutionInfo from '@/components/settings/InstitutionInfo'
 import ReceiptFields from '@/components/settings/ReceiptFields'
 import UserProfile from '@/components/settings/UserProfile'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { useSession } from '@/context/sessionContext'
-import { isPrivilegedRole } from '@/lib/userPermissions'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
+import { isPrivilegedRole } from '@/features/usuarios/model/userPermissions'
 
 export const Settings = () => {
   const { session } = useSession()
