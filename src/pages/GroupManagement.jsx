@@ -11,29 +11,19 @@ import {
   Settings,
 } from 'lucide-react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSession } from '@/context/sessionContext'
-import { Spinner } from '@/components/ui/spinner'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
+import { Spinner } from '@/shared/ui/spinner'
 import { MetricCard } from '../components/dashboard/MetricCard.jsx'
-import { PageHeader } from '@/components/data-display/PageHeader'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table'
+import { PageHeader } from '@/shared/ui/data-display/PageHeader'
+import { Button } from '@/shared/ui/button'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs.jsx'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/shared/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/shared/ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -41,19 +31,11 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog.jsx'
-import { toast } from 'sonner'
-import { Checkbox } from '@/components/ui/checkbox.jsx'
+} from '@/shared/ui/dialog.jsx'
+import toast from 'react-hot-toast'
+import { Checkbox } from '@/shared/ui/checkbox.jsx'
 import mock from '@/mocks/grupos.mock.json'
-import {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardAction,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card.jsx'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/ui/card.jsx'
 
 const getStatusBadgeColor = (status) => {
   const statusColors = {
@@ -129,7 +111,7 @@ const GroupManagement = () => {
   const formatDate = (date) => {
     try {
       return new Date(date).toLocaleDateString()
-    } catch (e) {
+    } catch {
       return ''
     }
   }
@@ -435,7 +417,7 @@ const GroupManagement = () => {
       }
 
       setGroup(found)
-    } catch (err) {
+    } catch {
       navigate('/grupos-reflexivos', { replace: true })
     } finally {
       setLoading(false)

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, useMemo } from 'react'
-import { useSession } from '@/context/sessionContext'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
 
 export function usePhotoCaptureCard({
   photo,
@@ -101,7 +101,7 @@ export function usePhotoCaptureCard({
           stream = await navigator.mediaDevices.getUserMedia({
             video: { deviceId: { exact: savedCameraId } },
           })
-        } catch (err) {
+        } catch {
           stream = await navigator.mediaDevices.getUserMedia({ video: true })
         }
       } else {
@@ -110,7 +110,7 @@ export function usePhotoCaptureCard({
 
       streamRef.current = stream
       setPhotoStreaming(true)
-    } catch (err) {
+    } catch {
       setPhotoError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
     }
   }, [stopCamera, setPhotoStreaming, setPhotoError, session?.user?.id])

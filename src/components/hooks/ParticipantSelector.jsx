@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { X, Search } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { Input } from '@/shared/ui/input'
+import { Badge } from '@/shared/ui/badge'
 
 const ParticipantSelector = ({
   participants,
@@ -24,7 +24,7 @@ const ParticipantSelector = ({
 
       return (matchNome || matchCPF) && !participants.find((sel) => sel.id === p.id)
     })
-  }, [searchTerm, availableParticipants, participants])
+  }, [searchTerm, availableParticipants, participants, disabled])
 
   const handleSelectParticipant = (participant) => {
     if (disabled) return

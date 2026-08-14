@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import ParticipantSelector from '@/components/hooks/ParticipantSelector'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/shared/ui/label'
+import { Input } from '@/shared/ui/input'
+import { Button } from '@/shared/ui/button'
+import { Textarea } from '@/shared/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -11,9 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-
-const STORAGE_KEY = 'groups_list'
+} from '@/shared/ui/dialog'
 
 const GroupEditModal = ({ group, isOpen, onOpenChange, availableParticipants, onUpdate }) => {
   const [editData, setEditData] = useState(
@@ -48,7 +46,7 @@ const GroupEditModal = ({ group, isOpen, onOpenChange, availableParticipants, on
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-175">
         <DialogHeader>
           <DialogTitle>Detalhes do grupo reflexivo</DialogTitle>
           <DialogDescription>

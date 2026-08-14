@@ -1,16 +1,16 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Plus, Users, Pencil, Trash, Settings } from 'lucide-react'
-import { useSession } from '@/context/sessionContext'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
 import mockGroups from '@/mocks/grupos.mock.json'
 import mockApenados from '@/mocks/apenados.json'
-import { DataTableCard } from '@/components/data-display/DataTableCard'
-import { EmptyTableState } from '@/components/data-display/EmptyTableState'
-import { FiltersPanel } from '@/components/data-display/FiltersPanel'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { PageHeader } from '@/components/data-display/PageHeader'
-import { Input } from '@/components/ui/input'
+import { DataTableCard } from '@/shared/ui/data-display/DataTableCard'
+import { EmptyTableState } from '@/shared/ui/data-display/EmptyTableState'
+import { FiltersPanel } from '@/shared/ui/data-display/FiltersPanel'
+import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
+import { PageHeader } from '@/shared/ui/data-display/PageHeader'
+import { Input } from '@/shared/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -18,31 +18,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from '@/shared/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+} from '@/shared/ui/dropdown-menu'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import NewGroupForm from '@/components/hooks/NewGroupForm'
 import GroupEditModal from '@/components/hooks/GroupEditModal'
 
@@ -83,7 +67,7 @@ const Groups = () => {
   const formatDate = (date) => {
     try {
       return new Date(date).toLocaleDateString()
-    } catch (e) {
+    } catch {
       return ''
     }
   }
@@ -173,7 +157,7 @@ const Groups = () => {
           </div>
 
           <Select defaultValue={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-[220px]">
+            <SelectTrigger className="w-full md:w-55">
               <SelectValue />
             </SelectTrigger>
 

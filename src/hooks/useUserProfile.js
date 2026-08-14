@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useSession } from '@/context/sessionContext'
+import { useState, useCallback } from 'react'
+import { useSession } from '@/features/autenticacao/context/sessionContext'
 
 const CAMERA_KEY = (userId) => `sicape:camera:${userId}`
 
@@ -16,10 +16,6 @@ async function fetchVideoDevices() {
   } catch {
     return []
   }
-}
-
-function applyTheme(isDark) {
-  document.documentElement.classList.toggle('dark', isDark)
 }
 
 export function useUserProfile() {
