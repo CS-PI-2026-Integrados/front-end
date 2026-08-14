@@ -1,6 +1,6 @@
 import { useReducer, useEffect } from 'react'
 import { useSession } from '@/features/autenticacao/context/sessionContext'
-import { mockTenants } from '@/mocks/tenants.mock'
+import { mockTenants } from '@/features/instituicoes/mock/instituicoesMock'
 import { TenantContext } from '@/features/instituicoes/context/tenantContext'
 
 const DEFAULT_RECEIPT_CONFIG = {

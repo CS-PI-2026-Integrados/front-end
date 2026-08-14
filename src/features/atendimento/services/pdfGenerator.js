@@ -25,7 +25,7 @@ export async function getBase64ImageFromUrl(imageUrl) {
 
 export const generateReceiptPDF = async (atendimento) => {
   const { apenado, processo, recibo, mudancasDetectadas = {} } = atendimento
-  const tenantConfig = recibo?.tenantConfig || {}
+  const configuracaoInstituicao = recibo?.configuracaoInstituicao || {}
 
   const receiptConfig = {
     mostrarFotoReferencia: true,
@@ -34,18 +34,18 @@ export const generateReceiptPDF = async (atendimento) => {
     mostrarProcessoVara: true,
     mostrarNomeServidor: true,
     mostrarAssinaturaDigital: false,
-    ...tenantConfig.receiptConfig,
+    ...configuracaoInstituicao.receiptConfig,
   }
 
-  const receiptFields = Array.isArray(tenantConfig.receiptFields)
-    ? tenantConfig.receiptFields
+  const receiptFields = Array.isArray(configuracaoInstituicao.receiptFields)
+    ? configuracaoInstituicao.receiptFields
     : [
         { key: 'phone', label: 'Telefone', visible: true, editable: true },
         { key: 'address', label: 'Endereço', visible: true, editable: true },
         { key: 'workingStatus', label: 'Situação Trabalhista', visible: true, editable: true },
       ]
 
-  const tenantLogo = tenantConfig.logo
+  const tenantLogo = configuracaoInstituicao.logo
   let logoBase64 = null
   if (tenantLogo) {
     logoBase64 = tenantLogo.startsWith('data:') ? tenantLogo : tenantLogo
@@ -68,8 +68,8 @@ export const generateReceiptPDF = async (atendimento) => {
   }
 
   let dataExtenso = ''
-  if (recibo?.dateTime) {
-    const d = new Date(recibo.dateTime)
+  if (recibo?.emitidoEm) {
+    const d = new Date(recibo.emitidoEm)
     const options = {
       day: '2-digit',
       month: 'long',
@@ -212,15 +212,15 @@ export const generateReceiptPDF = async (atendimento) => {
   }
 
   const operadorLine = receiptConfig.mostrarNomeServidor
-    ? [{ text: 'Operador: ', bold: true }, `${recibo?.operatorName || 'Não informado'}\n`]
+    ? [{ text: 'Operador: ', bold: true }, `${recibo?.nomeOperador || 'Não informado'}\n`]
     : []
 
   const processoVaraLine = receiptConfig.mostrarProcessoVara
     ? [
         { text: 'Fórum: ', bold: true },
-        `${tenantConfig.nomeComarca || 'Não informado'}\n`,
+        `${configuracaoInstituicao.nomeComarca || 'Não informado'}\n`,
         { text: 'Vara: ', bold: true },
-        `${tenantConfig.unidade || 'Não informado'}\n`,
+        `${configuracaoInstituicao.unidade || 'Não informado'}\n`,
       ]
     : []
 
@@ -259,13 +259,13 @@ export const generateReceiptPDF = async (atendimento) => {
           stack: [
             { text: 'COMPROVANTE DE COMPARECIMENTO', style: 'headerTitle', alignment: 'right' },
             {
-              text: `${tenantConfig.nomeComarca || 'Comarca não informada'} — ${tenantConfig.unidade || ''}`,
+              text: `${configuracaoInstituicao.nomeComarca || 'Comarca não informada'} — ${configuracaoInstituicao.unidade || ''}`,
               style: 'headerSecretaria',
               alignment: 'right',
             },
-            tenantConfig.endereco
+            configuracaoInstituicao.endereco
               ? {
-                  text: tenantConfig.endereco,
+                  text: configuracaoInstituicao.endereco,
                   style: 'headerAddress',
                   alignment: 'right',
                   margin: [0, 8, 0, 0],
@@ -280,14 +280,14 @@ export const generateReceiptPDF = async (atendimento) => {
     {
       text: [
         { text: 'Processo: ', bold: true },
-        `${processo?.processNumber || 'Sem Processo Vinculado'}\n`,
+        `${processo?.numeroProcesso || 'Sem Processo Vinculado'}\n`,
         { text: 'Nome: ', bold: true },
-        `${apenado?.fullName || 'Apenado'}\n`,
+        `${apenado?.nomeCompleto || 'Apenado'}\n`,
         ...cpfLine,
         ...processoVaraLine,
         ...operadorLine,
         { text: 'Protocolo de Validação: ', bold: true },
-        `${recibo?.verificationCode || 'Não gerado'}`,
+        `${recibo?.codigoVerificacao || 'Não gerado'}`,
       ],
       style: 'processData',
       marginBottom: 30,

@@ -1,8 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { mockPresenca } from '@/mocks/presenca.mock.js'
+import { listarComprovantes } from '@/features/atendimento'
 import { downloadReceiptPDF } from '@/features/atendimento/services/pdfService.js'
-import { mockProcessos } from '@/mocks/processos.mock.js'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -13,10 +12,14 @@ function formatarDataHora(data) {
 
 export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
   const [aba, setAba] = useState('comprovantes')
-  if (!apenado) return null
-  const comprovantes = (mockPresenca.presencas || []).filter(
-    (item) => String(item.apenadoId) === String(apenado.id)
+  const comprovantes = useMemo(
+    () =>
+      apenado
+        ? listarComprovantes(apenado.tenantId).filter((item) => item.apenadoId === apenado.id)
+        : [],
+    [apenado]
   )
+  if (!apenado) return null
 
   return (
     <Dialog open={Boolean(apenado)} onOpenChange={onOpenChange}>
@@ -49,9 +52,9 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
                   <tbody>
                     {comprovantes.map((comprovante) => (
                       <tr key={comprovante.id} className="border-b">
-                        <td className="p-2">{formatarDataHora(comprovante.dateTime)}</td>
-                        <td className="p-2 font-mono text-xs">{comprovante.verificationCode}</td>
-                        <td className="p-2">{comprovante.operatorName || 'Admin User'}</td>
+                        <td className="p-2">{formatarDataHora(comprovante.emitidoEm)}</td>
+                        <td className="p-2 font-mono text-xs">{comprovante.codigoVerificacao}</td>
+                        <td className="p-2">{comprovante.nomeOperador || 'Admin User'}</td>
                         <td className="p-2">
                           <Button
                             size="sm"
@@ -59,9 +62,8 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
                             onClick={() =>
                               downloadReceiptPDF({
                                 apenado,
-                                processo: mockProcessos.processos.find(
-                                  (processo) =>
-                                    String(processo.id) === String(comprovante.processoId)
+                                processo: apenado.processos.find(
+                                  (processo) => processo.id === comprovante.processoId
                                 ) || { numeroProcesso: comprovante.processoId },
                                 recibo: comprovante,
                               })
