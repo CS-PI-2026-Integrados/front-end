@@ -22,14 +22,18 @@ limites claros entre interface, estado React e comunicação com sistemas extern
   services comunicam-se com sistemas externos.
 - **UI isolada:** componentes não conhecem HTTP, armazenamento do navegador,
   formatos de API ou regras de negócio.
-- **Services como fronteira externa:** services são a única camada que comunica
-  com APIs, autenticação, armazenamento de sessão ou qualquer outro sistema
-  externo.
+- **Services como fronteira de integração:** services são a única camada que
+  comunica com APIs, SDKs, autenticação, armazenamento de sessão e demais
+  sistemas externos que leem ou alteram dados da aplicação. APIs de plataforma
+  usadas apenas para a interface ou seu ciclo de vida (por exemplo, DOM,
+  `AbortController` e navegação) não são integrações de dados.
 - **Modelo canônico:** a interface trabalha com objetos JavaScript em `camelCase`.
   Conversões de payload são feitas no service, na fronteira externa.
 - **Menor escopo de estado:** estado local é preferível; context só é usado para
   estado transversal e compartilhado.
 - **Código compartilhado sem domínio:** `shared/` não depende de features.
+- **Validações por Zod:** validações devem ser realizadas preferencialmente através da biblioteca Zod.
+- **Idioma Padrão**: o idioma inglês é preferido para nomenclaturas.
 
 ## Fluxo de responsabilidades
 
@@ -128,7 +132,7 @@ Podem:
 
 Não podem:
 
-- Fazer chamadas HTTP, acessar `localStorage` ou qualquer sistema externo.
+- Fazer chamadas HTTP, acessar `localStorage` ou outra integração de dados.
 - Implementar persistência, autorização ou regra de negócio durável.
 - Conhecer payloads de APIs ou detalhes de infraestrutura.
 
@@ -142,7 +146,8 @@ tela.
 
 Podem:
 
-- Chamar services e adaptar seus resultados para a UI.
+- Chamar services e derivar estado e apresentação próprios da tela, sem alterar
+  o modelo canônico retornado pelo service.
 - Controlar estados de loading, erro, filtros, paginação e seleção.
 - Expor comandos e dados para pages e componentes.
 - Sincronizar o React com efeitos de interface necessários.
@@ -172,10 +177,12 @@ Não podem:
 - Depender de componentes, pages ou contexts.
 - Expor formatos externos para hooks ou componentes.
 
-Services devem receber dependências e dados por argumentos explícitos. Não devem
-ler estado React ou variáveis globais mutáveis de forma implícita. Respostas HTTP
-cruas, códigos de transporte e detalhes de serialização não podem escapar dessa
-camada.
+Services devem receber os dados do caso de uso por argumentos explícitos. Clientes
+de infraestrutura estáveis, como o cliente HTTP compartilhado, podem ser
+importados da infraestrutura; dependências variáveis ou substituíveis devem ser
+recebidas por argumento ou por uma factory. Services não devem ler estado React
+nem variáveis globais mutáveis de forma implícita. Respostas HTTP cruas, códigos
+de transporte e detalhes de serialização não podem escapar dessa camada.
 
 Exemplo:
 
@@ -191,8 +198,10 @@ export async function listConvicteds(tenantId) {
 ### Modelos, schemas e mappers
 
 `model/` descreve o modelo canônico da feature. `schemas/` valida entradas de
-formulários e dados externos. Mappers pertencem ao service ou a `model/` quando
-forem reutilizados pela mesma feature.
+formulários e dados externos. Hooks e services podem consumir schemas da própria
+feature: hooks para validação e feedback de formulário; services para validar
+dados recebidos de integrações antes de convertê-los. Mappers pertencem ao
+service ou a `model/` quando forem reutilizados pela mesma feature.
 
 Como o projeto usa JavaScript, `model/` não é uma camada obrigatória nem uma
 tentativa de reproduzir tipos estáticos. A pasta só deve existir quando houver
@@ -250,13 +259,15 @@ feature, deve permanecer nela.
 ```txt
 app                -> features, shared
 feature components -> feature hooks, shared
-feature hooks      -> feature services, shared
-feature services   -> shared infrastructure, feature model
+feature hooks      -> feature services, feature schemas, shared
+feature services   -> shared infrastructure, feature model, feature schemas
+feature public API -> public APIs de outras features
 shared             -> shared apenas
 ```
 
-- Features não importam internals de outras features.
-- Integrações entre domínios usam a API pública da feature proprietária.
+- Features não importam internals de outras features. Uma integração deliberada
+  pode importar somente a API pública mínima (`index.js`) da feature proprietária;
+  essa API não deve reexportar internals por conveniência.
 - `shared/ui` não conhece domínio, sessão, rotas ou services.
 - Dependências circulares são proibidas.
 - Imports usam aliases consistentes, como `@/features/...` e `@/shared/...`.
@@ -288,8 +299,10 @@ API pública mínima e estável.
   estabilidade de dependência ou redução de renderizações observável.
 - Atualizações de estado devem ser imutáveis. Não altere objetos compartilhados
   por referência.
-- A UI valida formato e apresenta erros de campo; o service revalida regras de
-  negócio, autorização e transições de estado.
+- A UI valida formato e apresenta erros de campo; o service aplica pré-condições
+  e regras de aplicação que possui localmente. Guards e verificações no frontend
+  controlam a experiência, mas autorização e transições críticas são sempre
+  validadas pelo sistema externo autoritativo.
 - Notificações, navegação e mensagens visuais pertencem a componentes ou hooks,
   nunca a services.
 - Todo parsing de dados externos deve ser validado antes de entrar no estado
@@ -323,10 +336,61 @@ API pública mínima e estável.
   do sistema externo.
 - Conteúdo externo deve ser tratado como não confiável e validado antes de uso.
 
+## Validação com Zod
+
+Zod é a fonte principal de validação estrutural de entradas na interface.
+
+Regras:
+
+- representar obrigatoriedade, formato, limites e consistência local no schema;
+- normalizar valores simples antes das validações que dependem deles;
+- para conversões que alteram tipo ou exigem lógica arbitrária, usar `z.preprocess()` ou `.pipe()`;
+- usar `.refine()` para validações entre campos e definir o `path` do campo que receberá o erro;
+- não repetir regras de validação em `onChange`, `onBlur` e submit;
+- manter mensagens claras e específicas;
+- não criar schemas genéricos que escondam diferenças reais entre formulários;
+- não criar `ValidationService` para validações já atendidas pelo schema;
+- não usar Zod como substituto para validações de negócio, autorização ou regras que dependem de dados externos: essas regras devem ser revalidadas pelo service;
+- manter schemas de domínio em `features/<feature>/schemas/`; `shared/` só deve conter schemas verdadeiramente genéricos.
+
+Exemplo:
+
+```js
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, 'O e-mail é obrigatório')
+    .pipe(z.email('Informe um e-mail válido'))
+    .toLowerCase(),
+
+  password: z.string().min(1, 'A senha é obrigatória'),
+
+  rememberMe: z.boolean(),
+})
+```
+
+Não aplicar normalizações como `.trim()` em senhas sem uma regra explícita, pois espaços podem fazer parte de uma senha válida.
+
+Exemplo de validação entre campos:
+
+```js
+export const definePasswordSchema = z
+  .object({
+    password: z.string().min(8, 'A senha deve ter ao menos 8 caracteres'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'As senhas devem ser iguais',
+    path: ['confirmPassword'],
+  })
+```
+
 ## Critérios de aceite para novas mudanças
 
 - A mudança pertence a uma feature clara ou a `shared/` por motivo justificado.
-- Pages, componentes, hooks e contexts não acessam sistemas externos.
+- Pages, componentes, hooks e contexts não acessam integrações de dados; APIs de
+  plataforma usadas para a interface ou ciclo de vida do React são permitidas.
 - Apenas services comunicam-se com APIs, sessão persistida ou storage.
 - A UI recebe e manipula somente modelos canônicos em `camelCase`.
 - Casos de uso e conversões de payload estão nos services da feature.
