@@ -1,4 +1,4 @@
-import gruposIniciais from '@/features/grupos-reflexivos/mock/groupsMock.json'
+import gruposIniciais from '@/features/reflection-group/mock/groupsMock.json'
 import { readJson, writeJson } from '@/shared/infrastructure/storage/jsonStorage'
 
 const GRUPOS_STORAGE_KEY = 'sicape:grupos-reflexivos:v1'

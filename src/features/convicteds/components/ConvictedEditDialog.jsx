@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import { ProcessoCloseConfirmDialog } from './ProcessoCloseConfirmDialog'
-import { ProcessoCard } from './ProcessoCard'
+import { ProcessoCloseConfirmDialog } from '@/features/convicteds/components/ProcessCloseConfirmDialog'
+import { ProcessoCard } from '@/features/convicteds/components/ProcessCard'
 import { Button } from '@/shared/components/ui/button'
 import {
   Dialog,

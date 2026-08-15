@@ -1,4 +1,4 @@
-import authBg from '@/features/autenticacao/assets/auth-bg.png'
+import authBg from '@/features/authentication/assets/auth-bg.png'
 import { AuthBackgroundLayout } from '@/features/authentication/components/AuthBackgroundLayout'
 import { AuthFormCard } from '@/features/authentication/components/AuthFormCard'
 import { RecoverPasswordForm } from '@/features/authentication/components/RecoverPasswordForm'

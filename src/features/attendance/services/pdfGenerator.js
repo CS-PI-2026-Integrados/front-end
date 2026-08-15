@@ -1,4 +1,4 @@
-import tjprLogo from '@/features/atendimento/assets/tjpr_logo.png'
+import tjprLogo from '@/features/attendance/assets/tjpr_logo.png'
 
 export async function getBase64ImageFromUrl(imageUrl) {
   return new Promise((resolve) => {
