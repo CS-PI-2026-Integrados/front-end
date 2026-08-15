@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Ban, FileText, Pencil, Plus, Search, Users } from 'lucide-react'
+import { FileText, Pencil, Plus, Search, Trash2, Users } from 'lucide-react'
 import { useSession } from '@/context/sessionContext'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import ModalInative from '../components/hooks/modalInative'
@@ -7,20 +7,12 @@ import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
 import { toast } from 'sonner'
 import ModalDocumentosApenado from '../components/hooks/modalDocumentosApenado'
-import { useNavigate } from 'react-router-dom'
 import { DataTableCard } from '@/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/components/data-display/FiltersPanel'
 import { PageHeader } from '@/components/data-display/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 
 const ITEMS_PER_PAGE = 10
 const STORAGE_KEY = 'apenados_data_v4'
@@ -81,22 +73,6 @@ function maskCPF(cpf) {
   return cpf.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**')
 }
 
-function StatusBadge({ status }) {
-  const variants = {
-    Ativo:
-      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700',
-    Inativo:
-      'bg-slate-200 text-slate-700 ring-slate-300 dark:bg-slate-950 dark:text-muted-foreground dark:ring-slate-700',
-  }
-  return (
-    <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold ring-1 ${variants[status] || variants.Inativo}`}
-    >
-      {status === 'Inativo' ? 'Inativo' : 'Ativo'}
-    </span>
-  )
-}
-
 function SitTrabalhista({ sit }) {
   const variants = {
     'Trabalho Registrado':
@@ -117,11 +93,9 @@ function SitTrabalhista({ sit }) {
 
 const Convicteds = () => {
   const { session } = useSession()
-  const navigate = useNavigate()
   const comarca = session?.tenant?.id
 
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('Todos')
   const [currentPage, setCurrentPage] = useState(1)
   const [apenados, setApenados] = useState(getStoredApenados)
 
@@ -141,9 +115,6 @@ const Convicteds = () => {
     return apenados
       .filter((item) => item.tenant_id === comarca)
       .filter((a) => {
-        const matchStatus = statusFilter === 'Todos' || a.status === statusFilter
-        if (!matchStatus) return false
-
         if (!term) return true
 
         const matchNome = (a.nome || '').toLowerCase().includes(term)
@@ -156,7 +127,7 @@ const Convicteds = () => {
 
         return matchNome || matchCPF || matchProcesso
       })
-  }, [comarca, search, statusFilter, apenados])
+  }, [comarca, search, apenados])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
   const visiblePage = Math.min(currentPage, totalPages)
@@ -265,7 +236,7 @@ const Convicteds = () => {
         <div className="relative min-w-0 flex-1">
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
-            placeholder="Buscar por nome ou CPF..."
+            placeholder="Buscar por nome, CPF ou processo..."
             value={search}
             onChange={(event) => {
               setSearch(event.target.value)
@@ -274,23 +245,6 @@ const Convicteds = () => {
             className="pl-9"
           />
         </div>
-
-        <Select
-          value={statusFilter}
-          onValueChange={(value) => {
-            setStatusFilter(value)
-            setCurrentPage(1)
-          }}
-        >
-          <SelectTrigger className="hover:bg-muted w-full cursor-pointer lg:w-44">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Todos">Todos os Status</SelectItem>
-            <SelectItem value="Ativo">Ativo</SelectItem>
-            <SelectItem value="Inativo">Inativo</SelectItem>
-          </SelectContent>
-        </Select>
       </FiltersPanel>
 
       <DataTableCard
@@ -376,9 +330,6 @@ const Convicteds = () => {
                     <SitTrabalhista sit={a.sit_trabalhista} />
                   </td>
                   <td className="px-4 py-3.5">
-                    <StatusBadge status={a.status} />
-                  </td>
-                  <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1">
                       <Button
                         type="button"
@@ -402,13 +353,13 @@ const Convicteds = () => {
                       </Button>
                       <Button
                         type="button"
-                        title="Inativar"
+                        title="Excluir"
                         variant="destructive"
                         size="icon-sm"
                         onClick={() => setApenadoInativar(a)}
                       >
-                        <Ban />
-                        <span className="sr-only">Inativar</span>
+                        <Trash2 />
+                        <span className="sr-only">Excluir</span>
                       </Button>
                     </div>
                   </td>
@@ -425,12 +376,16 @@ const Convicteds = () => {
 function ApenadoMobileCard({ apenado, onEdit, onInactivate, onView }) {
   return (
     <article className="border-border bg-card space-y-4 rounded-xl border p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-3">
+        <img
+          src={apenado.foto || `https://i.pravatar.cc/40?u=${apenado.id}`}
+          alt={apenado.nome}
+          className="h-10 w-10 shrink-0 rounded-full object-cover"
+        />
         <div className="min-w-0">
           <h3 className="text-foreground truncate font-semibold">{apenado.nome}</h3>
           <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(apenado.cpf)}</p>
         </div>
-        <StatusBadge status={apenado.status} />
       </div>
 
       <dl className="grid grid-cols-1 gap-3 text-sm min-[420px]:grid-cols-2">
@@ -458,7 +413,7 @@ function ApenadoMobileCard({ apenado, onEdit, onInactivate, onView }) {
           <Pencil /> Editar
         </Button>
         <Button type="button" variant="destructive" size="sm" onClick={onInactivate}>
-          <Ban /> Inativar
+          <Trash2 /> Excluir
         </Button>
       </div>
     </article>
