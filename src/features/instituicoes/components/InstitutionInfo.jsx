@@ -1,7 +1,13 @@
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/shared/ui/card'
-import { Label } from '@/shared/ui/label'
-import { Input } from '@/shared/ui/input'
-import { Button } from '@/shared/ui/button'
+import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardDescription,
+  CardContent,
+} from '@/shared/components/ui/card'
+import { Label } from '@/shared/components/ui/label'
+import { Input } from '@/shared/components/ui/input'
+import { Button } from '@/shared/components/ui/button'
 import { Upload, X, ImageIcon, Loader2 } from 'lucide-react'
 import { useInstitutionForm } from '@/features/instituicoes/hooks/useInstitutionForm'
 import { LOGO_ACCEPTED_EXTENSIONS } from '@/features/instituicoes/services/tenantService'

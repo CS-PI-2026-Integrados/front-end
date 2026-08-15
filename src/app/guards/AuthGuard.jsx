@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSession } from '@/features/autenticacao/context/sessionContext'
-import { RouteLoader } from '@/shared/ui/RouteLoader'
+import { RouteLoader } from '@/shared/components/ui/RouteLoader'
 
 export default function AuthGuard() {
   const { isLoading, session } = useSession()

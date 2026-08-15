@@ -1,4 +1,4 @@
-import { Label } from '@/shared/ui/label.jsx'
+import { Label } from '@/shared/components/ui/label.jsx'
 import { useAtendimentoData } from '@/features/atendimento/hooks/useAtendimentoData.js'
 import { useFilteredConvicted } from '@/features/atendimento/hooks/useFilteredConvicted.js'
 import {
@@ -8,10 +8,10 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/shared/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
+} from '@/shared/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover'
 import { useState } from 'react'
-import { Button } from '@/shared/ui/button.jsx'
+import { Button } from '@/shared/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
 import { useAtendimento } from '@/features/atendimento'
 import { ConvictedInfoCard } from '@/features/atendimento/components/service/ConvictedInfoCard.jsx'

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { X, Search } from 'lucide-react'
-import { Input } from '@/shared/ui/input'
-import { Badge } from '@/shared/ui/badge'
+import { Input } from '@/shared/components/ui/input'
+import { Badge } from '@/shared/components/ui/badge'
 
 const ParticipantSelector = ({
   participants,

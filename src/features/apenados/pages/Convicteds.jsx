@@ -7,15 +7,24 @@ import { ApenadoCreateDialog } from '@/features/apenados/components/ApenadoCreat
 import { ApenadoDeactivateDialog } from '@/features/apenados/components/ApenadoDeactivateDialog'
 import { ApenadoDocumentsDialog } from '@/features/apenados/components/ApenadoDocumentsDialog'
 import { ApenadoEditDialog } from '@/features/apenados/components/ApenadoEditDialog'
-import { rotuloSituacaoApenado, rotuloSituacaoTrabalhista } from '@/features/apenados/model/apenado'
+import {
+  rotuloSituacaoApenado,
+  rotuloSituacaoTrabalhista,
+} from '@/features/apenados/utils/apenadoUtils'
 import { useApenados } from '@/features/apenados/hooks/useApenados'
-import { Button } from '@/shared/ui/button'
-import { DataTableCard } from '@/shared/ui/data-display/DataTableCard'
-import { EmptyTableState } from '@/shared/ui/data-display/EmptyTableState'
-import { FiltersPanel } from '@/shared/ui/data-display/FiltersPanel'
-import { PageHeader } from '@/shared/ui/data-display/PageHeader'
-import { Input } from '@/shared/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { Button } from '@/shared/components/ui/button'
+import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
+import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
+import { PageHeader } from '@/shared/components/data-display/PageHeader'
+import { Input } from '@/shared/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
 
 const POR_PAGINA = 10
 function cpfMascarado(cpf) {
@@ -56,7 +65,7 @@ export default function Convicteds() {
   }
 
   return (
-    <div className="bg-background min-h-screen space-y-5 px-4 py-5 sm:px-6">
+    <div className="space-y-5">
       {novoAberto && (
         <ApenadoCreateDialog
           open

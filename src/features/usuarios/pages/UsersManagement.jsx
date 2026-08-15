@@ -1,16 +1,22 @@
 import { Search, UserCheck, UserCog, UserPlus, UserX, Users } from 'lucide-react'
 import { useState } from 'react'
-import { DataTableCard } from '@/shared/ui/data-display/DataTableCard'
-import { EmptyTableState } from '@/shared/ui/data-display/EmptyTableState'
-import { FiltersPanel } from '@/shared/ui/data-display/FiltersPanel'
-import { PageHeader } from '@/shared/ui/data-display/PageHeader'
+import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
+import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
+import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { MetricCard } from '@/features/dashboard/components/dashboard/MetricCard'
 import { CreateOperatorDialog } from '@/features/usuarios/components/users/CreateOperatorDialog'
 import { UserDetailsPanel } from '@/features/usuarios/components/users/UserDetailsPanel'
 import { UsersTable } from '@/features/usuarios/components/users/UsersTable'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
 import {
   useUsersManagement,
   USERS_STATUS_FILTERS,
@@ -56,7 +62,7 @@ export default function UsersManagement() {
         }
       />
 
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <MetricCard
           title="Total de usuários"
           description="Cadastrados na comarca"

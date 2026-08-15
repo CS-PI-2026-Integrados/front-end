@@ -1,5 +1,11 @@
 import { useMemo } from 'react'
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/shared/ui/card.jsx'
+import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardDescription,
+  CardContent,
+} from '@/shared/components/ui/card.jsx'
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { useTheme } from '@/shared/hooks/useTheme'
 

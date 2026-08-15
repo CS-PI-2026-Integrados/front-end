@@ -1,14 +1,20 @@
 import { useState, useMemo } from 'react'
 import { Pencil, AlertCircle } from 'lucide-react'
 
-import { Label } from '@/shared/ui/label'
-import { Input } from '@/shared/ui/input'
-import { Checkbox } from '@/shared/ui/checkbox'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { Label } from '@/shared/components/ui/label'
+import { Input } from '@/shared/components/ui/input'
+import { Checkbox } from '@/shared/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
 
 import { useAtendimento } from '@/features/atendimento'
 import { useTenant } from '@/features/instituicoes/context/tenantContext'
-import { formatPhone } from '@/features/atendimento/model/atendimentoUtils'
+import { formatPhone } from '@/features/atendimento/utils/atendimentoUtils'
 
 export function ConvictedInfoCard() {
   const {

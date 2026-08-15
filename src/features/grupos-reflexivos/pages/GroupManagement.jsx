@@ -12,18 +12,25 @@ import {
 } from 'lucide-react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSession } from '@/features/autenticacao/context/sessionContext'
-import { Spinner } from '@/shared/ui/spinner'
+import { Spinner } from '@/shared/components/ui/spinner'
 import { MetricCard } from '@/features/dashboard/components/dashboard/MetricCard.jsx'
-import { PageHeader } from '@/shared/ui/data-display/PageHeader'
-import { Button } from '@/shared/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs.jsx'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/shared/ui/table'
+import { PageHeader } from '@/shared/components/data-display/PageHeader'
+import { Button } from '@/shared/components/ui/button'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs.jsx'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/shared/components/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu'
+} from '@/shared/components/ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -31,11 +38,17 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/shared/ui/dialog.jsx'
+} from '@/shared/components/ui/dialog.jsx'
 import toast from 'react-hot-toast'
-import { Checkbox } from '@/shared/ui/checkbox.jsx'
+import { Checkbox } from '@/shared/components/ui/checkbox.jsx'
 import { listarGrupos, salvarGrupos } from '@/features/grupos-reflexivos/services/gruposService'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/ui/card.jsx'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/shared/components/ui/card.jsx'
 
 const getStatusBadgeColor = (situacao) => {
   const statusColors = {

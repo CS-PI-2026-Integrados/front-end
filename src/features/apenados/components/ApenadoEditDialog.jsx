@@ -2,11 +2,23 @@ import { useState } from 'react'
 
 import { ProcessoCloseConfirmDialog } from './ProcessoCloseConfirmDialog'
 import { ProcessoCard } from './ProcessoCard'
-import { Button } from '@/shared/ui/button'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
-import { Input } from '@/shared/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
-import { Textarea } from '@/shared/ui/textarea'
+import { Button } from '@/shared/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/ui/dialog'
+import { Input } from '@/shared/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
+import { Textarea } from '@/shared/components/ui/textarea'
 
 function novoProcesso(apenadoId) {
   return {

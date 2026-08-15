@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import { FieldGroup } from '@/shared/ui/field'
-import { Button } from '@/shared/ui/button'
+import { FieldGroup } from '@/shared/components/ui/field'
+import { Button } from '@/shared/components/ui/button'
 import { AuthSubmitButton } from '@/features/autenticacao/components/AuthSubmitButton'
 import { PasswordField } from '@/features/autenticacao/components/PasswordField'
 import { PasswordStrengthMeter } from '@/features/autenticacao/components/PasswordStrengthMeter'

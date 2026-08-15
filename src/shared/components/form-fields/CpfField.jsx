@@ -1,4 +1,4 @@
-import { InputField } from '@/shared/ui/form-fields/InputField'
+import { InputField } from '@/shared/components/form-fields/InputField'
 import { cn } from '@/shared/lib/utils'
 import { formatCpf } from '@/shared/lib/cpf'
 

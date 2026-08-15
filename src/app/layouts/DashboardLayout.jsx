@@ -11,20 +11,20 @@ import {
   Sun,
 } from 'lucide-react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import LogoFallback from '@/assets/logos/to-light-background.svg'
+import LogoFallback from '@/shared/assets/logos/to-light-background.svg'
 
-import { Button } from '@/shared/ui/button'
+import { Button } from '@/shared/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from '@/shared/ui/dropdown-menu'
+} from '@/shared/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { useSession } from '@/features/autenticacao/context/sessionContext'
 import { useTenant } from '@/features/instituicoes/context/tenantContext'
 import { useTheme } from '@/shared/hooks/useTheme'
-import { canAccessUsersPage } from '@/features/usuarios/model/userPermissions'
+import { canAccessUsersPage } from '@/features/usuarios/utils/userPermissionsUtils'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)

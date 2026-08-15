@@ -3,11 +3,23 @@ import { useState } from 'react'
 import { ProcessoCard } from './ProcessoCard'
 import { ProcessoCloseConfirmDialog } from './ProcessoCloseConfirmDialog'
 import { validateCPF } from '@/shared/lib/cpf'
-import { Button } from '@/shared/ui/button'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
-import { Input } from '@/shared/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
-import { Textarea } from '@/shared/ui/textarea'
+import { Button } from '@/shared/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/ui/dialog'
+import { Input } from '@/shared/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
+import { Textarea } from '@/shared/components/ui/textarea'
 
 const formularioVazio = {
   nomeCompleto: '',

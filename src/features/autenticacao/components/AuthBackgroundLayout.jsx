@@ -1,5 +1,5 @@
-import logo from '@/assets/logos/to-light-background.svg'
-import logoWhite from '@/assets/logos/to-dark-background.svg'
+import logo from '@/shared/assets/logos/to-light-background.svg'
+import logoWhite from '@/shared/assets/logos/to-dark-background.svg'
 import { cn } from '@/shared/lib/utils'
 import { useTheme } from '@/shared/hooks/useTheme'
 

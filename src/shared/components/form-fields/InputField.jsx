@@ -1,5 +1,5 @@
-import { Field, FieldError, FieldLabel } from '@/shared/ui/field'
-import { Input } from '@/shared/ui/input'
+import { Field, FieldError, FieldLabel } from '@/shared/components/ui/field'
+import { Input } from '@/shared/components/ui/input'
 import { cn } from '@/shared/lib/utils'
 
 const inputBaseStyles =

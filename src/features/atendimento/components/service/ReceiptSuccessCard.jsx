@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card.jsx'
-import { Button } from '@/shared/ui/button.jsx'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card.jsx'
+import { Button } from '@/shared/components/ui/button.jsx'
 import { CheckCircle2, Download, Eye, PlusCircle } from 'lucide-react'
 import { cn } from '@/shared/lib/utils.js'
 import { downloadReceiptPDF, viewReceiptPDF } from '@/features/atendimento/services/pdfService.js'

@@ -1,6 +1,6 @@
 import { mockUsers } from '@/features/usuarios/mock/usuariosIniciais'
 import { findRoleById, findRoleByKey } from '@/features/usuarios/mock/rolesMock'
-import { ROLE_KEYS } from '@/features/usuarios/model/userPermissions'
+import { ROLE_KEYS } from '@/features/usuarios/utils/userPermissionsUtils'
 import { normalizeCpf } from '@/shared/lib/cpf'
 
 const MOCK_USERS_STORAGE_KEY = '@sicape:mock-users'

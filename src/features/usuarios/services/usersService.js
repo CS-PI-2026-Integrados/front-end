@@ -16,7 +16,7 @@ import {
   canDeactivateUser,
   canReactivateUser,
   canResetUserPassword,
-} from '@/features/usuarios/model/userPermissions'
+} from '@/features/usuarios/utils/userPermissionsUtils'
 import { formatCpf, validateCPF } from '@/shared/lib/cpf'
 
 const getActorFromSession = (session) => {

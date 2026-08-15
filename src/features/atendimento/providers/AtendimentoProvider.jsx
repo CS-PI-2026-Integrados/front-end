@@ -4,7 +4,7 @@ import {
   getApenadoOriginal,
   trackFieldChange,
   resetMudancas,
-} from '@/features/atendimento/model/atendimentoUtils'
+} from '@/features/atendimento/utils/atendimentoUtils'
 import { AtendimentoContext } from '@/features/atendimento/context/atendimentoContext'
 
 const initialState = {

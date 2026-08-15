@@ -4,13 +4,13 @@ import { Search, Plus, Users, Pencil, Trash, Settings } from 'lucide-react'
 import { useSession } from '@/features/autenticacao/context/sessionContext'
 import { listarGrupos, salvarGrupos } from '@/features/grupos-reflexivos/services/gruposService'
 import { listarApenados } from '@/features/apenados'
-import { DataTableCard } from '@/shared/ui/data-display/DataTableCard'
-import { EmptyTableState } from '@/shared/ui/data-display/EmptyTableState'
-import { FiltersPanel } from '@/shared/ui/data-display/FiltersPanel'
-import { Button } from '@/shared/ui/button'
-import { Badge } from '@/shared/ui/badge'
-import { PageHeader } from '@/shared/ui/data-display/PageHeader'
-import { Input } from '@/shared/ui/input'
+import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
+import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
+import { Button } from '@/shared/components/ui/button'
+import { Badge } from '@/shared/components/ui/badge'
+import { PageHeader } from '@/shared/components/data-display/PageHeader'
+import { Input } from '@/shared/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -18,15 +18,28 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog'
+} from '@/shared/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
+} from '@/shared/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/components/ui/table'
 import NewGroupForm from '@/features/grupos-reflexivos/components/hooks/NewGroupForm'
 import GroupEditModal from '@/features/grupos-reflexivos/components/hooks/GroupEditModal'
 

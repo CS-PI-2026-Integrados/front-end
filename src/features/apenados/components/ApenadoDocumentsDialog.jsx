@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react'
 
 import { listarComprovantes } from '@/features/atendimento'
 import { downloadReceiptPDF } from '@/features/atendimento/services/pdfService.js'
-import { Button } from '@/shared/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { Button } from '@/shared/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
 
 function formatarDataHora(data) {
   return new Date(data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })

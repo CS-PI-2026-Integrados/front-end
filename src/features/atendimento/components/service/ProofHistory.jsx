@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useAtendimentoData } from '@/features/atendimento/hooks/useAtendimentoData.js'
-import { Button } from '@/shared/ui/button.jsx'
+import { Button } from '@/shared/components/ui/button.jsx'
 import { ChevronLeft, ChevronRight, Eye, Download, FileText } from 'lucide-react'
 import { downloadReceiptPDF, viewReceiptPDF } from '@/features/atendimento/services/pdfService.js'
 

@@ -1,8 +1,14 @@
 import { useState, useCallback } from 'react'
-import { Card, CardTitle, CardHeader, CardDescription, CardContent } from '@/shared/ui/card'
-import { Label } from '@/shared/ui/label'
-import { Input } from '@/shared/ui/input'
-import { Button } from '@/shared/ui/button'
+import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardDescription,
+  CardContent,
+} from '@/shared/components/ui/card'
+import { Label } from '@/shared/components/ui/label'
+import { Input } from '@/shared/components/ui/input'
+import { Button } from '@/shared/components/ui/button'
 import toast from 'react-hot-toast'
 import { useSession } from '@/features/autenticacao/context/sessionContext'
 import { changePassword } from '@/features/autenticacao/services/authService'

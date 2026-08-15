@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { FieldGroup } from '@/shared/ui/field'
-import { Button } from '@/shared/ui/button'
+import { FieldGroup } from '@/shared/components/ui/field'
+import { Button } from '@/shared/components/ui/button'
 import { AuthSubmitButton } from '@/features/autenticacao/components/AuthSubmitButton'
-import { CpfField } from '@/shared/ui/form-fields/CpfField'
+import { CpfField } from '@/shared/components/form-fields/CpfField'
 import { PasswordField } from '@/features/autenticacao/components/PasswordField'
 import { useLogin } from '@/features/autenticacao/hooks/useLogin'
 

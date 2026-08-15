@@ -73,7 +73,10 @@ src/
       index.js
 
   shared/
-    ui/
+    components/
+      ui/
+      data-display/
+      form-fields/
     lib/
     hooks/
     infrastructure/
@@ -83,8 +86,9 @@ src/
 ```
 
 `app/` integra a aplicação. `features/` contém o comportamento de domínio.
-`shared/` contém utilitários, infraestrutura e componentes genéricos. O design
-system pertence a `shared/ui/`.
+`shared/` contém utilitários, infraestrutura e componentes genéricos. Os
+primitivos do design system pertencem a `shared/components/ui/`; componentes
+genéricos compostos podem ficar em `shared/components/`.
 
 O arquivo `index.js` de uma feature, quando existir, define sua API pública.
 Ele apenas reexporta os poucos elementos que consumidores externos podem usar;
@@ -117,11 +121,12 @@ Não pode:
 ### Pages e componentes
 
 Pages são pontos de entrada de rota. Componentes representam a interface e ficam
-na feature correspondente, exceto componentes genéricos de `shared/ui/`.
+na feature correspondente, exceto componentes genéricos de `shared/components/`.
 
 Pages ficam em `pages/`; componentes exclusivos da feature ficam em
-`components/`. Uma page compõe o fluxo da rota e deve permanecer fina: ela liga
-hooks a componentes, sem concentrar regras do domínio.
+`components/`. Componentes genéricos e reutilizáveis ficam em
+`shared/components/`. Uma page compõe o fluxo da rota e deve permanecer fina:
+ela liga hooks a componentes, sem concentrar regras do domínio.
 
 Podem:
 
@@ -244,7 +249,10 @@ evitar renderizações globais sem relação com a mudança.
 
 `shared/` possui código sem domínio específico:
 
-- `shared/ui/`: design system e componentes puramente visuais.
+- `shared/components/ui/`: primitivos do design system, incluindo os gerados
+  pelo Shadcn/ui.
+- `shared/components/`: componentes genéricos compostos e sem domínio, como
+  campos e componentes de exibição de dados.
 - `shared/lib/`: funções determinísticas e utilitários sem efeito externo.
 - `shared/hooks/`: hooks verdadeiramente genéricos.
 - `shared/infrastructure/http/`: cliente HTTP, interceptors e configuração de
@@ -268,7 +276,7 @@ shared             -> shared apenas
 - Features não importam internals de outras features. Uma integração deliberada
   pode importar somente a API pública mínima (`index.js`) da feature proprietária;
   essa API não deve reexportar internals por conveniência.
-- `shared/ui` não conhece domínio, sessão, rotas ou services.
+- `shared/components` não conhece domínio, sessão, rotas ou services.
 - Dependências circulares são proibidas.
 - Imports usam aliases consistentes, como `@/features/...` e `@/shared/...`.
 

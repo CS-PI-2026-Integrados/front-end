@@ -1,5 +1,11 @@
 import { useMemo } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/shared/ui/card.jsx'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from '@/shared/components/ui/card.jsx'
 import { formatarTempoRelativo } from '@/features/dashboard/hooks/useDashboardMetrics.js'
 
 export function RecentActivities({ atividadesRecentes }) {

@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card.jsx'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card.jsx'
 import { cn } from '@/shared/lib/utils.js'
-import { Button } from '@/shared/ui/button.jsx'
+import { Button } from '@/shared/components/ui/button.jsx'
 import { Camera, Loader2, Upload, X } from 'lucide-react'
 import { usePhotoCaptureCard } from '@/features/atendimento/hooks/usePhotoCaptureCard.js'
-import { Label } from '@/shared/ui/label.jsx'
+import { Label } from '@/shared/components/ui/label.jsx'
 import { useAtendimento } from '@/features/atendimento'
 
 export function PhotoCaptureCard({ className }) {

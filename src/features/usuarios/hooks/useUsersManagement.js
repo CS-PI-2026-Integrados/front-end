@@ -8,7 +8,7 @@ import {
   reactivateTenantUser,
   resetTenantUserPassword,
 } from '@/features/usuarios/services/usersService'
-import { normalizeSearch } from '@/features/usuarios/model/userFormatters'
+import { normalizeSearch } from '@/features/usuarios/utils/userFormattersUtils'
 
 export const USERS_STATUS_FILTERS = {
   ALL: 'all',

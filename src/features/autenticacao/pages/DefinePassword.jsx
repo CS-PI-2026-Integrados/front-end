@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
-import authBg from '@/assets/backgrounds/auth-bg.png'
+import authBg from '@/features/autenticacao/assets/auth-bg.png'
 import { AuthBackgroundLayout } from '@/features/autenticacao/components/AuthBackgroundLayout'
 import { AuthFormCard } from '@/features/autenticacao/components/AuthFormCard'
 import { DefinePasswordForm } from '@/features/autenticacao/components/DefinePasswordForm'
-import { Button } from '@/shared/ui/button'
+import { Button } from '@/shared/components/ui/button'
 import { useDefinePassword } from '@/features/autenticacao/hooks/useDefinePassword'
-import { RouteLoader } from '@/shared/ui/RouteLoader'
+import { RouteLoader } from '@/shared/components/ui/RouteLoader'
 
 const DefinePassword = () => {
   const definePasswordController = useDefinePassword()

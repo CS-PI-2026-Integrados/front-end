@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CalendarDays, Clock3, KeyRound, Mail, Power, RotateCcw, IdCard, X } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
+import { Button } from '@/shared/components/ui/button'
 import {
   canDeactivateUser,
   canReactivateUser,
   canResetUserPassword,
-} from '@/features/usuarios/model/userPermissions'
+} from '@/features/usuarios/utils/userPermissionsUtils'
 import {
   formatDate,
   formatDateTime,
   maskCpf,
   maskEmail,
-} from '@/features/usuarios/model/userFormatters'
+} from '@/features/usuarios/utils/userFormattersUtils'
 import { UserActionConfirmDialog } from '@/features/usuarios/components/users/UserActionConfirmDialog'
 import { ResetUserPasswordDialog } from '@/features/usuarios/components/users/ResetUserPasswordDialog'
 import { UserRoleBadge } from '@/features/usuarios/components/users/UserRoleBadge'

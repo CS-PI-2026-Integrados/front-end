@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
-import { FieldGroup } from '@/shared/ui/field'
-import { Button } from '@/shared/ui/button'
-import { AuthFeedbackMessage } from '@/components/feedback/AuthFeedbackMessage'
+import { FieldGroup } from '@/shared/components/ui/field'
+import { Button } from '@/shared/components/ui/button'
+import { AuthFeedbackMessage } from '@/features/autenticacao/components/AuthFeedbackMessage'
 import { AuthSubmitButton } from '@/features/autenticacao/components/AuthSubmitButton'
-import { CpfField } from '@/shared/ui/form-fields/CpfField'
+import { CpfField } from '@/shared/components/form-fields/CpfField'
 import { useRecoverPassword } from '@/features/autenticacao/hooks/useRecoverPassword'
 
 export function RecoverPasswordForm() {

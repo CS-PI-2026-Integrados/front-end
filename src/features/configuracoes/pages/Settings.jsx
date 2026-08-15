@@ -1,9 +1,10 @@
 import InstitutionInfo from '@/features/instituicoes/components/InstitutionInfo'
 import ReceiptFields from '@/features/instituicoes/components/ReceiptFields'
 import UserProfile from '@/features/usuarios/components/UserProfile'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs'
 import { useSession } from '@/features/autenticacao/context/sessionContext'
-import { isPrivilegedRole } from '@/features/usuarios/model/userPermissions'
+import { isPrivilegedRole } from '@/features/usuarios/utils/userPermissionsUtils'
+import { PageHeader } from '@/shared/components/data-display/PageHeader'
 
 export const Settings = () => {
   const { session } = useSession()
@@ -12,17 +13,16 @@ export const Settings = () => {
   const defaultTab = isAdmin ? 'instituicao' : 'perfil'
 
   return (
-    <div className="flex h-full w-full flex-col">
-      <Tabs defaultValue={defaultTab} className="flex h-full w-full flex-1 flex-col">
-        <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
-          <div>
-            <h1 className="text-2xl font-bold md:text-3xl">Configurações</h1>
-            <p className="text-muted-foreground mt-2 text-sm md:text-base">
-              Configure as preferências do sistema
-            </p>
-          </div>
-
-          <TabsList className="bg-muted text-muted-foreground grid h-auto w-full grid-cols-2 items-center justify-center rounded-lg p-1 shadow-sm md:inline-flex md:h-9 md:w-auto">
+    <Tabs defaultValue={defaultTab} className="space-y-5 p-0">
+      <PageHeader
+        title="Configurações"
+        description="Configure as preferências do sistema"
+        action={
+          <TabsList
+            className={`bg-muted text-muted-foreground grid h-auto w-full items-center justify-center rounded-lg p-1 shadow-sm md:inline-flex md:h-9 md:w-auto ${
+              isAdmin ? 'grid-cols-2' : 'grid-cols-1'
+            }`}
+          >
             {isAdmin && (
               <TabsTrigger
                 value="instituicao"
@@ -38,22 +38,22 @@ export const Settings = () => {
               Meu Perfil
             </TabsTrigger>
           </TabsList>
-        </div>
+        }
+      />
 
-        {isAdmin && (
-          <TabsContent value="instituicao" className="mt-0 w-full outline-none">
-            <div className="space-y-6">
-              <InstitutionInfo />
-              <ReceiptFields />
-            </div>
-          </TabsContent>
-        )}
-
-        <TabsContent value="perfil" className="mt-0 w-full outline-none">
-          <UserProfile />
+      {isAdmin && (
+        <TabsContent value="instituicao" className="w-full outline-none">
+          <div className="space-y-6">
+            <InstitutionInfo />
+            <ReceiptFields />
+          </div>
         </TabsContent>
-      </Tabs>
-    </div>
+      )}
+
+      <TabsContent value="perfil" className="mt-0 w-full outline-none">
+        <UserProfile />
+      </TabsContent>
+    </Tabs>
   )
 }
 

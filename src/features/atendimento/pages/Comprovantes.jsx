@@ -1,12 +1,13 @@
 import { ConvictedCard } from '@/features/atendimento/components/service/ConvictedCard.jsx'
 import { useAtendimento } from '@/features/atendimento'
-import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/shared/ui/tabs.jsx'
+import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/shared/components/ui/tabs.jsx'
 import { PhotoCaptureCard } from '@/features/atendimento/components/service/PhotoCaptureCard.jsx'
 import { ProofHistory } from '@/features/atendimento/components/service/ProofHistory.jsx'
 import { useGenerateReceipt } from '@/features/atendimento/hooks/useGenerateReceipt.js'
 import { useAtendimentoData } from '@/features/atendimento/hooks/useAtendimentoData.js'
 import { ReceiptSuccessCard } from '@/features/atendimento/components/service/ReceiptSuccessCard.jsx'
-import { getMudancasAtivas } from '@/features/atendimento/model/atendimentoUtils'
+import { getMudancasAtivas } from '@/features/atendimento/utils/atendimentoUtils'
+import { PageHeader } from '@/shared/components/data-display/PageHeader'
 
 const Service = () => {
   const {
@@ -69,15 +70,11 @@ const Service = () => {
   }
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col overflow-auto">
-      <Tabs defaultValue="novo" className="flex h-full min-h-0 w-full flex-1 flex-col">
-        <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-end">
-          <div>
-            <h1 className="text-2xl font-bold md:text-3xl">Emissão de Comprovantes</h1>
-            <p className="text-muted-foreground mt-2 text-sm md:text-base">
-              Gere comprovantes de comparecimento com foto
-            </p>
-          </div>
+    <Tabs defaultValue="novo" className="flex h-full min-h-0 w-full flex-1 flex-col">
+      <PageHeader
+        title="Emissão de Comprovantes"
+        description="Gere comprovantes de comparecimento com foto"
+        action={
           <TabsList className="bg-muted text-muted-foreground grid h-auto w-full grid-cols-2 items-center justify-center rounded-lg p-1 shadow-sm md:inline-flex md:h-9 md:w-auto">
             <TabsTrigger
               value="novo"
@@ -92,49 +89,49 @@ const Service = () => {
               Histórico {presencas.length > 0 ? `(${presencas.length})` : ''}
             </TabsTrigger>
           </TabsList>
-        </div>
+        }
+      />
 
-        <TabsContent
-          value="novo"
-          className="mt-0 flex min-h-0 w-full min-w-0 flex-col gap-4 overflow-y-auto pb-4 outline-none lg:flex-1 lg:items-stretch lg:gap-6 lg:overflow-visible lg:pb-0"
+      <TabsContent
+        value="novo"
+        className="mt-0 flex min-h-0 w-full min-w-0 flex-col gap-4 overflow-y-auto pb-4 outline-none lg:flex-1 lg:items-stretch lg:gap-6 lg:overflow-visible lg:pb-0"
+      >
+        <form
+          id="form-atendimento"
+          onSubmit={handleFinalSubmit}
+          className="grid min-h-0 w-full shrink-0 grid-cols-1 gap-4 p-0.5 lg:h-full lg:flex-1 lg:grid-cols-2 lg:gap-6"
         >
-          <form
-            id="form-atendimento"
-            onSubmit={handleFinalSubmit}
-            className="grid min-h-0 w-full shrink-0 grid-cols-1 gap-4 p-0.5 lg:h-full lg:flex-1 lg:grid-cols-2 lg:gap-6"
+          <ConvictedCard
+            className={`min-h-0 w-full min-w-0 transition-all duration-300 lg:h-full ${
+              isSuccess ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
+            }`}
+          />
+          <div
+            className={`flex min-h-0 w-full min-w-0 flex-col transition-all duration-300 lg:h-full ${
+              !isReadyToCapture && !isSuccess
+                ? 'pointer-events-none opacity-40 grayscale-[0.5]'
+                : ''
+            }`}
           >
-            <ConvictedCard
-              className={`min-h-0 w-full min-w-0 transition-all duration-300 lg:h-full ${
-                isSuccess ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
-              }`}
-            />
-            <div
-              className={`flex min-h-0 w-full min-w-0 flex-col transition-all duration-300 lg:h-full ${
-                !isReadyToCapture && !isSuccess
-                  ? 'pointer-events-none opacity-40 grayscale-[0.5]'
-                  : ''
-              }`}
-            >
-              {isSuccess ? (
-                <ReceiptSuccessCard
-                  className="w-full lg:h-full"
-                  atendimento={{ apenado, processo, recibo: reciboGerado }}
-                  onReset={resetAtendimento}
-                />
-              ) : (
-                <PhotoCaptureCard className="w-full lg:h-full" />
-              )}
-            </div>
-          </form>
-        </TabsContent>
-        <TabsContent
-          value="historico"
-          className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none"
-        >
-          <ProofHistory />
-        </TabsContent>
-      </Tabs>
-    </div>
+            {isSuccess ? (
+              <ReceiptSuccessCard
+                className="w-full lg:h-full"
+                atendimento={{ apenado, processo, recibo: reciboGerado }}
+                onReset={resetAtendimento}
+              />
+            ) : (
+              <PhotoCaptureCard className="w-full lg:h-full" />
+            )}
+          </div>
+        </form>
+      </TabsContent>
+      <TabsContent
+        value="historico"
+        className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none"
+      >
+        <ProofHistory />
+      </TabsContent>
+    </Tabs>
   )
 }
 

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import ParticipantSelector from '@/features/grupos-reflexivos/components/hooks/ParticipantSelector'
-import { Label } from '@/shared/ui/label'
-import { Input } from '@/shared/ui/input'
-import { Button } from '@/shared/ui/button'
-import { Textarea } from '@/shared/ui/textarea'
+import { Label } from '@/shared/components/ui/label'
+import { Input } from '@/shared/components/ui/input'
+import { Button } from '@/shared/components/ui/button'
+import { Textarea } from '@/shared/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog'
+} from '@/shared/components/ui/dialog'
 
 const GroupEditModal = ({ group, isOpen, onOpenChange, availableParticipants, onUpdate }) => {
   const [editData, setEditData] = useState(group ?? { nome: '', descricao: '', participantes: [] })
