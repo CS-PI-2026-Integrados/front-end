@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useSession } from '@/features/autenticacao/context/sessionContext'
+import { useSession } from '@/features/authentication/context/sessionContext'
 import { RouteLoader } from '@/shared/components/ui/RouteLoader'
 
 export default function GuestGuard() {

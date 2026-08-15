@@ -7,7 +7,7 @@ import {
 } from '@/features/attendance'
 import { useSession } from '@/features/authentication/context/sessionContext'
 
-export const useDistrictData = () => {
+export const useAtendimentoData = () => {
   const { session } = useSession()
   const comarca = session?.tenant?.id
 
