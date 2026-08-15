@@ -3,7 +3,6 @@ import { FileText, Pencil, Plus, Search, Trash2, Users } from 'lucide-react'
 import { useSession } from '@/context/sessionContext'
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import ModalInative from '../components/hooks/modalInative'
-import ModalEditar from '../components/hooks/modalEditar'
 import ModalCadastro from '../components/hooks/modalCadastro'
 import { toast } from 'sonner'
 import ModalDocumentosApenado from '../components/hooks/modalDocumentosApenado'
@@ -15,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 const ITEMS_PER_PAGE = 10
-const STORAGE_KEY = 'apenados_data_v4'
+const STORAGE_KEY = 'apenados_data_v5'
 
 function normalizeApenado(a) {
   return {
@@ -25,6 +24,13 @@ function normalizeApenado(a) {
     cpf: a.cpf || '',
     telefone: a.telefone || a.phone || '',
     endereco: a.endereco || a.address || '',
+    cep: a.cep || '',
+    logradouro: a.logradouro || '',
+    numero: a.numero || '',
+    complemento: a.complemento || '',
+    bairro: a.bairro || '',
+    cidade: a.cidade || '',
+    uf: a.uf || '',
     sit_trabalhista:
       a.sit_trabalhista ||
       (a.workingStatus === 'working_formal'
@@ -37,7 +43,7 @@ function normalizeApenado(a) {
       '',
     status: a.status || 'Ativo',
     foto: a.foto || a.referencePhotoUrl || '',
-    processos: a.processos || a.processos || [],
+    processos: a.processos || [],
     numero_processo:
       a.numero_processo ||
       a.numeroProcesso ||
@@ -142,14 +148,15 @@ const Convicteds = () => {
   }
 
   function handleSalvar(form) {
-    setApenados((prev) => prev.map((a) => (a.id === form.id ? { ...form } : a)))
-    setApenadoEditar(null)
-  }
-
-  function handleCadastrar(novoApenado) {
-    setApenados((prev) => [...prev, novoApenado])
-    setModalCadastroAberto(false)
-    toast.success('Apenado cadastrado com sucesso!')
+    if (apenadoEditar) {
+      setApenados((prev) => prev.map((a) => (a.id === form.id ? { ...form } : a)))
+      setApenadoEditar(null)
+      toast.success('Apenado atualizado com sucesso!')
+    } else {
+      setApenados((prev) => [...prev, form])
+      setModalCadastroAberto(false)
+      toast.success('Apenado cadastrado com sucesso!')
+    }
   }
 
   const paginationFooter =
@@ -198,17 +205,16 @@ const Convicteds = () => {
         onConfirmar={handleInativar}
         onCancelar={() => setApenadoInativar(null)}
       />
-      <ModalEditar
-        key={apenadoEditar?.id}
-        apenado={apenadoEditar}
-        onSalvar={handleSalvar}
-        onCancelar={() => setApenadoEditar(null)}
-      />
-      {modalCadastroAberto && (
+      {apenadoEditar && (
         <ModalCadastro
-          onSalvar={handleCadastrar}
-          onCancelar={() => setModalCadastroAberto(false)}
+          key={apenadoEditar.id}
+          apenado={apenadoEditar}
+          onSalvar={handleSalvar}
+          onCancelar={() => setApenadoEditar(null)}
         />
+      )}
+      {modalCadastroAberto && (
+        <ModalCadastro onSalvar={handleSalvar} onCancelar={() => setModalCadastroAberto(false)} />
       )}
       {apenadoDocumentos && (
         <ModalDocumentosApenado
@@ -277,59 +283,66 @@ const Convicteds = () => {
         </div>
 
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full min-w-210 text-sm">
+          <table className="w-full min-w-[700px] text-sm">
             <thead>
               <tr className="bg-secondary border-y">
-                {[
-                  'Foto',
-                  'Nome',
-                  'Processo',
-                  'Telefone',
-                  'Endereço',
-                  'Sit. Trabalhista',
-                  'Ações',
-                ].map((col) => (
-                  <th
-                    key={col}
-                    className="text-foreground px-4 py-3 text-left text-xs font-semibold whitespace-nowrap"
-                  >
-                    {col}
-                  </th>
-                ))}
+                <th className="text-foreground w-14 px-4 py-3 text-left text-xs font-semibold">
+                  Foto
+                </th>
+                <th className="text-foreground min-w-36 px-4 py-3 text-left text-xs font-semibold">
+                  Nome
+                </th>
+                <th className="text-foreground w-44 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                  Processo
+                </th>
+                <th className="text-foreground w-36 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                  Telefone
+                </th>
+                <th className="text-foreground min-w-44 px-4 py-3 text-left text-xs font-semibold">
+                  Endereço
+                </th>
+                <th className="text-foreground w-36 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                  Sit. Trabalhista
+                </th>
+                <th className="text-foreground w-28 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody>
               {paginated.map((a) => (
                 <tr key={a.id} className="hover:bg-muted/50 border-b transition-colors">
-                  <td className="px-4 py-3.5">
+                  <td className="w-14 px-4 py-3.5">
                     <img
                       src={a.foto || a.referencePhotoUrl || `https://i.pravatar.cc/40?u=${a.id}`}
                       alt={a.nome}
-                      className="h-10 w-10 rounded-full object-cover"
+                      className="h-9 w-9 rounded-full object-cover"
                     />
                   </td>
-                  <td className="min-w-40 px-4 py-3.5">
+                  <td className="min-w-36 px-4 py-3.5">
                     <p className="text-foreground font-semibold">{a.nome || a.fullName}</p>
                     <p className="text-muted-foreground mt-0.5 text-xs">
                       {maskCPF(a.cpf || a.cpf)}
                     </p>
                   </td>
-                  <td className="text-muted-foreground px-4 py-3.5 whitespace-nowrap">
-                    {a.numero_processo || a.numeroProcesso || ''}
+                  <td className="text-muted-foreground w-44 px-4 py-3.5">
+                    <span className="block max-w-40 truncate" title={a.numero_processo || ''}>
+                      {a.numero_processo || a.numeroProcesso || ''}
+                    </span>
                   </td>
-                  <td className="text-muted-foreground px-4 py-3.5 whitespace-nowrap">
+                  <td className="text-muted-foreground w-36 px-4 py-3.5 whitespace-nowrap">
                     {a.telefone || a.phone}
                   </td>
                   <td
-                    className="text-muted-foreground max-w-64 truncate px-4 py-3.5"
+                    className="text-muted-foreground max-w-56 min-w-44 truncate px-4 py-3.5"
                     title={a.endereco || a.address}
                   >
                     {a.endereco || a.address}
                   </td>
-                  <td className="px-4 py-3.5">
+                  <td className="w-36 px-4 py-3.5">
                     <SitTrabalhista sit={a.sit_trabalhista} />
                   </td>
-                  <td className="px-4 py-3.5">
+                  <td className="w-28 px-4 py-3.5">
                     <div className="flex items-center gap-1">
                       <Button
                         type="button"

@@ -1,8 +1,21 @@
 import { useSession } from '@/context/sessionContext'
 import { useState, useRef } from 'react'
 import { IMaskInput } from 'react-imask'
+import { Search, Upload, X } from 'lucide-react'
 import CardProcesso from './cardProcesso'
 import ModalAvisoEncerrar from './modalAvisoEncerrar'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 
 const SITUACOES = ['Trabalho Registrado', 'Trabalho Informal', 'Nao Trabalha']
 
@@ -11,7 +24,13 @@ const INITIAL_FORM = {
   cpf: '',
   dataNascimento: '',
   telefone: '',
-  endereco: '',
+  cep: '',
+  logradouro: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
+  cidade: '',
+  uf: '',
   instituicao: '',
   sitTrabalhista: '',
   observacoes: '',
@@ -50,15 +69,76 @@ function generateUUID() {
   })
 }
 
-function ModalCadastro({ onSalvar, onCancelar }) {
+function parsearEndereco(endereco) {
+  if (!endereco) return {}
+  const partes = endereco.split(/[,\-–]/).map((p) => p.trim())
+  if (partes.length >= 4) {
+    const logradouro = partes[0] || ''
+    const numero = partes[1] || ''
+    const bairro = partes[2] || ''
+    const cidadeUf = partes[3] || ''
+    const ufMatch = cidadeUf.match(/\b([A-Z]{2})$/)
+    const uf = ufMatch ? ufMatch[1] : ''
+    const cidade = uf ? cidadeUf.replace(uf, '').trim().replace(/\s*$/, '') : cidadeUf
+    return { logradouro, numero, bairro, cidade, uf }
+  }
+  return { logradouro: endereco }
+}
+
+function obterProcessosIniciais(apenado) {
+  if (apenado?.processos && apenado.processos.length > 0) {
+    return apenado.processos
+  }
+  if (apenado?.numero_processo || apenado?.vara) {
+    return [
+      {
+        id: crypto.randomUUID(),
+        numeroProcesso: apenado.numero_processo || '',
+        vara: apenado.vara || '',
+        tipoPena: apenado.tipoPena || '',
+        status: 'ATIVO',
+      },
+    ]
+  }
+  return [criarProcessoVazio()]
+}
+
+function ModalCadastro({ apenado, onSalvar, onCancelar }) {
   const { session } = useSession()
   const comarcaId = session?.tenant?.id
-  const [form, setForm] = useState(INITIAL_FORM)
-  const [processos, setProcessos] = useState([criarProcessoVazio()])
+  const isEditing = !!apenado
+
+  const buildInitialForm = () => {
+    if (!apenado) return INITIAL_FORM
+    const parsed = parsearEndereco(apenado.endereco)
+    return {
+      nome: apenado.nome || '',
+      cpf: apenado.cpf || '',
+      dataNascimento: apenado.data_nascimento || apenado.dataNascimento || '',
+      telefone: apenado.telefone || '',
+      cep: apenado.cep || '',
+      logradouro: apenado.logradouro || parsed.logradouro || '',
+      numero: apenado.numero || parsed.numero || '',
+      complemento: apenado.complemento || '',
+      bairro: apenado.bairro || parsed.bairro || '',
+      cidade: apenado.cidade || parsed.cidade || '',
+      uf: apenado.uf || parsed.uf || '',
+      instituicao: apenado.instituicao || '',
+      sitTrabalhista: apenado.sit_trabalhista || '',
+      observacoes: apenado.observacoes || '',
+      foto: null,
+    }
+  }
+
+  const [form, setForm] = useState(buildInitialForm)
+  const [processos, setProcessos] = useState(() => obterProcessosIniciais(apenado))
   const [errors, setErrors] = useState({})
-  const [processosErrors, setProcessosErrors] = useState([{}])
-  const [preview, setPreview] = useState(null)
+  const [processosErrors, setProcessosErrors] = useState(() =>
+    obterProcessosIniciais(apenado).map(() => ({}))
+  )
+  const [preview, setPreview] = useState(apenado?.foto || apenado?.referencePhotoUrl || null)
   const [indexParaEncerrar, setIndexParaEncerrar] = useState(null)
+  const [buscandoCep, setBuscandoCep] = useState(false)
   const fileRef = useRef(null)
 
   function handleChange(e) {
@@ -75,11 +155,60 @@ function ModalCadastro({ onSalvar, onCancelar }) {
   function handleFoto(e) {
     const file = e.target.files[0]
     if (!file) return
+
+    const allowedTypes = ['image/jpeg', 'image/png']
+    if (!allowedTypes.includes(file.type)) {
+      setErrors((prev) => ({ ...prev, foto: 'Formato inválido. Use JPG ou PNG.' }))
+      return
+    }
+
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      setErrors((prev) => ({ ...prev, foto: 'A foto deve ter no máximo 5 MB.' }))
+      return
+    }
+
     setForm((prev) => ({ ...prev, foto: file }))
     setErrors((prev) => ({ ...prev, foto: '' }))
     const reader = new FileReader()
     reader.onload = (ev) => setPreview(ev.target.result)
     reader.readAsDataURL(file)
+  }
+
+  function removerFoto() {
+    setForm((prev) => ({ ...prev, foto: null }))
+    setPreview(null)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  async function buscarCep() {
+    const cepLimpo = (form.cep || '').replace(/\D/g, '')
+    if (cepLimpo.length !== 8) {
+      setErrors((prev) => ({ ...prev, cep: 'CEP deve ter 8 dígitos.' }))
+      return
+    }
+
+    setBuscandoCep(true)
+    try {
+      const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
+      const data = await resp.json()
+      if (data.erro) {
+        setErrors((prev) => ({ ...prev, cep: 'CEP não encontrado.' }))
+      } else {
+        setForm((prev) => ({
+          ...prev,
+          logradouro: data.logradouro || prev.logradouro,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.localidade || prev.cidade,
+          uf: data.uf || prev.uf,
+        }))
+        setErrors((prev) => ({ ...prev, cep: '' }))
+      }
+    } catch {
+      setErrors((prev) => ({ ...prev, cep: 'Erro ao buscar CEP. Preencha manualmente.' }))
+    } finally {
+      setBuscandoCep(false)
+    }
   }
 
   function handleProcessoChange(index, processoAtualizado) {
@@ -120,14 +249,18 @@ function ModalCadastro({ onSalvar, onCancelar }) {
 
   function validar() {
     const erros = {}
-    if (!form.foto) erros.foto = 'A foto é obrigatória'
+    if (!isEditing && !form.foto && !preview) erros.foto = 'A foto é obrigatória'
     if (!form.nome.trim()) erros.nome = 'O nome é obrigatório'
     if (!form.cpf || form.cpf.replace(/\D/g, '').length < 11) erros.cpf = 'O CPF é obrigatório'
     else if (!validarCPF(form.cpf)) erros.cpf = 'CPF inválido'
     if (!form.dataNascimento) erros.dataNascimento = 'A data de nascimento é obrigatória'
     if (!form.telefone || form.telefone.replace(/\D/g, '').length < 10)
       erros.telefone = 'O telefone é obrigatório'
-    if (!form.endereco.trim()) erros.endereco = 'O endereço é obrigatório'
+    if (!form.logradouro.trim()) erros.logradouro = 'O logradouro é obrigatório'
+    if (!form.numero.trim()) erros.numero = 'O número é obrigatório'
+    if (!form.bairro.trim()) erros.bairro = 'O bairro é obrigatório'
+    if (!form.cidade.trim()) erros.cidade = 'A cidade é obrigatória'
+    if (!form.uf.trim()) erros.uf = 'A UF é obrigatória'
     if (!form.sitTrabalhista) erros.sitTrabalhista = 'A situação trabalhista é obrigatória'
 
     const errosProcessos = processos.map((p, i) => {
@@ -147,6 +280,13 @@ function ModalCadastro({ onSalvar, onCancelar }) {
     return { erros, errosProcessos }
   }
 
+  function montarEndereco() {
+    const parts = [form.logradouro, form.numero].filter(Boolean).join(', ')
+    const rest = [form.bairro, form.cidade].filter(Boolean).join(', ')
+    const full = [parts, rest].filter(Boolean).join(' - ')
+    return form.uf ? `${full} - ${form.uf}` : full
+  }
+
   function handleSalvar() {
     const { erros, errosProcessos } = validar()
     const temErrosProcessos = errosProcessos.some((e) => Object.keys(e).length > 0)
@@ -159,14 +299,21 @@ function ModalCadastro({ onSalvar, onCancelar }) {
 
     const statusApenado = contarProcessosAtivos() > 0 ? 'Ativo' : 'Inativo'
 
-    const novoApenado = {
-      id: generateUUID(),
-      tenant_id: comarcaId,
+    const resultado = {
+      id: isEditing ? apenado.id : generateUUID(),
+      tenant_id: isEditing ? apenado.tenant_id : comarcaId,
       nome: form.nome,
       cpf: form.cpf,
       data_nascimento: form.dataNascimento,
       telefone: form.telefone,
-      endereco: form.endereco,
+      cep: form.cep,
+      logradouro: form.logradouro,
+      numero: form.numero,
+      complemento: form.complemento,
+      bairro: form.bairro,
+      cidade: form.cidade,
+      uf: form.uf,
+      endereco: montarEndereco(),
       instituicao: form.instituicao,
       sit_trabalhista: form.sitTrabalhista,
       status: statusApenado,
@@ -174,151 +321,180 @@ function ModalCadastro({ onSalvar, onCancelar }) {
       foto: preview,
       processos: processos,
     }
-    onSalvar(novoApenado)
+    onSalvar(resultado)
   }
 
   const inputClass = (field) =>
-    `w-full rounded-lg border px-3 py-2 text-sm bg-card text-card-foreground focus:outline-none focus:ring-2 focus:ring-green-700 ${
-      errors[field] ? 'border-red-400 focus:ring-red-400' : 'border-border'
+    `w-full rounded-md border px-2.5 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none bg-transparent placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 ${
+      errors[field]
+        ? 'border-destructive ring-destructive/20 ring-3'
+        : 'border-input dark:bg-input/30'
     }`
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-0 sm:p-4">
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onCancelar()
+      }}
+    >
       <ModalAvisoEncerrar
         aberto={indexParaEncerrar !== null}
         onConfirmar={handleConfirmarEncerramento}
         onCancelar={() => setIndexParaEncerrar(null)}
       />
 
-      <div className="bg-card text-card-foreground border-border flex h-dvh max-h-none w-full max-w-2xl flex-col overflow-hidden rounded-none border shadow-2xl sm:h-auto sm:max-h-[90dvh] sm:rounded-xl">
-        <div className="bg-primary flex items-start justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
+      <DialogContent
+        showCloseButton={false}
+        className="flex max-h-[90vh] w-full max-w-2xl flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-2xl"
+      >
+        <DialogHeader className="flex-row items-start justify-between gap-4 px-6 py-4 text-left">
           <div>
-            <h2 className="text-lg font-bold text-white">Cadastrar Novo Apenado</h2>
-            <p className="text-muted-foreground text-sm">
+            <DialogTitle className="text-lg font-bold">
+              {isEditing ? 'Editar Apenado' : 'Cadastrar Novo Apenado'}
+            </DialogTitle>
+            <DialogDescription className="mt-1">
               Preencha os dados do apenado no formulário abaixo
-            </p>
+            </DialogDescription>
           </div>
-          <button
-            type="button"
-            onClick={onCancelar}
-            aria-label="Fechar modal"
-            className="rounded-lg p-1 text-white transition-colors hover:bg-green-700"
-          >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+          <DialogClose asChild>
+            <Button type="button" variant="ghost" size="icon-sm" className="shrink-0">
+              <X />
+              <span className="sr-only">Fechar modal</span>
+            </Button>
+          </DialogClose>
+        </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 text-left sm:px-6 sm:py-5">
-          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
-            Identificação Pessoal
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 text-left">
+          <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-widest uppercase">
+            Foto de Reconhecimento <span className="text-destructive">*</span>
           </p>
 
-          <div className="mb-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-            <div className="flex flex-col items-center gap-1">
-              <button
-                type="button"
-                onClick={() => fileRef.current.click()}
-                className={`bg-card text-card-foreground flex h-24 w-24 flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors hover:bg-slate-950 ${
-                  errors.foto ? 'border-red-400' : 'border-border dark:border-slate-700'
-                }`}
-              >
-                {preview ? (
-                  <img
-                    src={preview}
-                    alt="preview"
-                    className="h-full w-full rounded-lg object-cover"
-                  />
-                ) : (
-                  <>
-                    <svg
-                      className="text-muted-foreground h-8 w-8"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-                      />
-                    </svg>
-                    <span className="text-muted-foreground mt-1 px-1 text-center text-xs leading-tight">
-                      Clique para adicionar
-                    </span>
-                  </>
+          <div className="mb-5">
+            <div className="mb-4 flex items-start gap-4">
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => fileRef.current.click()}
+                  className={`hover:bg-muted flex h-20 w-20 flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-colors ${
+                    errors.foto ? 'border-destructive' : 'border-border'
+                  }`}
+                >
+                  {preview ? (
+                    <img src={preview} alt="preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <>
+                      <Upload className="text-muted-foreground h-5 w-5" />
+                      <span className="text-muted-foreground mt-1 px-1 text-center text-[10px] leading-tight">
+                        Adicionar
+                      </span>
+                    </>
+                  )}
+                </button>
+                {preview && (
+                  <button
+                    type="button"
+                    onClick={removerFoto}
+                    className="bg-destructive absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-white shadow"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
                 )}
-              </button>
-              <span className="text-muted-foreground text-[10px] leading-tight">
-                JPG, PNG — máx. 5 MB
-              </span>
-              {errors.foto && (
-                <span className="text-[10px] font-medium text-red-500">{errors.foto}</span>
-              )}
+              </div>
+
+              <div className="flex flex-col items-start gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileRef.current.click()}
+                  className="gap-1.5"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  {preview ? 'Trocar foto' : 'Enviar foto'}
+                </Button>
+                <span className="text-muted-foreground text-xs">
+                  JPG ou PNG, até 5MB. Envio obrigatório.
+                </span>
+                {errors.foto && (
+                  <span className="text-destructive text-xs font-medium">{errors.foto}</span>
+                )}
+              </div>
+
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png"
                 className="hidden"
                 onChange={handleFoto}
               />
             </div>
 
-            <div className="grid w-full flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="text-muted-foreground mb-1 block text-xs font-semibold">
-                  Nome completo <span className="text-red-500">*</span>
-                </label>
-                <input
+                <Label
+                  htmlFor="modal-nome"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Nome Completo <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="modal-nome"
                   name="nome"
                   value={form.nome}
                   onChange={handleChange}
                   placeholder="Nome e sobrenome"
+                  aria-invalid={errors.nome ? true : undefined}
                   className={inputClass('nome')}
                 />
-                {errors.nome && <p className="mt-0.5 text-xs text-red-500">{errors.nome}</p>}
+                {errors.nome && <p className="text-destructive mt-0.5 text-xs">{errors.nome}</p>}
               </div>
               <div>
-                <label className="text-muted-foreground mb-1 block text-xs font-semibold">
-                  CPF <span className="text-red-500">*</span>
-                </label>
+                <Label
+                  htmlFor="modal-cpf"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  CPF <span className="text-destructive">*</span>
+                </Label>
                 <IMaskInput
+                  id="modal-cpf"
                   mask="000.000.000-00"
                   value={form.cpf}
                   onAccept={(val) => handleMask('cpf', val)}
                   placeholder="000.000.000-00"
                   className={inputClass('cpf')}
                 />
-                {errors.cpf && <p className="mt-0.5 text-xs text-red-500">{errors.cpf}</p>}
+                {errors.cpf && <p className="text-destructive mt-0.5 text-xs">{errors.cpf}</p>}
               </div>
               <div>
-                <label className="text-muted-foreground mb-1 block text-xs font-semibold">
-                  Data de nascimento <span className="text-red-500">*</span>
-                </label>
-                <input
+                <Label
+                  htmlFor="modal-nascimento"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Data de Nascimento <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="modal-nascimento"
                   type="date"
                   name="dataNascimento"
                   value={form.dataNascimento}
                   onChange={handleChange}
+                  aria-invalid={errors.dataNascimento ? true : undefined}
                   className={inputClass('dataNascimento')}
                 />
                 {errors.dataNascimento && (
-                  <p className="mt-0.5 text-xs text-red-500">{errors.dataNascimento}</p>
+                  <p className="text-destructive mt-0.5 text-xs">{errors.dataNascimento}</p>
                 )}
               </div>
-              <div className="sm:col-span-2">
-                <label className="text-muted-foreground mb-1 block text-xs font-semibold">
-                  Telefone <span className="text-red-500">*</span>
-                </label>
+              <div>
+                <Label
+                  htmlFor="modal-telefone"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Telefone <span className="text-destructive">*</span>
+                </Label>
                 <IMaskInput
+                  id="modal-telefone"
                   mask="(00) 00000-0000"
                   value={form.telefone}
                   onAccept={(val) => handleMask('telefone', val)}
@@ -326,70 +502,220 @@ function ModalCadastro({ onSalvar, onCancelar }) {
                   className={inputClass('telefone')}
                 />
                 {errors.telefone && (
-                  <p className="mt-0.5 text-xs text-red-500">{errors.telefone}</p>
+                  <p className="text-destructive mt-0.5 text-xs">{errors.telefone}</p>
                 )}
               </div>
             </div>
           </div>
 
-          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
-            Endereço
-          </p>
-          <div className="mb-4">
-            <label className="text-muted-foreground mb-1 block text-xs font-semibold">
-              Endereço completo <span className="text-red-500">*</span>
-            </label>
-            <input
-              name="endereco"
-              value={form.endereco}
-              onChange={handleChange}
-              placeholder="Rua, número, bairro, cidade — estado"
-              className={inputClass('endereco')}
-            />
-            {errors.endereco && <p className="mt-0.5 text-xs text-red-500">{errors.endereco}</p>}
+          <Separator className="my-5" />
+
+          <div className="border-border mb-5 rounded-lg border p-4">
+            <p className="text-foreground mb-4 text-xs font-semibold tracking-widest uppercase">
+              Endereço
+            </p>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+              <div className="sm:col-span-3">
+                <Label
+                  htmlFor="modal-cep"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  CEP <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex gap-2">
+                  <IMaskInput
+                    id="modal-cep"
+                    mask="00000-000"
+                    value={form.cep}
+                    onAccept={(val) => handleMask('cep', val)}
+                    placeholder="00000-000"
+                    className={`flex-1 ${inputClass('cep')}`}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={buscarCep}
+                    disabled={buscandoCep}
+                    className="shrink-0 px-3"
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </div>
+                {errors.cep && <p className="text-destructive mt-0.5 text-xs">{errors.cep}</p>}
+              </div>
+
+              <div className="sm:col-span-4">
+                <Label
+                  htmlFor="modal-logradouro"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Logradouro <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="modal-logradouro"
+                  name="logradouro"
+                  value={form.logradouro}
+                  onChange={handleChange}
+                  placeholder="Rua, Avenida..."
+                  className={inputClass('logradouro')}
+                />
+                {errors.logradouro && (
+                  <p className="text-destructive mt-0.5 text-xs">{errors.logradouro}</p>
+                )}
+              </div>
+
+              <div className="sm:col-span-2">
+                <Label
+                  htmlFor="modal-numero"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Número <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="modal-numero"
+                  name="numero"
+                  value={form.numero}
+                  onChange={handleChange}
+                  placeholder="123"
+                  className={inputClass('numero')}
+                />
+                {errors.numero && (
+                  <p className="text-destructive mt-0.5 text-xs">{errors.numero}</p>
+                )}
+              </div>
+
+              <div className="sm:col-span-3">
+                <Label
+                  htmlFor="modal-complemento"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Complemento
+                </Label>
+                <Input
+                  id="modal-complemento"
+                  name="complemento"
+                  value={form.complemento}
+                  onChange={handleChange}
+                  placeholder="Apto, bloco..."
+                  className={inputClass('complemento')}
+                />
+              </div>
+
+              <div className="sm:col-span-3">
+                <Label
+                  htmlFor="modal-bairro"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Bairro <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="modal-bairro"
+                  name="bairro"
+                  value={form.bairro}
+                  onChange={handleChange}
+                  placeholder="Bairro"
+                  className={inputClass('bairro')}
+                />
+                {errors.bairro && (
+                  <p className="text-destructive mt-0.5 text-xs">{errors.bairro}</p>
+                )}
+              </div>
+
+              <div className="sm:col-span-4">
+                <Label
+                  htmlFor="modal-cidade"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Cidade <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="modal-cidade"
+                  name="cidade"
+                  value={form.cidade}
+                  onChange={handleChange}
+                  placeholder="Cidade"
+                  className={inputClass('cidade')}
+                />
+                {errors.cidade && (
+                  <p className="text-destructive mt-0.5 text-xs">{errors.cidade}</p>
+                )}
+              </div>
+
+              <div className="sm:col-span-2">
+                <Label
+                  htmlFor="modal-uf"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  UF <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="modal-uf"
+                  name="uf"
+                  value={form.uf}
+                  onChange={handleChange}
+                  placeholder="UF"
+                  maxLength={2}
+                  className={inputClass('uf')}
+                />
+                {errors.uf && <p className="text-destructive mt-0.5 text-xs">{errors.uf}</p>}
+              </div>
+            </div>
           </div>
 
-          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
-            Processos Vinculados
-          </p>
-          <div className="mb-4 flex flex-col gap-3">
-            {processos.map((processo, index) => (
-              <CardProcesso
-                key={processo.id}
-                processo={processo}
-                index={index}
-                onChange={handleProcessoChange}
-                onEncerrar={handlePedirEncerramento}
-                errors={processosErrors[index] || {}}
-              />
-            ))}
-            <button
-              type="button"
-              onClick={handleAdicionarProcesso}
-              className="border-border bg-card text-muted-foreground hover:text-foreground flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed py-2.5 text-sm font-medium transition-colors hover:border-green-600 hover:bg-green-50 dark:hover:bg-slate-950"
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
+          <Separator className="my-5" />
+
+          <div className="border-border mb-5 rounded-lg border p-4">
+            <p className="text-foreground mb-4 text-xs font-semibold tracking-widest uppercase">
+              Processos Vinculados
+            </p>
+            <div className="flex flex-col gap-3">
+              {processos.map((processo, index) => (
+                <CardProcesso
+                  key={processo.id}
+                  processo={processo}
+                  index={index}
+                  onChange={handleProcessoChange}
+                  onEncerrar={handlePedirEncerramento}
+                  errors={processosErrors[index] || {}}
+                />
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAdicionarProcesso}
+                className="w-full border-dashed"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Adicionar processo
-            </button>
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Adicionar processo
+              </Button>
+            </div>
           </div>
 
-          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
+          <Separator className="my-5" />
+
+          <p className="text-muted-foreground mb-4 text-xs font-semibold tracking-widest uppercase">
             Situação Laboral
           </p>
-          <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="text-muted-foreground mb-1 block text-xs font-semibold">
+              <Label
+                htmlFor="modal-instituicao"
+                className="text-muted-foreground mb-1 text-xs font-semibold"
+              >
                 Instituição / Unidade
-              </label>
-              <input
+              </Label>
+              <Input
+                id="modal-instituicao"
                 name="instituicao"
                 value={form.instituicao}
                 onChange={handleChange}
@@ -398,10 +724,14 @@ function ModalCadastro({ onSalvar, onCancelar }) {
               />
             </div>
             <div>
-              <label className="text-muted-foreground mb-1 block text-xs font-semibold">
-                Situação trabalhista <span className="text-red-500">*</span>
-              </label>
+              <Label
+                htmlFor="modal-sit"
+                className="text-muted-foreground mb-1 text-xs font-semibold"
+              >
+                Situação Trabalhista <span className="text-destructive">*</span>
+              </Label>
               <select
+                id="modal-sit"
                 name="sitTrabalhista"
                 value={form.sitTrabalhista}
                 onChange={handleChange}
@@ -415,12 +745,14 @@ function ModalCadastro({ onSalvar, onCancelar }) {
                 ))}
               </select>
               {errors.sitTrabalhista && (
-                <p className="mt-0.5 text-xs text-red-500">{errors.sitTrabalhista}</p>
+                <p className="text-destructive mt-0.5 text-xs">{errors.sitTrabalhista}</p>
               )}
             </div>
           </div>
 
-          <p className="text-muted-foreground mb-3 text-left text-xs font-semibold tracking-widest uppercase">
+          <Separator className="my-5" />
+
+          <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-widest uppercase">
             Observações
           </p>
           <div className="mb-2">
@@ -430,33 +762,34 @@ function ModalCadastro({ onSalvar, onCancelar }) {
               onChange={handleChange}
               rows={3}
               placeholder="Adicione observações relevantes sobre o apenado..."
-              className="border-border bg-card text-card-foreground dark:text-card-foreground w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-green-700 focus:outline-none dark:border-slate-700 dark:focus:ring-green-500"
+              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 flex w-full rounded-md border bg-transparent px-2.5 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-3"
             />
           </div>
         </div>
 
-        <div className="border-border mt-auto flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
+        <div className="border-border mt-auto flex flex-col gap-3 border-t px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-muted-foreground text-xs">* campos obrigatórios</p>
           <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row sm:gap-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onCancelar}
-              className="border-border bg-card text-muted-foreground w-full rounded-lg border px-5 py-2 text-sm transition-colors hover:bg-slate-50 sm:w-auto dark:hover:bg-slate-950"
+              className="rounded-lg px-5"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleSalvar}
-              disabled={!form.foto}
-              className="w-full rounded-lg bg-green-800 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-900 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              disabled={!isEditing && !form.foto && !preview}
+              className="rounded-lg px-5"
             >
-              Salvar cadastro
-            </button>
+              {isEditing ? 'Salvar' : 'Salvar cadastro'}
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
