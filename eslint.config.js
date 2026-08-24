@@ -33,6 +33,21 @@ export default [
       'prettier/prettier': 'error',
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-console': 'warn',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/components/ui/*'],
+              message: 'Use componentes Shadcn por meio de @/shared/ui/.',
+            },
+            {
+              group: ['@/lib/utils', '@/lib/validadorCpf'],
+              message: 'Use utilitários compartilhados por meio de @/shared/lib/.',
+            },
+          ],
+        },
+      ],
     },
     settings: {
       react: { version: 'detect' },
