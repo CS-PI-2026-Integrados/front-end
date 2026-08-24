@@ -49,6 +49,7 @@ const Convicteds = () => {
     visiblePage,
     paginated,
     filtered,
+    processCounts,
   } = state
   const {
     setSearch,
@@ -177,6 +178,7 @@ const Convicteds = () => {
             <ApenadoMobileCard
               key={apenado.id}
               apenado={apenado}
+              processCount={processCounts[apenado.numero_processo] || 0}
               onEdit={() => setApenadoEditar(apenado)}
               onInactivate={() => setApenadoInativar(apenado)}
               onView={() => setApenadoDocumentos(apenado)}
@@ -226,9 +228,23 @@ const Convicteds = () => {
                     <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(a.cpf)}</p>
                   </td>
                   <td className="text-muted-foreground w-44 px-4 py-3.5">
-                    <span className="block max-w-40 truncate" title={a.numero_processo || ''}>
-                      {a.numero_processo || ''}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-foreground block max-w-36 truncate font-medium"
+                        title={a.numero_processo || ''}
+                      >
+                        {a.numero_processo || '-'}
+                      </span>
+                      {processCounts[a.numero_processo] > 1 && (
+                        <span
+                          title={`${processCounts[a.numero_processo]} apenados vinculados a este processo`}
+                          className="inline-flex shrink-0 items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 text-xs font-semibold text-blue-600 dark:bg-blue-950/80 dark:text-blue-400"
+                        >
+                          <Users className="size-3" />
+                          <span>{processCounts[a.numero_processo]}</span>
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="text-muted-foreground w-36 px-4 py-3.5 whitespace-nowrap">
                     {a.telefone}
@@ -286,7 +302,7 @@ const Convicteds = () => {
   )
 }
 
-function ApenadoMobileCard({ apenado, onEdit, onInactivate, onView }) {
+function ApenadoMobileCard({ apenado, processCount, onEdit, onInactivate, onView }) {
   return (
     <article className="border-border bg-card space-y-4 rounded-xl border p-4 shadow-sm">
       <div className="flex items-start gap-3">
@@ -310,6 +326,21 @@ function ApenadoMobileCard({ apenado, onEdit, onInactivate, onView }) {
           <dt className="text-muted-foreground text-xs">Situação trabalhista</dt>
           <dd className="mt-1">
             <SitTrabalhista sit={apenado.sit_trabalhista} />
+          </dd>
+        </div>
+        <div className="min-[420px]:col-span-2">
+          <dt className="text-muted-foreground text-xs">Processo</dt>
+          <dd className="mt-0.5 flex items-center gap-1.5 font-medium">
+            <span className="text-foreground truncate">{apenado.numero_processo || '-'}</span>
+            {processCount > 1 && (
+              <span
+                title={`${processCount} apenados vinculados a este processo`}
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 text-xs font-semibold text-blue-600 dark:bg-blue-950/80 dark:text-blue-400"
+              >
+                <Users className="size-3" />
+                <span>{processCount}</span>
+              </span>
+            )}
           </dd>
         </div>
         <div className="min-[420px]:col-span-2">

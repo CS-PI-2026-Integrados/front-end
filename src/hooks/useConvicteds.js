@@ -39,6 +39,20 @@ export function useConvicteds(comarcaId) {
       })
   }, [comarcaId, search, apenados])
 
+  const processCounts = useMemo(() => {
+    if (!comarcaId) return {}
+    const counts = {}
+    apenados
+      .filter((item) => item.tenant_id === comarcaId)
+      .forEach((a) => {
+        const proc = (a.numero_processo || '').trim()
+        if (proc) {
+          counts[proc] = (counts[proc] || 0) + 1
+        }
+      })
+    return counts
+  }, [comarcaId, apenados])
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
   const visiblePage = Math.min(currentPage, totalPages)
   const paginated = filtered.slice((visiblePage - 1) * ITEMS_PER_PAGE, visiblePage * ITEMS_PER_PAGE)
@@ -76,6 +90,7 @@ export function useConvicteds(comarcaId) {
       visiblePage,
       paginated,
       filtered,
+      processCounts,
     },
     actions: {
       setSearch,
