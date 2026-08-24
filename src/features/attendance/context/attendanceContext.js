@@ -2,7 +2,6 @@ import { createContext, useContext } from 'react'
 
 export const AtendimentoContext = createContext(null)
 
-/** Returns the route-scoped state and commands for an attendance flow. */
 export function useAtendimento() {
   const context = useContext(AtendimentoContext)
 
