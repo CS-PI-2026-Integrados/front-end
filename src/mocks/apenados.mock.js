@@ -13,6 +13,15 @@ export const mockApenados = {
       referencePhotoUrl: 'https://i.pravatar.cc/150?u=joao.santos',
       createdAt: '2024-01-15',
       lastProof: '2026-04-17T09:30:00',
+      processos: [
+        {
+          id: 'p1',
+          numeroProcesso: '0001234-56.2023.8.00.0001',
+          vara: '1ª Vara de Execuções Penais',
+          tipoPena: 'Prestação de Serviços à Comunidade',
+          status: 'ATIVO',
+        },
+      ],
     },
     {
       id: '2',
@@ -27,6 +36,15 @@ export const mockApenados = {
       referencePhotoUrl: 'https://i.pravatar.cc/150?u=maria.santos',
       createdAt: '2024-02-10',
       lastProof: '2024-11-20T14:00:00',
+      processos: [
+        {
+          id: 'p1',
+          numeroProcesso: '0001234-56.2023.8.00.0001',
+          vara: '1ª Vara de Execuções Penais',
+          tipoPena: 'Prestação de Serviços à Comunidade',
+          status: 'ATIVO',
+        },
+      ],
     },
     {
       id: '3',
@@ -41,6 +59,15 @@ export const mockApenados = {
       referencePhotoUrl: 'https://i.pravatar.cc/150?u=pedro.costa',
       createdAt: '2024-01-20',
       lastProof: '2026-04-16T10:00:00',
+      processos: [
+        {
+          id: 'p2',
+          numeroProcesso: '0002345-67.2023.8.00.0001',
+          vara: '2ª Vara Criminal',
+          tipoPena: 'Liberdade Vigiada',
+          status: 'ATIVO',
+        },
+      ],
     },
     {
       id: '4',
@@ -55,6 +82,15 @@ export const mockApenados = {
       referencePhotoUrl: 'https://i.pravatar.cc/150?u=ana.lima',
       createdAt: '2024-03-05',
       lastProof: '2024-11-08T11:15:00',
+      processos: [
+        {
+          id: 'p3',
+          numeroProcesso: '0003456-78.2023.8.00.0001',
+          vara: '1ª Vara Criminal',
+          tipoPena: 'Prestação de Serviços à Comunidade',
+          status: 'ATIVO',
+        },
+      ],
     },
     {
       id: '5',
@@ -69,6 +105,15 @@ export const mockApenados = {
       referencePhotoUrl: 'https://i.pravatar.cc/150?u=carlos.pereira',
       createdAt: '2024-02-01',
       lastProof: '2026-04-16T15:30:00',
+      processos: [
+        {
+          id: 'p3',
+          numeroProcesso: '0003456-78.2023.8.00.0001',
+          vara: '1ª Vara Criminal',
+          tipoPena: 'Prestação de Serviços à Comunidade',
+          status: 'ATIVO',
+        },
+      ],
     },
   ],
 }

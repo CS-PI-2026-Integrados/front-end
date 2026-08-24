@@ -1,6 +1,6 @@
-﻿import { mockApenados } from '@/mocks/apenados.mock.js'
+import { mockApenados } from '@/mocks/apenados.mock.js'
 
-export const STORAGE_KEY = 'apenados_data_v5'
+export const STORAGE_KEY = 'apenados_data_v6'
 
 export function normalizeApenado(a) {
   return {

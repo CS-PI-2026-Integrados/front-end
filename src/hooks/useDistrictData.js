@@ -15,10 +15,18 @@ export const useDistrictData = () => {
     const processosAtuais = mockProcessos.processos || []
 
     const processosPorApenado = processosAtuais.reduce((acc, processo) => {
-      if (!acc[processo.apenadoId]) {
-        acc[processo.apenadoId] = []
-      }
-      acc[processo.apenadoId].push(processo)
+      const ids = Array.isArray(processo.apenadoIds)
+        ? processo.apenadoIds
+        : processo.apenadoId
+          ? [processo.apenadoId]
+          : []
+
+      ids.forEach((id) => {
+        if (!acc[id]) {
+          acc[id] = []
+        }
+        acc[id].push(processo)
+      })
       return acc
     }, {})
 
