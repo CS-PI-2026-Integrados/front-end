@@ -1,9 +1,9 @@
 import { useSession } from '@/context/sessionContext'
-import { useState, useRef } from 'react'
 import { IMaskInput } from 'react-imask'
 import { Search, Upload, X } from 'lucide-react'
 import CardProcesso from './cardProcesso'
 import ModalAvisoEncerrar from './modalAvisoEncerrar'
+import { useApenadoForm } from '@/hooks/useApenadoForm'
 import {
   Dialog,
   DialogContent,
@@ -19,310 +19,36 @@ import { Separator } from '@/components/ui/separator'
 
 const SITUACOES = ['Trabalho Registrado', 'Trabalho Informal', 'Nao Trabalha']
 
-const INITIAL_FORM = {
-  nome: '',
-  cpf: '',
-  dataNascimento: '',
-  telefone: '',
-  cep: '',
-  logradouro: '',
-  numero: '',
-  complemento: '',
-  bairro: '',
-  cidade: '',
-  uf: '',
-  instituicao: '',
-  sitTrabalhista: '',
-  observacoes: '',
-  foto: null,
-}
-
-function criarProcessoVazio() {
-  return {
-    id: crypto.randomUUID(),
-    numeroProcesso: '',
-    vara: '',
-    tipoPena: '',
-    status: 'ATIVO',
-  }
-}
-
-function validarCPF(cpf) {
-  const nums = cpf.replace(/\D/g, '')
-  if (nums.length !== 11 || /^(\d)\1+$/.test(nums)) return false
-  let soma = 0
-  for (let i = 0; i < 9; i++) soma += parseInt(nums[i]) * (10 - i)
-  let resto = (soma * 10) % 11
-  if (resto === 10 || resto === 11) resto = 0
-  if (resto !== parseInt(nums[9])) return false
-  soma = 0
-  for (let i = 0; i < 10; i++) soma += parseInt(nums[i]) * (11 - i)
-  resto = (soma * 10) % 11
-  if (resto === 10 || resto === 11) resto = 0
-  return resto === parseInt(nums[10])
-}
-
-function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
-  })
-}
-
-function parsearEndereco(endereco) {
-  if (!endereco) return {}
-  const partes = endereco.split(/[,\-–]/).map((p) => p.trim())
-  if (partes.length >= 4) {
-    const logradouro = partes[0] || ''
-    const numero = partes[1] || ''
-    const bairro = partes[2] || ''
-    const cidadeUf = partes[3] || ''
-    const ufMatch = cidadeUf.match(/\b([A-Z]{2})$/)
-    const uf = ufMatch ? ufMatch[1] : ''
-    const cidade = uf ? cidadeUf.replace(uf, '').trim().replace(/\s*$/, '') : cidadeUf
-    return { logradouro, numero, bairro, cidade, uf }
-  }
-  return { logradouro: endereco }
-}
-
-function obterProcessosIniciais(apenado) {
-  if (apenado?.processos && apenado.processos.length > 0) {
-    return apenado.processos
-  }
-  if (apenado?.numero_processo || apenado?.vara) {
-    return [
-      {
-        id: crypto.randomUUID(),
-        numeroProcesso: apenado.numero_processo || '',
-        vara: apenado.vara || '',
-        tipoPena: apenado.tipoPena || '',
-        status: 'ATIVO',
-      },
-    ]
-  }
-  return [criarProcessoVazio()]
-}
-
 function ModalCadastro({ apenado, onSalvar, onCancelar }) {
   const { session } = useSession()
   const comarcaId = session?.tenant?.id
-  const isEditing = !!apenado
 
-  const buildInitialForm = () => {
-    if (!apenado) return INITIAL_FORM
-    const parsed = parsearEndereco(apenado.endereco)
-    return {
-      nome: apenado.nome || '',
-      cpf: apenado.cpf || '',
-      dataNascimento: apenado.data_nascimento || apenado.dataNascimento || '',
-      telefone: apenado.telefone || '',
-      cep: apenado.cep || '',
-      logradouro: apenado.logradouro || parsed.logradouro || '',
-      numero: apenado.numero || parsed.numero || '',
-      complemento: apenado.complemento || '',
-      bairro: apenado.bairro || parsed.bairro || '',
-      cidade: apenado.cidade || parsed.cidade || '',
-      uf: apenado.uf || parsed.uf || '',
-      instituicao: apenado.instituicao || '',
-      sitTrabalhista: apenado.sit_trabalhista || '',
-      observacoes: apenado.observacoes || '',
-      foto: null,
-    }
-  }
+  const {
+    isEditing,
+    fileRef,
+    form,
+    processos,
+    errors,
+    processosErrors,
+    preview,
+    indexParaEncerrar,
+    buscandoCep,
+    actions,
+  } = useApenadoForm(apenado, comarcaId)
 
-  const [form, setForm] = useState(buildInitialForm)
-  const [processos, setProcessos] = useState(() => obterProcessosIniciais(apenado))
-  const [errors, setErrors] = useState({})
-  const [processosErrors, setProcessosErrors] = useState(() =>
-    obterProcessosIniciais(apenado).map(() => ({}))
-  )
-  const [preview, setPreview] = useState(apenado?.foto || apenado?.referencePhotoUrl || null)
-  const [indexParaEncerrar, setIndexParaEncerrar] = useState(null)
-  const [buscandoCep, setBuscandoCep] = useState(false)
-  const fileRef = useRef(null)
-
-  function handleChange(e) {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: '' }))
-  }
-
-  function handleMask(name, value) {
-    setForm((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: '' }))
-  }
-
-  function handleFoto(e) {
-    const file = e.target.files[0]
-    if (!file) return
-
-    const allowedTypes = ['image/jpeg', 'image/png']
-    if (!allowedTypes.includes(file.type)) {
-      setErrors((prev) => ({ ...prev, foto: 'Formato inválido. Use JPG ou PNG.' }))
-      return
-    }
-
-    const maxSize = 5 * 1024 * 1024
-    if (file.size > maxSize) {
-      setErrors((prev) => ({ ...prev, foto: 'A foto deve ter no máximo 5 MB.' }))
-      return
-    }
-
-    setForm((prev) => ({ ...prev, foto: file }))
-    setErrors((prev) => ({ ...prev, foto: '' }))
-    const reader = new FileReader()
-    reader.onload = (ev) => setPreview(ev.target.result)
-    reader.readAsDataURL(file)
-  }
-
-  function removerFoto() {
-    setForm((prev) => ({ ...prev, foto: null }))
-    setPreview(null)
-    if (fileRef.current) fileRef.current.value = ''
-  }
-
-  async function buscarCep() {
-    const cepLimpo = (form.cep || '').replace(/\D/g, '')
-    if (cepLimpo.length !== 8) {
-      setErrors((prev) => ({ ...prev, cep: 'CEP deve ter 8 dígitos.' }))
-      return
-    }
-
-    setBuscandoCep(true)
-    try {
-      const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
-      const data = await resp.json()
-      if (data.erro) {
-        setErrors((prev) => ({ ...prev, cep: 'CEP não encontrado.' }))
-      } else {
-        setForm((prev) => ({
-          ...prev,
-          logradouro: data.logradouro || prev.logradouro,
-          bairro: data.bairro || prev.bairro,
-          cidade: data.localidade || prev.cidade,
-          uf: data.uf || prev.uf,
-        }))
-        setErrors((prev) => ({ ...prev, cep: '' }))
-      }
-    } catch {
-      setErrors((prev) => ({ ...prev, cep: 'Erro ao buscar CEP. Preencha manualmente.' }))
-    } finally {
-      setBuscandoCep(false)
-    }
-  }
-
-  function handleProcessoChange(index, processoAtualizado) {
-    setProcessos((prev) => prev.map((p, i) => (i === index ? processoAtualizado : p)))
-    setProcessosErrors((prev) => {
-      const novos = [...prev]
-      novos[index] = {}
-      return novos
-    })
-  }
-
-  function handleAdicionarProcesso() {
-    setProcessos((prev) => [...prev, criarProcessoVazio()])
-    setProcessosErrors((prev) => [...prev, {}])
-  }
-
-  function contarProcessosAtivos() {
-    return processos.filter((p) => p.status === 'ATIVO').length
-  }
-
-  function handlePedirEncerramento(index) {
-    const ativos = contarProcessosAtivos()
-    if (ativos === 1) {
-      setIndexParaEncerrar(index)
-    } else {
-      encerrarProcesso(index)
-    }
-  }
-
-  function encerrarProcesso(index) {
-    setProcessos((prev) => prev.map((p, i) => (i === index ? { ...p, status: 'ENCERRADO' } : p)))
-  }
-
-  function handleConfirmarEncerramento() {
-    encerrarProcesso(indexParaEncerrar)
-    setIndexParaEncerrar(null)
-  }
-
-  function validar() {
-    const erros = {}
-    if (!isEditing && !form.foto && !preview) erros.foto = 'A foto é obrigatória'
-    if (!form.nome.trim()) erros.nome = 'O nome é obrigatório'
-    if (!form.cpf || form.cpf.replace(/\D/g, '').length < 11) erros.cpf = 'O CPF é obrigatório'
-    else if (!validarCPF(form.cpf)) erros.cpf = 'CPF inválido'
-    if (!form.dataNascimento) erros.dataNascimento = 'A data de nascimento é obrigatória'
-    if (!form.telefone || form.telefone.replace(/\D/g, '').length < 10)
-      erros.telefone = 'O telefone é obrigatório'
-    if (!form.logradouro.trim()) erros.logradouro = 'O logradouro é obrigatório'
-    if (!form.numero.trim()) erros.numero = 'O número é obrigatório'
-    if (!form.bairro.trim()) erros.bairro = 'O bairro é obrigatório'
-    if (!form.cidade.trim()) erros.cidade = 'A cidade é obrigatória'
-    if (!form.uf.trim()) erros.uf = 'A UF é obrigatória'
-    if (!form.sitTrabalhista) erros.sitTrabalhista = 'A situação trabalhista é obrigatória'
-
-    const errosProcessos = processos.map((p, i) => {
-      const e = {}
-      if (!p.numeroProcesso.trim()) e.numeroProcesso = 'O número do processo é obrigatório'
-      else {
-        const duplicado = processos.some(
-          (outro, j) => j !== i && outro.numeroProcesso.trim() === p.numeroProcesso.trim()
-        )
-        if (duplicado) e.numeroProcesso = 'Número de processo já vinculado a este apenado.'
-      }
-      if (!p.vara) e.vara = 'A vara é obrigatória'
-      if (!p.tipoPena) e.tipoPena = 'O tipo de pena é obrigatório'
-      return e
-    })
-
-    return { erros, errosProcessos }
-  }
-
-  function montarEndereco() {
-    const parts = [form.logradouro, form.numero].filter(Boolean).join(', ')
-    const rest = [form.bairro, form.cidade].filter(Boolean).join(', ')
-    const full = [parts, rest].filter(Boolean).join(' - ')
-    return form.uf ? `${full} - ${form.uf}` : full
-  }
-
-  function handleSalvar() {
-    const { erros, errosProcessos } = validar()
-    const temErrosProcessos = errosProcessos.some((e) => Object.keys(e).length > 0)
-
-    if (Object.keys(erros).length > 0 || temErrosProcessos) {
-      setErrors(erros)
-      setProcessosErrors(errosProcessos)
-      return
-    }
-
-    const statusApenado = contarProcessosAtivos() > 0 ? 'Ativo' : 'Inativo'
-
-    const resultado = {
-      id: isEditing ? apenado.id : generateUUID(),
-      tenant_id: isEditing ? apenado.tenant_id : comarcaId,
-      nome: form.nome,
-      cpf: form.cpf,
-      data_nascimento: form.dataNascimento,
-      telefone: form.telefone,
-      cep: form.cep,
-      logradouro: form.logradouro,
-      numero: form.numero,
-      complemento: form.complemento,
-      bairro: form.bairro,
-      cidade: form.cidade,
-      uf: form.uf,
-      endereco: montarEndereco(),
-      instituicao: form.instituicao,
-      sit_trabalhista: form.sitTrabalhista,
-      status: statusApenado,
-      observacoes: form.observacoes,
-      foto: preview,
-      processos: processos,
-    }
-    onSalvar(resultado)
-  }
+  const {
+    handleChange,
+    handleMask,
+    handleFoto,
+    removerFoto,
+    buscarCep,
+    handleProcessoChange,
+    handleAdicionarProcesso,
+    handlePedirEncerramento,
+    handleConfirmarEncerramento,
+    setIndexParaEncerrar,
+    tentarSalvar,
+  } = actions
 
   const inputClass = (field) =>
     `w-full rounded-md border px-2.5 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none bg-transparent placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 ${
@@ -780,7 +506,7 @@ function ModalCadastro({ apenado, onSalvar, onCancelar }) {
             </Button>
             <Button
               type="button"
-              onClick={handleSalvar}
+              onClick={() => tentarSalvar(onSalvar)}
               disabled={!isEditing && !form.foto && !preview}
               className="rounded-lg px-5"
             >
