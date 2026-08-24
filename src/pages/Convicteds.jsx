@@ -1,10 +1,8 @@
-import { useState, useMemo, useEffect } from 'react'
 import { FileText, Pencil, Plus, Search, Trash2, Users } from 'lucide-react'
 import { useSession } from '@/context/sessionContext'
-import { mockApenados } from '@/mocks/apenados.mock.js'
+import { useConvicteds } from '@/hooks/useConvicteds'
 import ModalInative from '../components/hooks/modalInative'
 import ModalCadastro from '../components/hooks/modalCadastro'
-import { toast } from 'sonner'
 import ModalDocumentosApenado from '../components/hooks/modalDocumentosApenado'
 import { DataTableCard } from '@/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/components/data-display/EmptyTableState'
@@ -13,70 +11,8 @@ import { PageHeader } from '@/components/data-display/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-const ITEMS_PER_PAGE = 10
-const STORAGE_KEY = 'apenados_data_v5'
-
-function normalizeApenado(a) {
-  return {
-    id: a.id != null ? String(a.id) : crypto.randomUUID(),
-    tenant_id: a.tenant_id || a.tenantId || null,
-    nome: a.nome || a.fullName || '',
-    cpf: a.cpf || '',
-    telefone: a.telefone || a.phone || '',
-    endereco: a.endereco || a.address || '',
-    cep: a.cep || '',
-    logradouro: a.logradouro || '',
-    numero: a.numero || '',
-    complemento: a.complemento || '',
-    bairro: a.bairro || '',
-    cidade: a.cidade || '',
-    uf: a.uf || '',
-    sit_trabalhista:
-      a.sit_trabalhista ||
-      (a.workingStatus === 'working_formal'
-        ? 'Trabalho Registrado'
-        : a.workingStatus === 'working_informal'
-          ? 'Trabalho Informal'
-          : a.workingStatus === 'not_working'
-            ? 'Nao Trabalha'
-            : '') ||
-      '',
-    status: a.status || 'Ativo',
-    foto: a.foto || a.referencePhotoUrl || '',
-    processos: a.processos || [],
-    numero_processo:
-      a.numero_processo ||
-      a.numeroProcesso ||
-      (a.processos && a.processos.length ? a.processos[0].numeroProcesso : '') ||
-      '',
-  }
-}
-
-function getStoredApenados() {
-  const salvo = localStorage.getItem(STORAGE_KEY)
-
-  const sourceFromMock =
-    mockApenados && mockApenados.apenados
-      ? mockApenados.apenados
-      : Array.isArray(mockApenados)
-        ? mockApenados
-        : []
-
-  if (!salvo) return sourceFromMock.map(normalizeApenado)
-
-  try {
-    const parsed = JSON.parse(salvo)
-    const source = Array.isArray(parsed) ? parsed : parsed?.apenados || sourceFromMock
-    return Array.isArray(source)
-      ? source.map(normalizeApenado)
-      : sourceFromMock.map(normalizeApenado)
-  } catch {
-    return sourceFromMock.map(normalizeApenado)
-  }
-}
-
 function maskCPF(cpf) {
-  return cpf.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**')
+  return (cpf || '').replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**')
 }
 
 function SitTrabalhista({ sit }) {
@@ -101,63 +37,29 @@ const Convicteds = () => {
   const { session } = useSession()
   const comarca = session?.tenant?.id
 
-  const [search, setSearch] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [apenados, setApenados] = useState(getStoredApenados)
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(apenados))
-  }, [apenados])
-
-  const [apenadoInativar, setApenadoInativar] = useState(null)
-  const [apenadoEditar, setApenadoEditar] = useState(null)
-  const [modalCadastroAberto, setModalCadastroAberto] = useState(false)
-  const [apenadoDocumentos, setApenadoDocumentos] = useState(null)
-
-  const filtered = useMemo(() => {
-    if (!comarca) return []
-    const term = search.toLowerCase().trim()
-
-    return apenados
-      .filter((item) => item.tenant_id === comarca)
-      .filter((a) => {
-        if (!term) return true
-
-        const matchNome = (a.nome || '').toLowerCase().includes(term)
-
-        const cleanCPF = (a.cpf || '').replace(/\D/g, '')
-        const cleanTerm = term.replace(/\D/g, '')
-        const matchCPF = cleanTerm !== '' && cleanCPF.includes(cleanTerm)
-
-        const matchProcesso = (a.numero_processo || '').toLowerCase().includes(term)
-
-        return matchNome || matchCPF || matchProcesso
-      })
-  }, [comarca, search, apenados])
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
-  const visiblePage = Math.min(currentPage, totalPages)
-  const paginated = filtered.slice((visiblePage - 1) * ITEMS_PER_PAGE, visiblePage * ITEMS_PER_PAGE)
-
-  function handleInativar() {
-    setApenados((prev) =>
-      prev.map((a) => (a.id === apenadoInativar.id ? { ...a, status: 'Inativo' } : a))
-    )
-    setApenadoInativar(null)
-    toast.success('Apenado inativado com sucesso!')
-  }
-
-  function handleSalvar(form) {
-    if (apenadoEditar) {
-      setApenados((prev) => prev.map((a) => (a.id === form.id ? { ...form } : a)))
-      setApenadoEditar(null)
-      toast.success('Apenado atualizado com sucesso!')
-    } else {
-      setApenados((prev) => [...prev, form])
-      setModalCadastroAberto(false)
-      toast.success('Apenado cadastrado com sucesso!')
-    }
-  }
+  const { state, actions } = useConvicteds(comarca)
+  const {
+    search,
+    currentPage,
+    apenadoInativar,
+    apenadoEditar,
+    modalCadastroAberto,
+    apenadoDocumentos,
+    totalPages,
+    visiblePage,
+    paginated,
+    filtered,
+  } = state
+  const {
+    setSearch,
+    setCurrentPage,
+    setApenadoInativar,
+    setApenadoEditar,
+    setModalCadastroAberto,
+    setApenadoDocumentos,
+    handleInativar,
+    handleSalvar,
+  } = actions
 
   const paginationFooter =
     totalPages > 1 ? (
@@ -314,30 +216,28 @@ const Convicteds = () => {
                 <tr key={a.id} className="hover:bg-muted/50 border-b transition-colors">
                   <td className="w-14 px-4 py-3.5">
                     <img
-                      src={a.foto || a.referencePhotoUrl || `https://i.pravatar.cc/40?u=${a.id}`}
+                      src={a.foto || `https://i.pravatar.cc/40?u=${a.id}`}
                       alt={a.nome}
                       className="h-9 w-9 rounded-full object-cover"
                     />
                   </td>
                   <td className="min-w-36 px-4 py-3.5">
-                    <p className="text-foreground font-semibold">{a.nome || a.fullName}</p>
-                    <p className="text-muted-foreground mt-0.5 text-xs">
-                      {maskCPF(a.cpf || a.cpf)}
-                    </p>
+                    <p className="text-foreground font-semibold">{a.nome}</p>
+                    <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(a.cpf)}</p>
                   </td>
                   <td className="text-muted-foreground w-44 px-4 py-3.5">
                     <span className="block max-w-40 truncate" title={a.numero_processo || ''}>
-                      {a.numero_processo || a.numeroProcesso || ''}
+                      {a.numero_processo || ''}
                     </span>
                   </td>
                   <td className="text-muted-foreground w-36 px-4 py-3.5 whitespace-nowrap">
-                    {a.telefone || a.phone}
+                    {a.telefone}
                   </td>
                   <td
                     className="text-muted-foreground max-w-56 min-w-44 truncate px-4 py-3.5"
-                    title={a.endereco || a.address}
+                    title={a.endereco}
                   >
-                    {a.endereco || a.address}
+                    {a.endereco}
                   </td>
                   <td className="w-36 px-4 py-3.5">
                     <SitTrabalhista sit={a.sit_trabalhista} />

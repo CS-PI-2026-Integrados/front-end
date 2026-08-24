@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Search, Plus, Users, Pencil, Trash, Settings } from 'lucide-react'
 import { useSession } from '@/context/sessionContext'
 import mockGroups from '@/mocks/grupos.mock.json'
-import mockApenados from '@/mocks/apenados.json'
+import { mockApenados } from '@/mocks/apenados.mock.js'
 import { DataTableCard } from '@/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/components/data-display/FiltersPanel'
@@ -77,7 +77,9 @@ const Groups = () => {
   const availableParticipants = useMemo(() => {
     const comarca = session?.tenant?.id
     if (!comarca) return []
-    return mockApenados.filter((a) => a.tenant_id === comarca && a.status === 'Ativo')
+    return (mockApenados.apenados || []).filter(
+      (a) => a.tenantId === comarca && (!a.status || a.status === 'Ativo')
+    )
   }, [session?.tenant?.id])
 
   const formatDate = (date) => {

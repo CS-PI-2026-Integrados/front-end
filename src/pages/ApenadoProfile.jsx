@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSession } from '@/context/sessionContext'
-
-const STORAGE_KEY = 'apenados_data_v4'
+import { STORAGE_KEY } from '@/utils/apenadosUtils'
 
 export default function ApenadoProfile() {
   const { id } = useParams()
