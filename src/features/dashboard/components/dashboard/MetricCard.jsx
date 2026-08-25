@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { cn } from '@/shared/lib/utils.js'
 
 export function MetricCard({ data, icon, title, description, className }) {
   return (
-    <Card className={className}>
+    <Card className={cn('shadow-sm', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-muted-foreground font-medium">{title}</CardTitle>
         {icon}

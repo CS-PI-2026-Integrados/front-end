@@ -2,8 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Button } from '@/shared/components/ui/button.jsx'
 import { CheckCircle2, Download, Eye, PlusCircle } from 'lucide-react'
 import { cn } from '@/shared/lib/utils.js'
+import { downloadReceiptPDF, viewReceiptPDF } from '@/features/attendance/services/pdfService.js'
 
-export function ReceiptSuccessCard({ className, atendimento, onReset, onDownload, onView }) {
+export function ReceiptSuccessCard({ className, atendimento, onReset }) {
   return (
     <Card
       className={cn(
@@ -52,13 +53,17 @@ export function ReceiptSuccessCard({ className, atendimento, onReset, onDownload
             type="button"
             variant="outline"
             className="h-10 w-full bg-transparent"
-            onClick={() => onView(atendimento)}
+            onClick={() => viewReceiptPDF(atendimento)}
           >
             <Eye className="mr-2 h-4 w-4 shrink-0" />
             Visualizar Comprovante
           </Button>
 
-          <Button type="button" className="h-10 w-full" onClick={() => onDownload(atendimento)}>
+          <Button
+            type="button"
+            className="h-10 w-full"
+            onClick={() => downloadReceiptPDF(atendimento)}
+          >
             <Download className="mr-2 h-4 w-4 shrink-0" />
             Baixar Comprovante (PDF)
           </Button>

@@ -2,18 +2,9 @@ import { useState, useMemo } from 'react'
 import { useAtendimentoData } from '@/features/attendance/hooks/useAttendanceData.js'
 import { Button } from '@/shared/components/ui/button.jsx'
 import { ChevronLeft, ChevronRight, Eye, Download, FileText } from 'lucide-react'
-import { useReceiptPdfActions } from '@/features/attendance/hooks/useReceiptPdfActions'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/shared/components/ui/table'
+import { downloadReceiptPDF, viewReceiptPDF } from '@/features/attendance/services/pdfService.js'
 
 export function ProofHistory() {
-  const { download, view } = useReceiptPdfActions()
   const { presencas, apenados } = useAtendimentoData()
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -48,11 +39,11 @@ export function ProofHistory() {
   }
 
   const handleDownload = (comp) => {
-    download(buildAtendimento(comp))
+    downloadReceiptPDF(buildAtendimento(comp))
   }
 
   const handleView = (comp) => {
-    view(buildAtendimento(comp))
+    viewReceiptPDF(buildAtendimento(comp))
   }
 
   return (
@@ -100,39 +91,39 @@ export function ProofHistory() {
           <>
             <div className="hidden flex-col md:flex">
               <div className="w-full overflow-auto">
-                <Table className="text-sm">
-                  <TableHeader className="bg-muted/50 sticky top-0 z-10">
-                    <TableRow className="border-b">
-                      <TableHead className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50 sticky top-0 z-10">
+                    <tr className="border-b">
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
                         Data/Hora
-                      </TableHead>
-                      <TableHead className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                      </th>
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
                         Apenado
-                      </TableHead>
-                      <TableHead className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                      </th>
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
                         CPF
-                      </TableHead>
-                      <TableHead className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                      </th>
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
                         Código
-                      </TableHead>
-                      <TableHead className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
+                      </th>
+                      <th className="h-10 px-6 text-left text-xs font-semibold whitespace-nowrap">
                         Operador
-                      </TableHead>
-                      <TableHead className="h-10 px-6 text-center text-xs font-semibold whitespace-nowrap">
+                      </th>
+                      <th className="h-10 px-6 text-center text-xs font-semibold whitespace-nowrap">
                         Ações
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {comprovantesPage.map((comp, idx) => (
-                      <TableRow
+                      <tr
                         key={comp.id}
                         className="hover:bg-muted/50 border-b transition-colors last:border-b-0"
                         style={{
                           animationDelay: `${idx * 30}ms`,
                         }}
                       >
-                        <TableCell className="px-6 py-3.5 align-middle whitespace-nowrap">
+                        <td className="px-6 py-3.5 align-middle whitespace-nowrap">
                           <span className="text-foreground text-sm">
                             {new Date(comp.emitidoEm).toLocaleDateString('pt-BR')}
                           </span>
@@ -142,24 +133,24 @@ export function ProofHistory() {
                               minute: '2-digit',
                             })}
                           </span>
-                        </TableCell>
-                        <TableCell className="px-6 py-3.5 align-middle">
+                        </td>
+                        <td className="px-6 py-3.5 align-middle">
                           <span className="text-foreground text-sm font-medium">
                             {comp.nomeApenado}
                           </span>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground px-6 py-3.5 align-middle text-sm whitespace-nowrap">
+                        </td>
+                        <td className="text-muted-foreground px-6 py-3.5 align-middle text-sm whitespace-nowrap">
                           {comp.cpf}
-                        </TableCell>
-                        <TableCell className="px-6 py-3.5 align-middle">
+                        </td>
+                        <td className="px-6 py-3.5 align-middle">
                           <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 font-mono text-xs font-medium">
                             {comp.codigoVerificacao}
                           </span>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground px-6 py-3.5 align-middle text-sm">
+                        </td>
+                        <td className="text-muted-foreground px-6 py-3.5 align-middle text-sm">
                           {comp.nomeOperador}
-                        </TableCell>
-                        <TableCell className="px-6 py-3.5 align-middle">
+                        </td>
+                        <td className="px-6 py-3.5 align-middle">
                           <div className="flex items-center justify-center gap-1">
                             <Button
                               variant="ghost"
@@ -180,11 +171,11 @@ export function ProofHistory() {
                               <span className="text-xs">PDF</span>
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
                     ))}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
             </div>
 

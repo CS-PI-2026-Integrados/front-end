@@ -1,9 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useSession } from '@/features/authentication/context/sessionContext'
-import {
-  getCameraPreference,
-  saveCameraPreference,
-} from '@/features/users/services/userPreferencesService'
+
+const CAMERA_KEY = (userId) => `sicape:camera:${userId}`
 
 async function fetchVideoDevices() {
   if (!navigator?.mediaDevices?.enumerateDevices) return []
@@ -26,7 +24,7 @@ export function useUserProfile() {
 
   const [cameras, setCameras] = useState([])
   const [selectedCamera, setSelectedCamera] = useState(() => {
-    return getCameraPreference(userId)
+    return userId ? localStorage.getItem(CAMERA_KEY(userId)) || '' : ''
   })
   const [cameraLoading, setCameraLoading] = useState(false)
   const [cameraError, setCameraError] = useState(null)
@@ -49,7 +47,7 @@ export function useUserProfile() {
     (deviceId) => {
       setSelectedCamera(deviceId)
       if (userId) {
-        saveCameraPreference(userId, deviceId)
+        localStorage.setItem(CAMERA_KEY(userId), deviceId)
       }
     },
     [userId]
