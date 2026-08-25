@@ -8,6 +8,7 @@ import {
   FileText,
   Image,
   Download,
+  Search,
 } from 'lucide-react'
 import { presencasStore } from '@/mocks/presenca.mock.js'
 import { mockProcessos } from '@/mocks/processos.mock.js'
@@ -61,6 +62,7 @@ const Documents = () => {
   const userId = session?.user?.id || 'default'
 
   const [abaAtiva, setAbaAtiva] = useState('atendimentos')
+  const [busca, setBusca] = useState('')
 
   const comprovantes = useMemo(() => {
     const todos = presencasStore.getSnapshot() || []
@@ -114,6 +116,19 @@ const Documents = () => {
     })
   }, [comprovantes, anoSelecionado, mesSelecionado])
 
+  const documentosFiltrados = useMemo(() => {
+    const termo = busca.toLowerCase().trim()
+    if (!termo) return documentosDoMes
+
+    return documentosDoMes.filter((doc) => {
+      const nome = (doc.apenadoName || '').toLowerCase()
+      const processo = getNumeroProcesso(doc).toLowerCase()
+      return nome.includes(termo) || processo.includes(termo)
+    })
+  }, [documentosDoMes, busca])
+
+  const temBusca = busca.trim() !== ''
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="mb-6">
@@ -155,6 +170,7 @@ const Documents = () => {
                   onChange={(e) => {
                     setAnoSelecionado(Number(e.target.value))
                     setMesSelecionadoManual(null)
+                    setBusca('')
                   }}
                   className="cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 focus:ring-2 focus:ring-green-700 focus:outline-none"
                 >
@@ -185,7 +201,12 @@ const Documents = () => {
                     <button
                       key={mes}
                       disabled={!temRegistro}
-                      onClick={() => temRegistro && setMesSelecionadoManual(index)}
+                      onClick={() => {
+                        if (temRegistro) {
+                          setMesSelecionadoManual(index)
+                          setBusca('')
+                        }
+                      }}
                       className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                         isSelecionado
                           ? 'bg-green-700 text-white'
@@ -219,52 +240,69 @@ const Documents = () => {
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <div className="mb-5 flex items-center justify-between">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-semibold text-gray-900">
                   {MESES_EXTENSO[mesSelecionado]} {anoSelecionado}
                 </p>
                 <p className="mt-0.5 text-xs text-gray-400">
-                  {documentosDoMes.length} documento(s) encontrado(s)
+                  {temBusca
+                    ? `${documentosFiltrados.length} de ${documentosDoMes.length} documento(s) encontrado(s)`
+                    : `${documentosDoMes.length} documento(s) encontrado(s)`}
                 </p>
               </div>
 
-              <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-1">
-                <button
-                  onClick={() => handleViewMode('grid')}
-                  className={`rounded-md p-1.5 transition-colors ${
-                    viewMode === 'grid'
-                      ? 'bg-green-700 text-white'
-                      : 'text-gray-500 hover:bg-gray-100'
-                  }`}
-                  title="Grade"
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleViewMode('lista')}
-                  className={`rounded-md p-1.5 transition-colors ${
-                    viewMode === 'lista'
-                      ? 'bg-green-700 text-white'
-                      : 'text-gray-500 hover:bg-gray-100'
-                  }`}
-                  title="Lista"
-                >
-                  <List className="h-4 w-4" />
-                </button>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar por nome ou processo..."
+                    value={busca}
+                    onChange={(e) => setBusca(e.target.value)}
+                    className="w-64 rounded-lg border border-gray-300 py-2 pr-4 pl-9 text-sm text-gray-800 focus:border-transparent focus:ring-2 focus:ring-green-700 focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-1">
+                  <button
+                    onClick={() => handleViewMode('grid')}
+                    className={`rounded-md p-1.5 transition-colors ${
+                      viewMode === 'grid'
+                        ? 'bg-green-700 text-white'
+                        : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                    title="Grade"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleViewMode('lista')}
+                    className={`rounded-md p-1.5 transition-colors ${
+                      viewMode === 'lista'
+                        ? 'bg-green-700 text-white'
+                        : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                    title="Lista"
+                  >
+                    <List className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
-            {documentosDoMes.length === 0 ? (
+            {documentosFiltrados.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                 <FileText className="h-10 w-10 text-gray-300" />
                 <p className="mt-3 text-sm font-medium text-gray-500">
-                  Nenhum documento neste período
+                  {temBusca
+                    ? `Nenhum documento encontrado para "${busca}" em ${MESES_EXTENSO[mesSelecionado]} ${anoSelecionado}.`
+                    : 'Nenhum documento neste período'}
                 </p>
               </div>
             ) : viewMode === 'grid' ? (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {documentosDoMes.map((doc) => (
+                {documentosFiltrados.map((doc) => (
                   <div
                     key={doc.id}
                     className="rounded-xl border border-gray-200 p-4 transition-shadow hover:shadow-sm"
@@ -317,7 +355,7 @@ const Documents = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {documentosDoMes.map((doc) => (
+                    {documentosFiltrados.map((doc) => (
                       <tr
                         key={doc.id}
                         className="border-b border-gray-50 transition-colors hover:bg-gray-50"
