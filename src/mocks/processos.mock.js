@@ -37,7 +37,7 @@ export const mockProcessos = {
       id: 'p3',
       processNumber: '0003456-78.2023.8.00.0001',
       tenantId: '1',
-      apenadoIds: ['4', '5'],
+      apenadoIds: ['4'],
       judicialStatus: 'Prestação de Serviços',
       institution: 'Unidade Leste',
       court: '1ª Vara Criminal',
