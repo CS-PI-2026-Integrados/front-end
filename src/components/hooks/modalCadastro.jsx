@@ -82,7 +82,7 @@ function ModalCadastro({ apenado, onSalvar, onCancelar }) {
                 <button
                   type="button"
                   onClick={() => fileRef.current.click()}
-                  className={`hover:bg-muted flex aspect-square h-20 w-20 shrink-0 flex-col items-center justify-center overflow-hidden rounded-full border-2 border-dashed transition-colors ${
+                  className={`hover:bg-muted flex h-20 w-20 shrink-0 flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-colors ${
                     errors.foto ? 'border-destructive' : 'border-border'
                   }`}
                 >
@@ -90,7 +90,7 @@ function ModalCadastro({ apenado, onSalvar, onCancelar }) {
                     <img
                       src={preview}
                       alt="preview"
-                      className="aspect-square h-full w-full rounded-full object-cover"
+                      className="h-full w-full rounded-lg object-cover"
                     />
                   ) : (
                     <>
