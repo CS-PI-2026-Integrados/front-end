@@ -13,7 +13,7 @@ const generateRandomCode = (length = 9) => {
 export function useGenerateReceipt() {
   const { session } = useSession()
   const { state: tenantState } = useTenant()
-  const usuario = session?.user?.name
+  const usuario = session?.user?.name || 'Administrador'
 
   const generateReceipt = useCallback(
     (params = {}) =>
@@ -28,15 +28,22 @@ export function useGenerateReceipt() {
 
             const now = new Date().toISOString()
             const apenadoFinal = apenado
+            const tenantId = String(
+              apenadoFinal?.tenantId || apenadoFinal?.tenant_id || session?.tenant?.id || '1'
+            )
 
             const novaPresenca = {
               id: `${Date.now()}`,
-              apenadoId: apenadoFinal?.id,
-              tenantId: apenadoFinal?.tenantId,
-              processoId: processo?.id,
-              nomeApenado: apenadoFinal?.nomeCompleto,
+              apenadoId: String(apenadoFinal?.id),
+              tenantId,
+              processoId: processo?.id
+                ? String(processo.id)
+                : apenadoFinal.processos?.[0]?.id
+                  ? String(apenadoFinal.processos[0].id)
+                  : 'p1',
+              nomeApenado: apenadoFinal?.nomeCompleto || apenadoFinal?.nome || 'Apenado',
               photoUrl: fotoAtendimento,
-              cpfApenado: apenadoFinal.cpf,
+              cpfApenado: apenadoFinal.cpf || '',
               emitidoEm: now,
               nomeOperador: usuario,
               codigoVerificacao: `COMP-${new Date(now).getTime()}-${generateRandomCode()}`,
@@ -51,12 +58,12 @@ export function useGenerateReceipt() {
                 ),
 
               configuracaoInstituicao: {
-                nomeComarca: tenantState.nomeComarca,
-                unidade: tenantState.unidade,
-                endereco: tenantState.endereco,
-                logo: tenantState.logo,
-                receiptConfig: { ...tenantState.receiptConfig },
-                receiptFields: tenantState.receiptFields.map((f) => ({ ...f })),
+                nomeComarca: tenantState?.nomeComarca || 'Comarca Central',
+                unidade: tenantState?.unidade || 'Vara de Execuções Penais',
+                endereco: tenantState?.endereco || '',
+                logo: tenantState?.logo || null,
+                receiptConfig: { ...(tenantState?.receiptConfig || {}) },
+                receiptFields: (tenantState?.receiptFields || []).map((f) => ({ ...f })),
               },
             }
 
@@ -66,7 +73,7 @@ export function useGenerateReceipt() {
           }
         }, 500)
       }),
-    [usuario, tenantState]
+    [usuario, tenantState, session]
   )
 
   return { generateReceipt }

@@ -5,7 +5,8 @@ export function useFilteredConvicted(apenados, search) {
   return useMemo(() => {
     if (!apenados || apenados.length === 0) return []
 
-    const s = search ? search.toLowerCase() : ''
+    const s = search ? search.toLowerCase().trim() : ''
+    const sDigits = s.replace(/\D/g, '')
     const resultados = []
 
     if (!s) {
@@ -17,12 +18,29 @@ export function useFilteredConvicted(apenados, search) {
     }
 
     for (const a of apenados) {
-      const matchesNome = a.nomeCompleto?.toLowerCase().includes(s)
-      const matchesCpf = a.cpf?.toLowerCase().includes(s)
+      const nome = (a.nomeCompleto || a.nome || a.fullName || '').toLowerCase()
+      const matchesNome = nome.includes(s)
 
-      const matchesProcess = a.processos?.some((processo) =>
-        processo.numeroProcesso?.toLowerCase().includes(s)
-      )
+      const cpf = (a.cpf || '').toLowerCase()
+      const cpfDigits = (a.cpf || '').replace(/\D/g, '')
+      const matchesCpf = cpf.includes(s) || (sDigits.length >= 2 && cpfDigits.includes(sDigits))
+
+      const procs = [
+        a.numeroProcesso,
+        a.processNumber,
+        a.numero_processo,
+        ...(a.processos || []).map((p) => p.numeroProcesso || p.processNumber),
+      ].filter(Boolean)
+
+      const matchesProcess = procs.some((proc) => {
+        const lower = String(proc).toLowerCase()
+        if (lower.includes(s)) return true
+        if (sDigits.length >= 2) {
+          const clean = String(proc).replace(/\D/g, '')
+          if (clean.includes(sDigits)) return true
+        }
+        return false
+      })
 
       if (matchesNome || matchesCpf || matchesProcess) {
         resultados.push(a)

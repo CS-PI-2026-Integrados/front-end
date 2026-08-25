@@ -11,7 +11,9 @@ export function ProofHistory() {
   const itemsPerPage = 5
 
   const comprovantes = useMemo(() => {
-    return [...presencas].sort((a, b) => new Date(b.emitidoEm) - new Date(a.emitidoEm))
+    return [...presencas].sort(
+      (a, b) => new Date(b.emitidoEm || b.dateTime) - new Date(a.emitidoEm || a.dateTime)
+    )
   }, [presencas])
 
   const totalPages = Math.max(1, Math.ceil(comprovantes.length / itemsPerPage))
@@ -21,17 +23,22 @@ export function ProofHistory() {
   )
 
   const buildAtendimento = (comp) => {
-    const apenado = apenados.find((a) => a.id === comp.apenadoId)
-    const processo = apenado?.processos?.find((p) => p.id === comp.processoId) || null
+    const apenado = apenados.find((a) => String(a.id) === String(comp.apenadoId))
+    const processo =
+      apenado?.processos?.find((p) => String(p.id) === String(comp.processoId)) || null
 
     return {
-      apenado: apenado || { nomeCompleto: comp.nomeApenado, cpf: comp.cpf },
-      processo,
+      apenado: apenado || {
+        id: comp.apenadoId,
+        nomeCompleto: comp.nomeApenado || comp.fullName || 'Apenado',
+        cpf: comp.cpf || comp.cpfApenado || '',
+      },
+      processo: processo || (comp.processoId ? { numeroProcesso: comp.processoId } : null),
       recibo: {
         photoUrl: comp.photoUrl,
-        codigoVerificacao: comp.codigoVerificacao,
-        emitidoEm: comp.emitidoEm,
-        nomeOperador: comp.nomeOperador,
+        codigoVerificacao: comp.codigoVerificacao || comp.verificationCode,
+        emitidoEm: comp.emitidoEm || comp.dateTime,
+        nomeOperador: comp.nomeOperador || comp.operatorName || 'Administrador',
         configuracaoInstituicao: comp.configuracaoInstituicao,
       },
       mudancasDetectadas: comp.alteracoesRastreadas || {},
@@ -125,10 +132,10 @@ export function ProofHistory() {
                       >
                         <td className="px-6 py-3.5 align-middle whitespace-nowrap">
                           <span className="text-foreground text-sm">
-                            {new Date(comp.emitidoEm).toLocaleDateString('pt-BR')}
+                            {new Date(comp.emitidoEm || comp.dateTime).toLocaleDateString('pt-BR')}
                           </span>
                           <span className="text-muted-foreground ml-1.5 text-xs">
-                            {new Date(comp.emitidoEm).toLocaleTimeString('pt-BR', {
+                            {new Date(comp.emitidoEm || comp.dateTime).toLocaleTimeString('pt-BR', {
                               hour: '2-digit',
                               minute: '2-digit',
                             })}
@@ -136,19 +143,19 @@ export function ProofHistory() {
                         </td>
                         <td className="px-6 py-3.5 align-middle">
                           <span className="text-foreground text-sm font-medium">
-                            {comp.nomeApenado}
+                            {comp.nomeApenado || comp.fullName}
                           </span>
                         </td>
                         <td className="text-muted-foreground px-6 py-3.5 align-middle text-sm whitespace-nowrap">
-                          {comp.cpf}
+                          {comp.cpf || comp.cpfApenado}
                         </td>
                         <td className="px-6 py-3.5 align-middle">
                           <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 font-mono text-xs font-medium">
-                            {comp.codigoVerificacao}
+                            {comp.codigoVerificacao || comp.verificationCode}
                           </span>
                         </td>
                         <td className="text-muted-foreground px-6 py-3.5 align-middle text-sm">
-                          {comp.nomeOperador}
+                          {comp.nomeOperador || comp.operatorName || 'Administrador'}
                         </td>
                         <td className="px-6 py-3.5 align-middle">
                           <div className="flex items-center justify-center gap-1">
@@ -189,20 +196,24 @@ export function ProofHistory() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-foreground truncate text-sm font-medium">
-                        {comp.nomeApenado}
+                        {comp.nomeApenado || comp.fullName}
                       </p>
-                      <p className="text-muted-foreground mt-0.5 text-xs">{comp.cpf}</p>
+                      <p className="text-muted-foreground mt-0.5 text-xs">
+                        {comp.cpf || comp.cpfApenado}
+                      </p>
                     </div>
                     <span className="bg-muted text-muted-foreground shrink-0 rounded-md px-2 py-0.5 font-mono text-[10px] font-medium">
-                      {comp.codigoVerificacao}
+                      {comp.codigoVerificacao || comp.verificationCode}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="text-muted-foreground text-xs">
-                      <span>{new Date(comp.emitidoEm).toLocaleDateString('pt-BR')}</span>
+                      <span>
+                        {new Date(comp.emitidoEm || comp.dateTime).toLocaleDateString('pt-BR')}
+                      </span>
                       <span className="mx-1.5">•</span>
                       <span>
-                        {new Date(comp.emitidoEm).toLocaleTimeString('pt-BR', {
+                        {new Date(comp.emitidoEm || comp.dateTime).toLocaleTimeString('pt-BR', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}

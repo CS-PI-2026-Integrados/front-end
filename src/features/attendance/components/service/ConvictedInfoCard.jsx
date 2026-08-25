@@ -46,8 +46,12 @@ export function ConvictedInfoCard() {
     [tenantState.receiptFields]
   )
 
-  const [localPhone, setLocalPhone] = useState(apenado ? formatPhone(apenado.phone || '') : '')
-  const [localAddress, setLocalAddress] = useState(apenado ? apenado.address || '' : '')
+  const [localPhone, setLocalPhone] = useState(
+    apenado ? formatPhone(apenado.phone || apenado.telefone || '') : ''
+  )
+  const [localAddress, setLocalAddress] = useState(
+    apenado ? apenado.address || apenado.endereco || '' : ''
+  )
 
   if (!apenado) {
     return (
@@ -67,7 +71,8 @@ export function ConvictedInfoCard() {
   }
 
   const handlePhoneBlur = () => {
-    if (localPhone !== formatPhone(apenado.phone || '')) {
+    const currentPhone = apenado.phone || apenado.telefone || ''
+    if (localPhone !== formatPhone(currentPhone)) {
       updateField('phone', localPhone)
     }
   }
@@ -77,7 +82,8 @@ export function ConvictedInfoCard() {
   }
 
   const handleAddressBlur = () => {
-    if (localAddress !== (apenado.address || '')) {
+    const currentAddress = apenado.address || apenado.endereco || ''
+    if (localAddress !== currentAddress) {
       updateField('address', localAddress)
     }
   }
@@ -118,9 +124,9 @@ export function ConvictedInfoCard() {
                 <SelectValue placeholder="Selecione um processo" />
               </SelectTrigger>
               <SelectContent>
-                {processosAtivos.map((processo) => (
-                  <SelectItem key={processo.id} value={String(processo.id)}>
-                    {processo.numeroProcesso || processo.numeroProcesso}
+                {processosAtivos.map((proc) => (
+                  <SelectItem key={proc.id} value={String(proc.id)}>
+                    {proc.numeroProcesso || proc.processNumber || `Processo ${proc.id}`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -131,15 +137,22 @@ export function ConvictedInfoCard() {
             <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
               <p>
                 <span className="text-muted-foreground">Processo:</span>{' '}
-                {processo.numeroProcesso || processo.numeroProcesso}
+                {processo.numeroProcesso || processo.processNumber || '-'}
               </p>
               <p>
                 <span className="text-muted-foreground">Situação:</span>{' '}
-                {processo.tipoPena || processo.tipoPena}
+                {processo.tipoPena || processo.penaltyType || processo.judicialStatus || 'Regular'}
               </p>
-              {processo.institution && (
+              {(processo.institution || processo.instituicao) && (
                 <p>
-                  <span className="text-muted-foreground">Instituição:</span> {processo.institution}
+                  <span className="text-muted-foreground">Instituição:</span>{' '}
+                  {processo.institution || processo.instituicao}
+                </p>
+              )}
+              {(processo.court || processo.vara) && (
+                <p>
+                  <span className="text-muted-foreground">Vara:</span>{' '}
+                  {processo.court || processo.vara}
                 </p>
               )}
             </div>
@@ -224,7 +237,14 @@ export function ConvictedInfoCard() {
               <Select
                 disabled={!canEdit || !isFieldEditable('workingStatus')}
                 name="workingStatus"
-                value={apenado.workingStatus || ''}
+                value={
+                  apenado.workingStatus ||
+                  (apenado.situacaoTrabalhista === 'registrado'
+                    ? 'working_formal'
+                    : apenado.situacaoTrabalhista === 'informal'
+                      ? 'working_informal'
+                      : 'not_working')
+                }
                 onValueChange={(value) => updateField('workingStatus', value)}
               >
                 <SelectTrigger className="w-full">

@@ -15,10 +15,10 @@ export function ApenadoDeactivateDialog({ apenado, onConfirm, onOpenChange }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Inativar apenado</DialogTitle>
+          <DialogTitle>Excluir Apenado</DialogTitle>
           <DialogDescription>
-            Deseja inativar <strong>{apenado?.nomeCompleto}</strong>? O status será alterado para
-            Inativo.
+            Deseja excluir <strong>{apenado?.nomeCompleto || apenado?.nome}</strong>? Esta ação não
+            poderá ser desfeita.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -26,7 +26,7 @@ export function ApenadoDeactivateDialog({ apenado, onConfirm, onOpenChange }) {
             Cancelar
           </Button>
           <Button type="button" variant="destructive" onClick={onConfirm}>
-            Inativar
+            Excluir
           </Button>
         </DialogFooter>
       </DialogContent>

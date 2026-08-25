@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react'
 
 import { listarComprovantes } from '@/features/attendance'
-import { downloadReceiptPDF } from '@/features/attendance/services/pdfService.js'
+import { downloadReceiptPDF, viewReceiptPDF } from '@/features/attendance/services/pdfService.js'
 import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
 
 function formatarDataHora(data) {
-  return new Date(data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+  try {
+    return new Date(data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+  } catch {
+    return data || ''
+  }
 }
 
 export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
@@ -15,7 +19,9 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
   const comprovantes = useMemo(
     () =>
       apenado
-        ? listarComprovantes(apenado.tenantId).filter((item) => item.apenadoId === apenado.id)
+        ? listarComprovantes(apenado.tenantId || apenado.tenant_id).filter(
+            (item) => String(item.apenadoId) === String(apenado.id)
+          )
         : [],
     [apenado]
   )
@@ -25,7 +31,7 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
     <Dialog open={Boolean(apenado)} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{apenado.nomeCompleto}</DialogTitle>
+          <DialogTitle>{apenado.nomeCompleto || apenado.nome}</DialogTitle>
           <p className="text-muted-foreground text-sm">CPF: {apenado.cpf}</p>
         </DialogHeader>
         <Tabs value={aba} onValueChange={setAba}>
@@ -50,30 +56,55 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {comprovantes.map((comprovante) => (
-                      <tr key={comprovante.id} className="border-b">
-                        <td className="p-2">{formatarDataHora(comprovante.emitidoEm)}</td>
-                        <td className="p-2 font-mono text-xs">{comprovante.codigoVerificacao}</td>
-                        <td className="p-2">{comprovante.nomeOperador || 'Admin User'}</td>
-                        <td className="p-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              downloadReceiptPDF({
-                                apenado,
-                                processo: apenado.processos.find(
-                                  (processo) => processo.id === comprovante.processoId
-                                ) || { numeroProcesso: comprovante.processoId },
-                                recibo: comprovante,
-                              })
-                            }
-                          >
-                            Baixar
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                    {comprovantes.map((comprovante) => {
+                      const proc = (apenado.processos || []).find(
+                        (p) => String(p.id) === String(comprovante.processoId)
+                      ) || { numeroProcesso: comprovante.processoId || '' }
+
+                      return (
+                        <tr key={comprovante.id} className="border-b">
+                          <td className="p-2">
+                            {formatarDataHora(comprovante.emitidoEm || comprovante.dateTime)}
+                          </td>
+                          <td className="p-2 font-mono text-xs">
+                            {comprovante.codigoVerificacao || comprovante.verificationCode}
+                          </td>
+                          <td className="p-2">
+                            {comprovante.nomeOperador || comprovante.operatorName || 'Admin User'}
+                          </td>
+                          <td className="p-2">
+                            <div className="flex items-center gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  viewReceiptPDF({
+                                    apenado,
+                                    processo: proc,
+                                    recibo: comprovante,
+                                  })
+                                }
+                              >
+                                Ver
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  downloadReceiptPDF({
+                                    apenado,
+                                    processo: proc,
+                                    recibo: comprovante,
+                                  })
+                                }
+                              >
+                                Baixar
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
