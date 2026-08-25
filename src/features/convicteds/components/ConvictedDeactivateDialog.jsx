@@ -1,35 +1,22 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/components/ui/dialog'
-import { Button } from '@/shared/components/ui/button'
+import { ConfirmationDialog } from '@/shared/components/ConfirmationDialog'
 
 export function ApenadoDeactivateDialog({ apenado, onConfirm, onOpenChange }) {
   const open = Boolean(apenado)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Inativar apenado</DialogTitle>
-          <DialogDescription>
-            Deseja inativar <strong>{apenado?.nomeCompleto}</strong>? O status será alterado para
-            Inativo.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button type="button" variant="destructive" onClick={onConfirm}>
-            Inativar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmationDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Inativar apenado"
+      description={
+        <>
+          Deseja inativar <strong>{apenado?.nomeCompleto}</strong>? O status será alterado para
+          Inativo.
+        </>
+      }
+      destructive
+      confirmLabel="Inativar"
+      onConfirm={onConfirm}
+    />
   )
 }

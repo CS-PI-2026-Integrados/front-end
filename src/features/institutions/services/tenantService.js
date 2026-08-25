@@ -1,7 +1,7 @@
 const ACCEPTED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024 // 1 MB
 
-export const LOGO_ACCEPTED_EXTENSIONS = '.png,.jpg,.jpeg,.webp'
+export { LOGO_ACCEPTED_EXTENSIONS }
 
 export const MAX_FIELD_LENGTH = 120
 
@@ -67,3 +67,4 @@ export const saveTenantSettings = (settings) => {
     }, 250)
   })
 }
+import { LOGO_ACCEPTED_EXTENSIONS } from '@/features/institutions/model/logoConfig'
