@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { FieldGroup } from '@/shared/components/ui/field'
 import { Button } from '@/shared/components/ui/button'
-import { AuthSubmitButton } from '@/features/authentication/components/AuthSubmitButton'
-import { PasswordField } from '@/features/authentication/components/PasswordField'
+import { SubmitButton } from '@/shared/components/buttons/SubmitButton'
+import { PasswordField } from '@/shared/components/form-fields/PasswordField'
 import { PasswordStrengthMeter } from '@/features/authentication/components/PasswordStrengthMeter'
 
 export function DefinePasswordForm({
@@ -48,9 +48,13 @@ export function DefinePasswordForm({
           placeholder="Digite sua senha"
         />
 
-        <AuthSubmitButton disabled={!isValid} isLoading={isSubmitting}>
+        <SubmitButton
+          className="mt-3 h-13 rounded-[8px] text-lg"
+          disabled={!isValid}
+          isLoading={isSubmitting}
+        >
           {submitLabel}
-        </AuthSubmitButton>
+        </SubmitButton>
 
         {errors.root?.message && (
           <p role="alert" className="text-sm text-red-500">
