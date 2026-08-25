@@ -14,7 +14,7 @@ import { useState } from 'react'
 import { Button } from '@/shared/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
 import { useAtendimento } from '@/features/attendance'
-import { ConvictedInfoCard } from '@/features/attendance/components/service/ConvictedInfoCard.jsx'
+import { ConvictedInfoCard } from '@/features/attendance/components/ConvictedInfoCard.jsx'
 
 export function SelectConvicted() {
   const { apenado, selectApenado } = useAtendimento()
