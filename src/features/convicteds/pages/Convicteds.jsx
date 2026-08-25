@@ -25,15 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/shared/components/ui/table'
-import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
 
 const POR_PAGINA = 10
 function cpfMascarado(cpf) {
@@ -123,7 +114,10 @@ export default function Convicteds() {
         title="Gestão de Apenados"
         description="Cadastro e gerenciamento de apenados"
         action={
-          <HeaderButton icon={Plus} text="Novo apenado" onClick={() => setNovoAberto(true)} />
+          <Button size="sm" onClick={() => setNovoAberto(true)}>
+            <Plus />
+            Novo apenado
+          </Button>
         }
       />
       <FiltersPanel description="Pesquise e filtre os apenados cadastrados">
@@ -200,46 +194,44 @@ export default function Convicteds() {
           ))}
         </div>
         <div className="hidden overflow-x-auto md:block">
-          <Table className="min-w-210 text-sm">
-            <TableHeader>
-              <TableRow className="bg-secondary border-y">
+          <table className="w-full min-w-210 text-sm">
+            <thead>
+              <tr className="bg-secondary border-y">
                 {['Nome', 'Telefone', 'Endereço', 'Situação trabalhista', 'Status', 'Ações'].map(
                   (coluna) => (
-                    <TableHead key={coluna} className="px-4 py-3 text-left text-xs font-semibold">
+                    <th key={coluna} className="px-4 py-3 text-left text-xs font-semibold">
                       {coluna}
-                    </TableHead>
+                    </th>
                   )
                 )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+              </tr>
+            </thead>
+            <tbody>
               {exibidos.map((apenado) => (
-                <TableRow key={apenado.id} className="hover:bg-muted/50 border-b">
-                  <TableCell className="px-4 py-3">
+                <tr key={apenado.id} className="hover:bg-muted/50 border-b">
+                  <td className="px-4 py-3">
                     <strong>{apenado.nomeCompleto}</strong>
                     <span className="text-muted-foreground block text-xs">
                       {cpfMascarado(apenado.cpf)}
                     </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-3">{apenado.telefone}</TableCell>
-                  <TableCell className="max-w-64 truncate px-4 py-3">{apenado.endereco}</TableCell>
-                  <TableCell className="px-4 py-3">
+                  </td>
+                  <td className="px-4 py-3">{apenado.telefone}</td>
+                  <td className="max-w-64 truncate px-4 py-3">{apenado.endereco}</td>
+                  <td className="px-4 py-3">
                     {rotuloSituacaoTrabalhista(apenado.situacaoTrabalhista)}
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    {rotuloSituacaoApenado(apenado.situacao)}
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
+                  </td>
+                  <td className="px-4 py-3">{rotuloSituacaoApenado(apenado.situacao)}</td>
+                  <td className="px-4 py-3">
                     <Acoes
                       onDocuments={() => setDocumentos(apenado)}
                       onEdit={() => setEditar(apenado)}
                       onDeactivate={() => setInativar(apenado)}
                     />
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       </DataTableCard>
     </div>

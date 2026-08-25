@@ -10,7 +10,8 @@ import { Label } from '@/shared/components/ui/label'
 import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'
 import toast from 'react-hot-toast'
-import { usePasswordChange } from '@/features/users/hooks/usePasswordChange'
+import { useSession } from '@/features/authentication/context/sessionContext'
+import { changePassword } from '@/features/authentication/services/authService'
 import { PasswordStrengthMeter } from '@/features/authentication/components/PasswordStrengthMeter'
 import { obterForcaSenha } from '@/features/authentication/components/passwordStrength'
 
@@ -34,7 +35,7 @@ export const PasswordChange = () => {
     confirmarSenha: '',
   })
   const [errors, setErrors] = useState({})
-  const { submitPasswordChange } = usePasswordChange()
+  const { session } = useSession()
 
   const handleChange = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -76,7 +77,9 @@ export const PasswordChange = () => {
 
     const doChange = async () => {
       try {
-        await submitPasswordChange(formData.senhaAtual, formData.novaSenha)
+        if (!session) throw new Error('Sessão inválida')
+
+        await changePassword(session, formData.senhaAtual, formData.novaSenha)
 
         setErrors({})
         setFormData({ senhaAtual: '', novaSenha: '', confirmarSenha: '' })
@@ -88,7 +91,7 @@ export const PasswordChange = () => {
     }
 
     doChange()
-  }, [formData, submitPasswordChange])
+  }, [formData, session])
 
   return (
     <Card className="w-full">
