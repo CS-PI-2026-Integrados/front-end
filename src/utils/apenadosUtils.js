@@ -1,8 +1,52 @@
 import { mockApenados } from '@/mocks/apenados.mock.js'
+import { mockProcessos } from '@/mocks/processos.mock.js'
 
 export const STORAGE_KEY = 'apenados_data_v6'
 
+function getProcessosPorApenadoMap() {
+  const processosList = mockProcessos?.processos || []
+  return processosList.reduce((acc, processo) => {
+    const ids = Array.isArray(processo.apenadoIds)
+      ? processo.apenadoIds
+      : processo.apenadoId
+        ? [processo.apenadoId]
+        : []
+
+    ids.forEach((id) => {
+      if (!acc[id]) {
+        acc[id] = []
+      }
+      acc[id].push(processo)
+    })
+    return acc
+  }, {})
+}
+
 export function normalizeApenado(a) {
+  const processosPorApenado = getProcessosPorApenadoMap()
+  const procsFromMock = processosPorApenado[String(a.id)]
+  const procs = procsFromMock !== undefined ? procsFromMock : a.processos || []
+
+  const primeiroProcesso = procs.length > 0 ? procs[0] : null
+
+  const numProcesso = primeiroProcesso
+    ? primeiroProcesso.processNumber || primeiroProcesso.numeroProcesso || ''
+    : procsFromMock !== undefined
+      ? ''
+      : a.numero_processo || a.numeroProcesso || a.processNumber || ''
+
+  const vara = primeiroProcesso
+    ? primeiroProcesso.court || primeiroProcesso.vara || ''
+    : procsFromMock !== undefined
+      ? ''
+      : a.vara || a.court || ''
+
+  const instituicao = primeiroProcesso
+    ? primeiroProcesso.institution || ''
+    : procsFromMock !== undefined
+      ? ''
+      : a.instituicao || ''
+
   return {
     id: a.id != null ? String(a.id) : crypto.randomUUID(),
     tenant_id: a.tenant_id || a.tenantId || null,
@@ -30,15 +74,11 @@ export function normalizeApenado(a) {
       '',
     status: a.status || 'Ativo',
     foto: a.foto || a.referencePhotoUrl || '',
-    processos: a.processos || [],
-    numero_processo:
-      a.numero_processo ||
-      a.numeroProcesso ||
-      (a.processos && a.processos.length ? a.processos[0].numeroProcesso : '') ||
-      '',
-    vara: a.vara || '',
+    processos: procs,
+    numero_processo: numProcesso,
+    vara: vara,
     observacoes: a.observacoes || a.observations || '',
-    instituicao: a.instituicao || '',
+    instituicao: instituicao,
   }
 }
 
@@ -85,13 +125,13 @@ export function obterProcessosIniciais(apenado) {
   if (apenado?.processos && apenado.processos.length > 0) {
     return apenado.processos
   }
-  if (apenado?.numero_processo || apenado?.vara) {
+  if (apenado?.numero_processo || apenado?.processNumber || apenado?.vara || apenado?.court) {
     return [
       {
         id: crypto.randomUUID(),
-        numeroProcesso: apenado.numero_processo || '',
-        vara: apenado.vara || '',
-        tipoPena: apenado.tipoPena || '',
+        processNumber: apenado.processNumber || apenado.numero_processo || '',
+        court: apenado.court || apenado.vara || '',
+        penaltyType: apenado.penaltyType || apenado.tipoPena || '',
         status: 'ATIVO',
       },
     ]
@@ -102,9 +142,9 @@ export function obterProcessosIniciais(apenado) {
 export function criarProcessoVazio() {
   return {
     id: crypto.randomUUID(),
-    numeroProcesso: '',
-    vara: '',
-    tipoPena: '',
+    processNumber: '',
+    court: '',
+    penaltyType: '',
     status: 'ATIVO',
   }
 }
