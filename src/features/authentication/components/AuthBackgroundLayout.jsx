@@ -15,7 +15,7 @@ export function AuthBackgroundLayout({
   return (
     <div
       className={cn(
-        'bg-background text-foreground relative min-h-screen overflow-hidden p-15 dark:bg-zinc-950 dark:text-white',
+        'text-foreground relative min-h-screen overflow-hidden bg-black p-15 dark:bg-zinc-950 dark:text-white',
         className
       )}
     >

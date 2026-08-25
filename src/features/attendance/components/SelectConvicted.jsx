@@ -62,7 +62,7 @@ export function SelectConvicted() {
           >
             <Command shouldFilter={false}>
               <CommandInput placeholder="Buscar por nome ou CPF" onValueChange={setSearch} />
-              <CommandList className="max-h-[200px]">
+              <CommandList className="max-h-50">
                 <CommandEmpty>Nenhum apenado encontrado.</CommandEmpty>
                 <CommandGroup>
                   {apenadosFiltrados.map((a) => (

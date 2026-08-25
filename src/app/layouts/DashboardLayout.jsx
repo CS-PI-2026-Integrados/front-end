@@ -47,12 +47,12 @@ export default function DashboardLayout() {
       <div className="flex h-dvh">
         <div
           open={isMenuVisible}
-          className="group absolute z-10 h-dvh w-[0px] bg-black/5 open:w-full md:static md:w-auto md:bg-black/0 open:md:w-auto"
+          className="group absolute z-10 h-dvh w-0 bg-black/5 open:w-full md:static md:w-auto md:bg-black/0 open:md:w-auto"
           onClick={() => {
             setisMenuVisible(false)
           }}
         >
-          <div className="bg-background flex h-full w-60 -translate-x-60 flex-col border-e transition-transform duration-200 ease-out group-open:-translate-x-0 group-open:shadow-lg md:static md:-translate-x-0 group-open:md:shadow-none">
+          <div className="bg-background flex h-full w-60 -translate-x-60 flex-col border-e transition-transform duration-200 ease-out group-open:translate-x-0 group-open:shadow-lg md:static md:translate-x-0 group-open:md:shadow-none">
             <div className="flex h-14 items-center border-b px-4">
               <img
                 src={displayLogo}
