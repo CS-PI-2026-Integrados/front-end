@@ -17,11 +17,11 @@ export function useFilteredConvicted(apenados, search) {
     }
 
     for (const a of apenados) {
-      const matchesNome = a.fullName?.toLowerCase().includes(s)
+      const matchesNome = (a.fullName || a.nome)?.toLowerCase().includes(s)
       const matchesCpf = a.cpf?.toLowerCase().includes(s)
 
       const matchesProcess = a.processos?.some((processo) =>
-        processo.processNumber?.toLowerCase().includes(s)
+        (processo.processNumber || processo.numeroProcesso)?.toLowerCase().includes(s)
       )
 
       if (matchesNome || matchesCpf || matchesProcess) {

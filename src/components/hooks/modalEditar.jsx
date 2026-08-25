@@ -5,9 +5,9 @@ import ModalAvisoEncerrar from './modalAvisoEncerrar'
 function criarProcessoVazio() {
   return {
     id: crypto.randomUUID(),
-    numeroProcesso: '',
-    vara: '',
-    tipoPena: '',
+    processNumber: '',
+    court: '',
+    penaltyType: '',
     status: 'ATIVO',
   }
 }
@@ -16,13 +16,13 @@ function obterProcessosIniciais(apenado) {
   if (apenado?.processos && apenado.processos.length > 0) {
     return apenado.processos
   }
-  if (apenado?.numero_processo || apenado?.vara) {
+  if (apenado?.numero_processo || apenado?.processNumber || apenado?.vara || apenado?.court) {
     return [
       {
         id: crypto.randomUUID(),
-        numeroProcesso: apenado.numero_processo || '',
-        vara: apenado.vara || '',
-        tipoPena: apenado.tipoPena || '',
+        processNumber: apenado.processNumber || apenado.numero_processo || '',
+        court: apenado.court || apenado.vara || '',
+        penaltyType: apenado.penaltyType || apenado.tipoPena || '',
         status: 'ATIVO',
       },
     ]
@@ -81,15 +81,18 @@ function ModalEditar({ apenado, onSalvar, onCancelar }) {
   function validarProcessos() {
     return processos.map((p, i) => {
       const e = {}
-      if (!p.numeroProcesso.trim()) e.numeroProcesso = 'O número do processo é obrigatório'
+      const numProc = (p.processNumber || p.numeroProcesso || '').trim()
+      if (!numProc) e.processNumber = 'O número do processo é obrigatório'
       else {
-        const duplicado = processos.some(
-          (outro, j) => j !== i && outro.numeroProcesso.trim() === p.numeroProcesso.trim()
-        )
-        if (duplicado) e.numeroProcesso = 'Número de processo já vinculado a este apenado.'
+        const duplicado = processos.some((outro, j) => {
+          if (j === i) return false
+          const outroNum = (outro.processNumber || outro.numeroProcesso || '').trim()
+          return outroNum === numProc
+        })
+        if (duplicado) e.processNumber = 'Número de processo já vinculado a este apenado.'
       }
-      if (!p.vara) e.vara = 'A vara é obrigatória'
-      if (!p.tipoPena) e.tipoPena = 'O tipo de pena é obrigatório'
+      if (!p.court && !p.vara) e.court = 'A vara é obrigatória'
+      if (!p.penaltyType && !p.tipoPena) e.penaltyType = 'O tipo de pena é obrigatório'
       return e
     })
   }

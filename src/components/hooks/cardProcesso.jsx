@@ -47,10 +47,11 @@ function CardProcesso({ processo, index, onChange, onEncerrar, errors = {} }) {
           </svg>
           <div>
             <p className="text-foreground text-sm font-semibold">
-              {processo.numeroProcesso || `Processo ${index + 1}`}
+              {processo.processNumber || processo.numeroProcesso || `Processo ${index + 1}`}
             </p>
             <p className="text-muted-foreground text-xs">
-              {processo.vara || 'Vara não definida'} · {processo.tipoPena || 'Tipo não definido'}
+              {processo.court || processo.vara || 'Vara não definida'} ·{' '}
+              {processo.penaltyType || processo.tipoPena || 'Tipo não definido'}
             </p>
           </div>
         </div>
@@ -73,15 +74,17 @@ function CardProcesso({ processo, index, onChange, onEncerrar, errors = {} }) {
                 Número do processo <span className="text-red-500">*</span>
               </label>
               <input
-                name="numeroProcesso"
-                value={processo.numeroProcesso}
+                name="processNumber"
+                value={processo.processNumber || processo.numeroProcesso || ''}
                 onChange={handleChange}
                 disabled={isEncerrado}
                 placeholder="0000000-00.0000.0.00.0000"
-                className={`${inputClass('numeroProcesso')} ${isEncerrado ? 'cursor-not-allowed bg-slate-950' : ''}`}
+                className={`${inputClass('processNumber')} ${isEncerrado ? 'cursor-not-allowed bg-slate-950' : ''}`}
               />
-              {errors.numeroProcesso && (
-                <p className="mt-0.5 text-xs text-red-500">{errors.numeroProcesso}</p>
+              {(errors.processNumber || errors.numeroProcesso) && (
+                <p className="mt-0.5 text-xs text-red-500">
+                  {errors.processNumber || errors.numeroProcesso}
+                </p>
               )}
             </div>
             <div>
@@ -89,11 +92,11 @@ function CardProcesso({ processo, index, onChange, onEncerrar, errors = {} }) {
                 Vara vinculada <span className="text-red-500">*</span>
               </label>
               <select
-                name="vara"
-                value={processo.vara}
+                name="court"
+                value={processo.court || processo.vara || ''}
                 onChange={handleChange}
                 disabled={isEncerrado}
-                className={`${inputClass('vara')} ${isEncerrado ? 'cursor-not-allowed bg-slate-950' : ''}`}
+                className={`${inputClass('court')} ${isEncerrado ? 'cursor-not-allowed bg-slate-950' : ''}`}
               >
                 <option value="">Selecione</option>
                 {VARAS.map((v) => (
@@ -102,18 +105,20 @@ function CardProcesso({ processo, index, onChange, onEncerrar, errors = {} }) {
                   </option>
                 ))}
               </select>
-              {errors.vara && <p className="mt-0.5 text-xs text-red-500">{errors.vara}</p>}
+              {(errors.court || errors.vara) && (
+                <p className="mt-0.5 text-xs text-red-500">{errors.court || errors.vara}</p>
+              )}
             </div>
             <div>
               <label className="text-muted-foreground mb-1 block text-xs font-semibold">
                 Tipo de pena <span className="text-red-500">*</span>
               </label>
               <select
-                name="tipoPena"
-                value={processo.tipoPena}
+                name="penaltyType"
+                value={processo.penaltyType || processo.tipoPena || ''}
                 onChange={handleChange}
                 disabled={isEncerrado}
-                className={`${inputClass('tipoPena')} ${isEncerrado ? 'cursor-not-allowed bg-slate-950' : ''}`}
+                className={`${inputClass('penaltyType')} ${isEncerrado ? 'cursor-not-allowed bg-slate-950' : ''}`}
               >
                 <option value="">Selecione</option>
                 {TIPOS_PENA.map((t) => (
@@ -122,7 +127,11 @@ function CardProcesso({ processo, index, onChange, onEncerrar, errors = {} }) {
                   </option>
                 ))}
               </select>
-              {errors.tipoPena && <p className="mt-0.5 text-xs text-red-500">{errors.tipoPena}</p>}
+              {(errors.penaltyType || errors.tipoPena) && (
+                <p className="mt-0.5 text-xs text-red-500">
+                  {errors.penaltyType || errors.tipoPena}
+                </p>
+              )}
             </div>
           </div>
 

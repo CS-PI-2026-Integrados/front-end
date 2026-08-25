@@ -38,9 +38,9 @@ export function useGenerateReceipt() {
             const novaPresenca = {
               id: `${Date.now()}`,
               apenadoId: apenadoFinal?.id,
-              tenantId: apenadoFinal?.tenantId,
+              tenantId: apenadoFinal?.tenantId || apenadoFinal?.tenant_id,
               processoId: processo?.id,
-              apenadoName: apenadoFinal?.fullName,
+              apenadoName: apenadoFinal?.fullName || apenadoFinal?.nome,
               photoUrl: fotoAtendimento,
               cpf: apenadoFinal.cpf,
               dateTime: now,

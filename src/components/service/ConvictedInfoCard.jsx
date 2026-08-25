@@ -135,7 +135,7 @@ export function ConvictedInfoCard() {
               </p>
               <p>
                 <span className="text-muted-foreground">Situação:</span>{' '}
-                {processo.judicialStatus || processo.tipoPena}
+                {processo.judicialStatus || processo.penaltyType || processo.tipoPena}
               </p>
               {processo.institution && (
                 <p>
