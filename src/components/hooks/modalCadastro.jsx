@@ -1,7 +1,7 @@
 import { useSession } from '@/context/sessionContext'
 import { IMaskInput } from 'react-imask'
 import { Search, Upload, Users, X } from 'lucide-react'
-import { useApenadoForm, INSTITUICOES } from '@/hooks/useApenadoForm'
+import { useApenadoForm } from '@/hooks/useApenadoForm'
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,7 @@ function ModalCadastro({ apenado, onSalvar, onCancelar }) {
     preview,
     buscandoCep,
     processosDisponiveis,
+    procSelecionado,
     outrosApenadosNoProcesso,
     actions,
   } = useApenadoForm(apenado, comarcaId)
@@ -446,33 +447,32 @@ function ModalCadastro({ apenado, onSalvar, onCancelar }) {
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Label
-                  htmlFor="modal-instituicao"
-                  className="text-muted-foreground mb-1 text-xs font-semibold"
-                >
-                  Instituição/Unidade <span className="text-destructive">*</span>
-                </Label>
-                <select
-                  id="modal-instituicao"
-                  name="instituicao"
-                  value={form.instituicao}
-                  onChange={handleChange}
-                  className={inputClass('instituicao')}
-                >
-                  <option value="">Selecione a instituição</option>
-                  {INSTITUICOES.map((inst) => (
-                    <option key={inst} value={inst}>
-                      {inst}
-                    </option>
-                  ))}
-                </select>
-                {errors.instituicao && (
-                  <p className="text-destructive mt-0.5 text-xs">{errors.instituicao}</p>
+            {form.processoId && procSelecionado && (
+              <div className="border-border/60 bg-muted/40 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border px-3 py-2.5 text-xs">
+                <div>
+                  <span className="text-muted-foreground">Instituição/Unidade: </span>
+                  <span className="text-foreground font-semibold">
+                    {procSelecionado.institution || 'Não informada'}
+                  </span>
+                </div>
+                {(procSelecionado.court || procSelecionado.vara) && (
+                  <div>
+                    <span className="text-muted-foreground">Vara: </span>
+                    <span className="text-foreground font-semibold">
+                      {procSelecionado.court || procSelecionado.vara}
+                    </span>
+                  </div>
+                )}
+                {procSelecionado.penaltyType && (
+                  <div>
+                    <span className="text-muted-foreground">Pena: </span>
+                    <span className="text-foreground font-semibold">
+                      {procSelecionado.penaltyType}
+                    </span>
+                  </div>
                 )}
               </div>
-            </div>
+            )}
           </div>
 
           <Separator className="my-5" />

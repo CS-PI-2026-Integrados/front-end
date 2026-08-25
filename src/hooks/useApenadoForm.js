@@ -8,14 +8,6 @@ import {
 } from '@/utils/apenadosUtils'
 import { mockProcessos } from '@/mocks/processos.mock'
 
-export const INSTITUICOES = [
-  'Unidade Central',
-  'Unidade Norte',
-  'Unidade Leste',
-  'Unidade Oeste',
-  'Fórum Central',
-]
-
 const INITIAL_FORM = {
   nome: '',
   cpf: '',
@@ -61,6 +53,10 @@ export function useApenadoForm(apenado, comarcaId) {
       if (proc) initialProcessoId = String(proc.id)
     }
 
+    const initialProc = (mockProcessos.processos || []).find(
+      (p) => String(p.id) === String(initialProcessoId)
+    )
+
     return {
       nome: apenado.nome || apenado.fullName || '',
       cpf: apenado.cpf || '',
@@ -75,7 +71,11 @@ export function useApenadoForm(apenado, comarcaId) {
       cidade: apenado.cidade || parsed.cidade || '',
       uf: apenado.uf || parsed.uf || '',
       processoId: initialProcessoId,
-      instituicao: apenado.instituicao || apenado.processos?.[0]?.institution || '',
+      instituicao:
+        initialProc?.institution ||
+        apenado.instituicao ||
+        apenado.processos?.[0]?.institution ||
+        '',
       sitTrabalhista:
         apenado.sit_trabalhista ||
         (apenado.workingStatus === 'working_formal'
@@ -96,22 +96,27 @@ export function useApenadoForm(apenado, comarcaId) {
   const [preview, setPreview] = useState(apenado?.foto || apenado?.referencePhotoUrl || null)
   const [buscandoCep, setBuscandoCep] = useState(false)
 
+  const procSelecionado = useMemo(() => {
+    if (!form.processoId) return null
+    return processosDisponiveis.find((p) => String(p.id) === String(form.processoId)) || null
+  }, [form.processoId, processosDisponiveis])
+
   const outrosApenadosNoProcesso = useMemo(() => {
-    if (!form.processoId) return []
-    const proc = processosDisponiveis.find((p) => String(p.id) === String(form.processoId))
-    if (!proc) return []
+    if (!procSelecionado) return []
 
     const apenadosCadastrados = getStoredApenados()
     const apenadoIdAtual = apenado?.id ? String(apenado.id) : null
 
-    const outrosIds = (proc.apenadoIds || []).filter((id) => String(id) !== apenadoIdAtual)
+    const outrosIds = (procSelecionado.apenadoIds || []).filter(
+      (id) => String(id) !== apenadoIdAtual
+    )
     return outrosIds
       .map((id) => {
         const found = apenadosCadastrados.find((a) => String(a.id) === String(id))
         return found ? found.nome || found.fullName : null
       })
       .filter(Boolean)
-  }, [form.processoId, processosDisponiveis, apenado])
+  }, [procSelecionado, apenado])
 
   function handleChange(e) {
     const { name, value } = e.target
@@ -121,7 +126,7 @@ export function useApenadoForm(apenado, comarcaId) {
       setForm((prev) => ({
         ...prev,
         processoId: value,
-        instituicao: prev.instituicao || proc?.institution || '',
+        instituicao: proc?.institution || '',
       }))
       setErrors((prev) => ({ ...prev, processoId: '' }))
       return
@@ -211,7 +216,6 @@ export function useApenadoForm(apenado, comarcaId) {
     if (!form.uf.trim()) erros.uf = 'A UF é obrigatória'
     if (!form.processoId) erros.processoId = 'O número do processo é obrigatório'
     if (!form.sitTrabalhista) erros.sitTrabalhista = 'A situação trabalhista é obrigatória'
-    if (!form.instituicao) erros.instituicao = 'A instituição/unidade é obrigatória'
 
     return erros
   }
@@ -225,9 +229,6 @@ export function useApenadoForm(apenado, comarcaId) {
     }
 
     const apenadoId = isEditing ? apenado.id : generateUUID()
-    const procSelecionado = processosDisponiveis.find(
-      (p) => String(p.id) === String(form.processoId)
-    )
 
     if (procSelecionado) {
       if (!procSelecionado.apenadoIds) procSelecionado.apenadoIds = []
@@ -263,7 +264,7 @@ export function useApenadoForm(apenado, comarcaId) {
       uf: form.uf,
       endereco: montarEnderecoStr(form),
       address: montarEnderecoStr(form),
-      instituicao: form.instituicao,
+      instituicao: procSelecionado?.institution || form.instituicao || '',
       sit_trabalhista: form.sitTrabalhista,
       workingStatus: workingStatus,
       status: 'Ativo',
@@ -290,6 +291,7 @@ export function useApenadoForm(apenado, comarcaId) {
     preview,
     buscandoCep,
     processosDisponiveis,
+    procSelecionado,
     outrosApenadosNoProcesso,
     actions: {
       handleChange,
