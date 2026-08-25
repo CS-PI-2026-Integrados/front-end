@@ -1,5 +1,6 @@
 import { mockApenados } from '@/mocks/apenados.mock.js'
 import { mockProcessos } from '@/mocks/processos.mock.js'
+import { mockEnderecos } from '@/mocks/enderecos.mock.js'
 
 export const STORAGE_KEY = 'apenados_data_v6'
 
@@ -18,6 +19,16 @@ function getProcessosPorApenadoMap() {
       }
       acc[id].push(processo)
     })
+    return acc
+  }, {})
+}
+
+function getEnderecosPorApenadoMap() {
+  const lista = mockEnderecos?.enderecos || []
+  return lista.reduce((acc, end) => {
+    if (end.apenadoId) {
+      acc[String(end.apenadoId)] = end
+    }
     return acc
   }, {})
 }
@@ -47,6 +58,37 @@ export function normalizeApenado(a) {
       ? ''
       : a.instituicao || ''
 
+  const enderecosPorApenado = getEnderecosPorApenadoMap()
+  const endFromMock = enderecosPorApenado[String(a.id)]
+
+  const cep = a.cep || endFromMock?.cep || ''
+  const logradouro = a.logradouro || endFromMock?.logradouro || ''
+  const numero = a.numero || endFromMock?.numero || ''
+  const complemento = a.complemento || endFromMock?.complemento || ''
+  const bairro = a.bairro || endFromMock?.bairro || ''
+  const cidade = a.cidade || endFromMock?.cidade || ''
+  const uf = a.uf || endFromMock?.uf || ''
+
+  const parsed = !logradouro && a.endereco ? parsearEndereco(a.endereco) : {}
+
+  const finalLogradouro = logradouro || parsed.logradouro || ''
+  const finalNumero = numero || parsed.numero || ''
+  const finalComplemento = complemento || parsed.complemento || ''
+  const finalBairro = bairro || parsed.bairro || ''
+  const finalCidade = cidade || parsed.cidade || ''
+  const finalUf = uf || parsed.uf || ''
+
+  const formEndereco = {
+    logradouro: finalLogradouro,
+    numero: finalNumero,
+    complemento: finalComplemento,
+    bairro: finalBairro,
+    cidade: finalCidade,
+    uf: finalUf,
+  }
+
+  const enderecoFormatado = a.endereco || a.address || montarEnderecoStr(formEndereco)
+
   return {
     id: a.id != null ? String(a.id) : crypto.randomUUID(),
     tenant_id: a.tenant_id || a.tenantId || null,
@@ -54,14 +96,15 @@ export function normalizeApenado(a) {
     cpf: a.cpf || '',
     data_nascimento: a.data_nascimento || a.dateOfBirth || '',
     telefone: a.telefone || a.phone || '',
-    endereco: a.endereco || a.address || '',
-    cep: a.cep || '',
-    logradouro: a.logradouro || '',
-    numero: a.numero || '',
-    complemento: a.complemento || '',
-    bairro: a.bairro || '',
-    cidade: a.cidade || '',
-    uf: a.uf || '',
+    endereco: enderecoFormatado,
+    address: enderecoFormatado,
+    cep: cep,
+    logradouro: finalLogradouro,
+    numero: finalNumero,
+    complemento: finalComplemento,
+    bairro: finalBairro,
+    cidade: finalCidade,
+    uf: finalUf,
     sit_trabalhista:
       a.sit_trabalhista ||
       (a.workingStatus === 'working_formal'
@@ -176,4 +219,43 @@ export function montarEnderecoStr(form) {
   const rest = [form.bairro, form.cidade].filter(Boolean).join(', ')
   const full = [parts, rest].filter(Boolean).join(' - ')
   return form.uf ? `${full} - ${form.uf}` : full
+}
+
+export function compressImage(file, maxWidth = 300, maxHeight = 300, quality = 0.75) {
+  return new Promise((resolve) => {
+    if (!file || !(file instanceof Blob)) {
+      return resolve(null)
+    }
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width)
+            width = maxWidth
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height)
+            height = maxHeight
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.onerror = () => resolve(event.target.result)
+      img.src = event.target.result
+    }
+    reader.onerror = () => resolve(null)
+    reader.readAsDataURL(file)
+  })
 }
