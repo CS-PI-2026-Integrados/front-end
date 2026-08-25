@@ -1,6 +1,16 @@
 import { useState, useMemo } from 'react'
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  List,
+  FileText,
+  Image,
+  Download,
+} from 'lucide-react'
 import { presencasStore } from '@/mocks/presenca.mock.js'
+import { mockProcessos } from '@/mocks/processos.mock.js'
 import { useSession } from '@/context/sessionContext'
 
 const ABAS = [
@@ -25,9 +35,30 @@ const MESES_EXTENSO = [
   'Dezembro',
 ]
 
+const VIEW_STORAGE_KEY = 'documentos_view_mode'
+
+function getNumeroProcesso(doc) {
+  if (doc.processNumber) return doc.processNumber
+  const processo = mockProcessos.processos.find(
+    (p) => String(p.apenadoId) === String(doc.apenadoId)
+  )
+  return processo?.processNumber || '—'
+}
+
+function formatarDataHora(iso) {
+  return new Date(iso).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 const Documents = () => {
   const { session } = useSession()
   const tenantId = session?.tenant?.id
+  const userId = session?.user?.id || 'default'
 
   const [abaAtiva, setAbaAtiva] = useState('atendimentos')
 
@@ -65,6 +96,23 @@ const Documents = () => {
   const [mesSelecionadoManual, setMesSelecionadoManual] = useState(null)
   const mesSelecionado =
     mesSelecionadoManual !== null ? mesSelecionadoManual : mesMaisRecenteComRegistro
+
+  const [viewMode, setViewMode] = useState(() => {
+    const salvo = localStorage.getItem(`${VIEW_STORAGE_KEY}_${userId}`)
+    return salvo || 'grid'
+  })
+
+  function handleViewMode(modo) {
+    setViewMode(modo)
+    localStorage.setItem(`${VIEW_STORAGE_KEY}_${userId}`, modo)
+  }
+
+  const documentosDoMes = useMemo(() => {
+    return comprovantes.filter((c) => {
+      const data = new Date(c.dateTime)
+      return data.getFullYear() === anoSelecionado && data.getMonth() === mesSelecionado
+    })
+  }, [comprovantes, anoSelecionado, mesSelecionado])
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -171,12 +219,139 @@ const Documents = () => {
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <p className="font-semibold text-gray-900">
-              {MESES_EXTENSO[mesSelecionado]} {anoSelecionado}
-            </p>
-            <p className="mt-0.5 text-xs text-gray-400">
-              {contagemPorMes[mesSelecionado]} documento(s) encontrado(s)
-            </p>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-gray-900">
+                  {MESES_EXTENSO[mesSelecionado]} {anoSelecionado}
+                </p>
+                <p className="mt-0.5 text-xs text-gray-400">
+                  {documentosDoMes.length} documento(s) encontrado(s)
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-1">
+                <button
+                  onClick={() => handleViewMode('grid')}
+                  className={`rounded-md p-1.5 transition-colors ${
+                    viewMode === 'grid'
+                      ? 'bg-green-700 text-white'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  }`}
+                  title="Grade"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleViewMode('lista')}
+                  className={`rounded-md p-1.5 transition-colors ${
+                    viewMode === 'lista'
+                      ? 'bg-green-700 text-white'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  }`}
+                  title="Lista"
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {documentosDoMes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                <FileText className="h-10 w-10 text-gray-300" />
+                <p className="mt-3 text-sm font-medium text-gray-500">
+                  Nenhum documento neste período
+                </p>
+              </div>
+            ) : viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {documentosDoMes.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="rounded-xl border border-gray-200 p-4 transition-shadow hover:shadow-sm"
+                  >
+                    <div className="mb-3 flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-50">
+                        <FileText className="h-5 w-5 text-green-700" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-gray-900">{doc.apenadoName}</p>
+                        <p className="text-xs text-gray-400">{getNumeroProcesso(doc)}</p>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                          {formatarDataHora(doc.dateTime)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50">
+                        <Image className="h-3.5 w-3.5" />
+                        Foto
+                      </button>
+                      <button className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50">
+                        <Download className="h-3.5 w-3.5" />
+                        PDF
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">
+                        Nome
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">
+                        Processo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">
+                        Data/Hora
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">
+                        Operador
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documentosDoMes.map((doc) => (
+                      <tr
+                        key={doc.id}
+                        className="border-b border-gray-50 transition-colors hover:bg-gray-50"
+                      >
+                        <td className="px-4 py-3 font-medium text-gray-900">{doc.apenadoName}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-gray-600">
+                          {getNumeroProcesso(doc)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-gray-600">
+                          {formatarDataHora(doc.dateTime)}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">{doc.operatorName || '—'}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-1">
+                            <button
+                              className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100"
+                              title="Foto"
+                            >
+                              <Image className="h-4 w-4" />
+                            </button>
+                            <button
+                              className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100"
+                              title="PDF"
+                            >
+                              <Download className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </>
       )}
