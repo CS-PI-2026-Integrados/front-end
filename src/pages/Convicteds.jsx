@@ -10,6 +10,8 @@ import { FiltersPanel } from '@/components/data-display/FiltersPanel'
 import { PageHeader } from '@/components/data-display/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { cn } from '@/lib/utils'
 
 function maskCPF(cpf) {
   return (cpf || '').replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**')
@@ -18,15 +20,18 @@ function maskCPF(cpf) {
 function SitTrabalhista({ sit }) {
   const variants = {
     'Trabalho Registrado':
-      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700',
+      'bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:ring-emerald-800',
     'Trabalho Informal':
-      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700',
+      'bg-blue-100 text-blue-700 ring-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:ring-blue-800',
     'Nao Trabalha':
-      'bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-muted-foreground dark:ring-slate-700',
+      'bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700',
   }
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold ring-1 ${variants[sit] || variants['Nao Trabalha']}`}
+      className={cn(
+        'inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold whitespace-nowrap ring-1',
+        variants[sit] || 'bg-muted text-muted-foreground ring-border dark:bg-muted/50'
+      )}
     >
       {sit}
     </span>
@@ -190,7 +195,7 @@ const Convicteds = () => {
           <table className="w-full min-w-[700px] text-sm">
             <thead>
               <tr className="bg-secondary border-y">
-                <th className="text-foreground w-14 px-4 py-3 text-left text-xs font-semibold">
+                <th className="text-foreground w-16 px-4 py-3 text-left text-xs font-semibold">
                   Foto
                 </th>
                 <th className="text-foreground min-w-36 px-4 py-3 text-left text-xs font-semibold">
@@ -205,7 +210,7 @@ const Convicteds = () => {
                 <th className="text-foreground min-w-44 px-4 py-3 text-left text-xs font-semibold">
                   Endereço
                 </th>
-                <th className="text-foreground w-36 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                <th className="text-foreground w-44 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
                   Sit. Trabalhista
                 </th>
                 <th className="text-foreground w-28 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
@@ -216,12 +221,16 @@ const Convicteds = () => {
             <tbody>
               {paginated.map((a) => (
                 <tr key={a.id} className="hover:bg-muted/50 border-b transition-colors">
-                  <td className="w-14 px-4 py-3.5">
-                    <img
-                      src={a.foto || `https://i.pravatar.cc/40?u=${a.id}`}
-                      alt={a.nome}
-                      className="h-9 w-9 rounded-full object-cover"
-                    />
+                  <td className="w-16 px-4 py-3">
+                    <Avatar className="size-9 shrink-0">
+                      <AvatarImage
+                        src={a.foto || `https://i.pravatar.cc/150?u=${a.id}`}
+                        alt={a.nome}
+                      />
+                      <AvatarFallback className="text-xs font-semibold">
+                        {(a.nome || 'A').charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                   </td>
                   <td className="min-w-36 px-4 py-3.5">
                     <p className="text-foreground font-semibold">{a.nome}</p>
@@ -255,7 +264,7 @@ const Convicteds = () => {
                   >
                     {a.endereco}
                   </td>
-                  <td className="w-36 px-4 py-3.5">
+                  <td className="w-44 px-4 py-3.5 whitespace-nowrap">
                     <SitTrabalhista sit={a.sit_trabalhista} />
                   </td>
                   <td className="w-28 px-4 py-3.5">
@@ -306,11 +315,15 @@ function ApenadoMobileCard({ apenado, processCount, onEdit, onInactivate, onView
   return (
     <article className="border-border bg-card space-y-4 rounded-xl border p-4 shadow-sm">
       <div className="flex items-start gap-3">
-        <img
-          src={apenado.foto || `https://i.pravatar.cc/40?u=${apenado.id}`}
-          alt={apenado.nome}
-          className="h-10 w-10 shrink-0 rounded-full object-cover"
-        />
+        <Avatar className="size-10 shrink-0">
+          <AvatarImage
+            src={apenado.foto || `https://i.pravatar.cc/150?u=${apenado.id}`}
+            alt={apenado.nome}
+          />
+          <AvatarFallback className="text-sm font-semibold">
+            {(apenado.nome || 'A').charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
         <div className="min-w-0">
           <h3 className="text-foreground truncate font-semibold">{apenado.nome}</h3>
           <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(apenado.cpf)}</p>
