@@ -5,8 +5,10 @@ import {
   generateUUID,
   montarEnderecoStr,
   getStoredApenados,
+  compressImage,
 } from '@/utils/apenadosUtils'
 import { mockProcessos } from '@/mocks/processos.mock'
+import { getEnderecoByCep } from '@/mocks/enderecos.mock'
 
 const INITIAL_FORM = {
   nome: '',
@@ -141,7 +143,7 @@ export function useApenadoForm(apenado, comarcaId) {
     setErrors((prev) => ({ ...prev, [name]: '' }))
   }
 
-  function handleFoto(e) {
+  async function handleFoto(e) {
     const file = e.target.files[0]
     if (!file) return
 
@@ -159,9 +161,15 @@ export function useApenadoForm(apenado, comarcaId) {
 
     setForm((prev) => ({ ...prev, foto: file }))
     setErrors((prev) => ({ ...prev, foto: '' }))
-    const reader = new FileReader()
-    reader.onload = (ev) => setPreview(ev.target.result)
-    reader.readAsDataURL(file)
+
+    try {
+      const compressedDataUrl = await compressImage(file, 300, 300, 0.75)
+      setPreview(compressedDataUrl || null)
+    } catch {
+      const reader = new FileReader()
+      reader.onload = (ev) => setPreview(ev.target.result)
+      reader.readAsDataURL(file)
+    }
   }
 
   function removerFoto() {
@@ -182,7 +190,19 @@ export function useApenadoForm(apenado, comarcaId) {
       const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
       const data = await resp.json()
       if (data.erro) {
-        setErrors((prev) => ({ ...prev, cep: 'CEP não encontrado.' }))
+        const mockData = getEnderecoByCep(cepLimpo)
+        if (mockData) {
+          setForm((prev) => ({
+            ...prev,
+            logradouro: mockData.logradouro || prev.logradouro,
+            bairro: mockData.bairro || prev.bairro,
+            cidade: mockData.cidade || prev.cidade,
+            uf: mockData.uf || prev.uf,
+          }))
+          setErrors((prev) => ({ ...prev, cep: '' }))
+        } else {
+          setErrors((prev) => ({ ...prev, cep: 'CEP não encontrado.' }))
+        }
       } else {
         setForm((prev) => ({
           ...prev,
@@ -194,7 +214,19 @@ export function useApenadoForm(apenado, comarcaId) {
         setErrors((prev) => ({ ...prev, cep: '' }))
       }
     } catch {
-      setErrors((prev) => ({ ...prev, cep: 'Erro ao buscar CEP. Preencha manualmente.' }))
+      const mockData = getEnderecoByCep(cepLimpo)
+      if (mockData) {
+        setForm((prev) => ({
+          ...prev,
+          logradouro: mockData.logradouro || prev.logradouro,
+          bairro: mockData.bairro || prev.bairro,
+          cidade: mockData.cidade || prev.cidade,
+          uf: mockData.uf || prev.uf,
+        }))
+        setErrors((prev) => ({ ...prev, cep: '' }))
+      } else {
+        setErrors((prev) => ({ ...prev, cep: 'Erro ao buscar CEP. Preencha manualmente.' }))
+      }
     } finally {
       setBuscandoCep(false)
     }

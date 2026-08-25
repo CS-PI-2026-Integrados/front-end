@@ -15,7 +15,14 @@ export function useConvicteds(comarcaId) {
   const [apenadoDocumentos, setApenadoDocumentos] = useState(null)
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(apenados))
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(apenados))
+    } catch (err) {
+      console.warn(
+        'Não foi possível salvar apenados no localStorage (cota excedida ou desabilitado):',
+        err
+      )
+    }
   }, [apenados])
 
   const filtered = useMemo(() => {
