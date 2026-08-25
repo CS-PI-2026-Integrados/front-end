@@ -21,19 +21,38 @@ export function useConvicteds(comarcaId) {
   const filtered = useMemo(() => {
     if (!comarcaId) return []
     const term = search.toLowerCase().trim()
+    if (!term) {
+      return apenados.filter((item) => item.tenant_id === comarcaId || item.tenantId === comarcaId)
+    }
+
+    const cleanTerm = term.replace(/\D/g, '')
 
     return apenados
-      .filter((item) => item.tenant_id === comarcaId)
+      .filter((item) => item.tenant_id === comarcaId || item.tenantId === comarcaId)
       .filter((a) => {
-        if (!term) return true
-
-        const matchNome = (a.nome || '').toLowerCase().includes(term)
+        const matchNome = (a.nome || a.fullName || '').toLowerCase().includes(term)
 
         const cleanCPF = (a.cpf || '').replace(/\D/g, '')
-        const cleanTerm = term.replace(/\D/g, '')
-        const matchCPF = cleanTerm !== '' && cleanCPF.includes(cleanTerm)
+        const matchCPF =
+          (a.cpf || '').toLowerCase().includes(term) ||
+          (cleanTerm.length >= 2 && cleanCPF.includes(cleanTerm))
 
-        const matchProcesso = (a.numero_processo || '').toLowerCase().includes(term)
+        const procs = [
+          a.numero_processo,
+          a.processNumber,
+          a.numeroProcesso,
+          ...(a.processos || []).map((p) => p.processNumber || p.numeroProcesso),
+        ].filter(Boolean)
+
+        const matchProcesso = procs.some((proc) => {
+          const lowerProc = String(proc).toLowerCase()
+          if (lowerProc.includes(term)) return true
+          if (cleanTerm.length >= 2) {
+            const cleanProc = String(proc).replace(/\D/g, '')
+            if (cleanProc.includes(cleanTerm)) return true
+          }
+          return false
+        })
 
         return matchNome || matchCPF || matchProcesso
       })
