@@ -1,9 +1,7 @@
 import { useSession } from '@/context/sessionContext'
 import { IMaskInput } from 'react-imask'
-import { Search, Upload, X } from 'lucide-react'
-import CardProcesso from './cardProcesso'
-import ModalAvisoEncerrar from './modalAvisoEncerrar'
-import { useApenadoForm } from '@/hooks/useApenadoForm'
+import { Search, Upload, Users, X } from 'lucide-react'
+import { useApenadoForm, INSTITUICOES } from '@/hooks/useApenadoForm'
 import {
   Dialog,
   DialogContent,
@@ -27,28 +25,15 @@ function ModalCadastro({ apenado, onSalvar, onCancelar }) {
     isEditing,
     fileRef,
     form,
-    processos,
     errors,
-    processosErrors,
     preview,
-    indexParaEncerrar,
     buscandoCep,
+    processosDisponiveis,
+    outrosApenadosNoProcesso,
     actions,
   } = useApenadoForm(apenado, comarcaId)
 
-  const {
-    handleChange,
-    handleMask,
-    handleFoto,
-    removerFoto,
-    buscarCep,
-    handleProcessoChange,
-    handleAdicionarProcesso,
-    handlePedirEncerramento,
-    handleConfirmarEncerramento,
-    setIndexParaEncerrar,
-    tentarSalvar,
-  } = actions
+  const { handleChange, handleMask, handleFoto, removerFoto, buscarCep, tentarSalvar } = actions
 
   const inputClass = (field) =>
     `w-full rounded-md border px-2.5 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none bg-transparent placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 ${
@@ -64,12 +49,6 @@ function ModalCadastro({ apenado, onSalvar, onCancelar }) {
         if (!open) onCancelar()
       }}
     >
-      <ModalAvisoEncerrar
-        aberto={indexParaEncerrar !== null}
-        onConfirmar={handleConfirmarEncerramento}
-        onCancelar={() => setIndexParaEncerrar(null)}
-      />
-
       <DialogContent
         showCloseButton={false}
         className="flex max-h-[90vh] w-full max-w-2xl flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-2xl"
@@ -392,87 +371,107 @@ function ModalCadastro({ apenado, onSalvar, onCancelar }) {
 
           <Separator className="my-5" />
 
-          <div className="border-border mb-5 rounded-lg border p-4">
-            <p className="text-foreground mb-4 text-xs font-semibold tracking-widest uppercase">
-              Processos Vinculados
+          <div className="border-border mb-5 space-y-4 rounded-lg border p-4">
+            <p className="text-foreground text-xs font-semibold tracking-widest uppercase">
+              Dados Processuais e Laborais
             </p>
-            <div className="flex flex-col gap-3">
-              {processos.map((processo, index) => (
-                <CardProcesso
-                  key={processo.id}
-                  processo={processo}
-                  index={index}
-                  onChange={handleProcessoChange}
-                  onEncerrar={handlePedirEncerramento}
-                  errors={processosErrors[index] || {}}
-                />
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAdicionarProcesso}
-                className="w-full border-dashed"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <Label
+                  htmlFor="modal-processoId"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Adicionar processo
-              </Button>
-            </div>
-          </div>
+                  Número do Processo <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="modal-processoId"
+                  name="processoId"
+                  value={form.processoId}
+                  onChange={handleChange}
+                  className={inputClass('processoId')}
+                >
+                  <option value="">Selecione o processo</option>
+                  {processosDisponiveis.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.processNumber} {p.court || p.vara ? `(${p.court || p.vara})` : ''}
+                    </option>
+                  ))}
+                </select>
+                {errors.processoId && (
+                  <p className="text-destructive mt-0.5 text-xs">{errors.processoId}</p>
+                )}
+              </div>
 
-          <Separator className="my-5" />
-
-          <p className="text-muted-foreground mb-4 text-xs font-semibold tracking-widest uppercase">
-            Situação Laboral
-          </p>
-          <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <Label
-                htmlFor="modal-instituicao"
-                className="text-muted-foreground mb-1 text-xs font-semibold"
-              >
-                Instituição / Unidade
-              </Label>
-              <Input
-                id="modal-instituicao"
-                name="instituicao"
-                value={form.instituicao}
-                onChange={handleChange}
-                placeholder="Nome da instituição"
-                className={inputClass('instituicao')}
-              />
+              <div>
+                <Label
+                  htmlFor="modal-sit"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Situação Trabalhista <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="modal-sit"
+                  name="sitTrabalhista"
+                  value={form.sitTrabalhista}
+                  onChange={handleChange}
+                  className={inputClass('sitTrabalhista')}
+                >
+                  <option value="">Selecione</option>
+                  {SITUACOES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                {errors.sitTrabalhista && (
+                  <p className="text-destructive mt-0.5 text-xs">{errors.sitTrabalhista}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <Label
-                htmlFor="modal-sit"
-                className="text-muted-foreground mb-1 text-xs font-semibold"
-              >
-                Situação Trabalhista <span className="text-destructive">*</span>
-              </Label>
-              <select
-                id="modal-sit"
-                name="sitTrabalhista"
-                value={form.sitTrabalhista}
-                onChange={handleChange}
-                className={inputClass('sitTrabalhista')}
-              >
-                <option value="">Selecione</option>
-                {SITUACOES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              {errors.sitTrabalhista && (
-                <p className="text-destructive mt-0.5 text-xs">{errors.sitTrabalhista}</p>
-              )}
+
+            {outrosApenadosNoProcesso.length > 0 && (
+              <div className="border-border bg-card flex items-start gap-3 rounded-lg border p-3.5 text-sm shadow-xs">
+                <Users className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+                <div className="text-muted-foreground text-xs leading-relaxed">
+                  <span>
+                    Este processo já possui {outrosApenadosNoProcesso.length} apenado(s)
+                    vinculado(s):
+                  </span>
+                  <p className="text-foreground my-0.5 font-semibold">
+                    {outrosApenadosNoProcesso.join(', ')}
+                  </p>
+                  <span>. O cadastro será registrado como corréu no mesmo processo.</span>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Label
+                  htmlFor="modal-instituicao"
+                  className="text-muted-foreground mb-1 text-xs font-semibold"
+                >
+                  Instituição/Unidade <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="modal-instituicao"
+                  name="instituicao"
+                  value={form.instituicao}
+                  onChange={handleChange}
+                  className={inputClass('instituicao')}
+                >
+                  <option value="">Selecione a instituição</option>
+                  {INSTITUICOES.map((inst) => (
+                    <option key={inst} value={inst}>
+                      {inst}
+                    </option>
+                  ))}
+                </select>
+                {errors.instituicao && (
+                  <p className="text-destructive mt-0.5 text-xs">{errors.instituicao}</p>
+                )}
+              </div>
             </div>
           </div>
 
