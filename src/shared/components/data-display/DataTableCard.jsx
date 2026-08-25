@@ -14,7 +14,7 @@ export function DataTableCard({
   title,
 }) {
   return (
-    <Card className={cn('gap-0 py-0 shadow-sm', className)}>
+    <Card className={cn('gap-0 py-0', className)}>
       <CardHeader className="flex flex-row items-center justify-between gap-3 px-4 py-4 sm:px-6">
         <div>
           <h2 className="text-sm font-semibold">{title}</h2>
