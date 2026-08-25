@@ -2,6 +2,14 @@ import { formatDateTime, maskCpf, maskEmail } from '@/features/users/utils/userF
 import { cn } from '@/shared/lib/utils'
 import { UserRoleBadge } from '@/features/users/components/users/UserRoleBadge'
 import { UserStatusBadge } from '@/features/users/components/users/UserStatusBadge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/components/ui/table'
 
 const columns = ['Nome Completo', 'CPF', 'E-mail', 'Nível de Acesso', 'Status', 'Último Acesso']
 
@@ -16,23 +24,23 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-205 text-sm">
-        <thead>
-          <tr className="bg-secondary border-y">
+      <Table className="min-w-205 text-sm">
+        <TableHeader>
+          <TableRow className="bg-secondary border-y">
             {columns.map((column) => (
-              <th key={column} className="px-4 py-3 text-left text-xs font-semibold">
+              <TableHead key={column} className="px-4 py-3 text-left text-xs font-semibold">
                 {column}
-              </th>
+              </TableHead>
             ))}
-          </tr>
-        </thead>
-        <tbody>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {users.map((user) => {
             const isInactive = !user.isActive
             const isSelected = selectedUserId === user.id
 
             return (
-              <tr
+              <TableRow
                 key={user.id}
                 className={cn(
                   'hover:bg-muted/50 cursor-pointer border-b transition-colors',
@@ -41,27 +49,29 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
                 )}
                 onClick={() => onSelectUser(user.id)}
               >
-                <td className="px-4 py-3">
+                <TableCell className="px-4 py-3">
                   <div className="text-foreground font-semibold">{user.name}</div>
-                </td>
-                <td className="text-muted-foreground px-4 py-3 font-medium">{maskCpf(user.cpf)}</td>
-                <td className="text-muted-foreground px-4 py-3 font-medium">
+                </TableCell>
+                <TableCell className="text-muted-foreground px-4 py-3 font-medium">
+                  {maskCpf(user.cpf)}
+                </TableCell>
+                <TableCell className="text-muted-foreground px-4 py-3 font-medium">
                   {maskEmail(user.email)}
-                </td>
-                <td className="px-4 py-3">
+                </TableCell>
+                <TableCell className="px-4 py-3">
                   <UserRoleBadge role={user.role} />
-                </td>
-                <td className="px-4 py-3">
+                </TableCell>
+                <TableCell className="px-4 py-3">
                   <UserStatusBadge isActive={user.isActive} />
-                </td>
-                <td className="text-muted-foreground px-4 py-3">
+                </TableCell>
+                <TableCell className="text-muted-foreground px-4 py-3">
                   {formatDateTime(user.lastAccessAt)}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }
