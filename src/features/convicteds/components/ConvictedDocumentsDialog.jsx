@@ -1,16 +1,25 @@
 import { useMemo, useState } from 'react'
 
 import { listarComprovantes } from '@/features/attendance'
-import { downloadReceiptPDF } from '@/features/attendance/services/pdfService.js'
+import { useReceiptPdfActions } from '@/features/attendance'
 import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/components/ui/table'
 
 function formatarDataHora(data) {
   return new Date(data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 }
 
 export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
+  const { download } = useReceiptPdfActions()
   const [aba, setAba] = useState('comprovantes')
   const comprovantes = useMemo(
     () =>
@@ -40,27 +49,33 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
               </p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left">
-                      <th className="p-2">Data/hora</th>
-                      <th className="p-2">Código</th>
-                      <th className="p-2">Operador</th>
-                      <th className="p-2">Ação</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table className="text-sm">
+                  <TableHeader>
+                    <TableRow className="border-b text-left">
+                      <TableHead className="p-2">Data/hora</TableHead>
+                      <TableHead className="p-2">Código</TableHead>
+                      <TableHead className="p-2">Operador</TableHead>
+                      <TableHead className="p-2">Ação</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {comprovantes.map((comprovante) => (
-                      <tr key={comprovante.id} className="border-b">
-                        <td className="p-2">{formatarDataHora(comprovante.emitidoEm)}</td>
-                        <td className="p-2 font-mono text-xs">{comprovante.codigoVerificacao}</td>
-                        <td className="p-2">{comprovante.nomeOperador || 'Admin User'}</td>
-                        <td className="p-2">
+                      <TableRow key={comprovante.id} className="border-b">
+                        <TableCell className="p-2">
+                          {formatarDataHora(comprovante.emitidoEm)}
+                        </TableCell>
+                        <TableCell className="p-2 font-mono text-xs">
+                          {comprovante.codigoVerificacao}
+                        </TableCell>
+                        <TableCell className="p-2">
+                          {comprovante.nomeOperador || 'Admin User'}
+                        </TableCell>
+                        <TableCell className="p-2">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() =>
-                              downloadReceiptPDF({
+                              download({
                                 apenado,
                                 processo: apenado.processos.find(
                                   (processo) => processo.id === comprovante.processoId
@@ -71,11 +86,11 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
                           >
                             Baixar
                           </Button>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             )}
           </TabsContent>

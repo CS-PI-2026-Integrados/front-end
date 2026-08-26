@@ -67,7 +67,7 @@ export function ProofData({ ultimosMesesGrafico = [], contagemMeses = [] }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div style={{ width: '100%', minWidth: 0, minHeight: 0 }} className="mt-4 h-[300px]">
+        <div style={{ width: '100%', minWidth: 0, minHeight: 0 }} className="mt-4 h-75">
           <ResponsiveContainer width="100%" height={300} minWidth={0} minHeight={0}>
             <BarChart data={dadosGrafico}>
               <CartesianGrid
