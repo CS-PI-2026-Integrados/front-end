@@ -10,7 +10,7 @@ import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'
 import { Upload, X, ImageIcon, Loader2 } from 'lucide-react'
 import { useInstitutionForm } from '@/features/institutions/hooks/useInstitutionForm'
-import { LOGO_ACCEPTED_EXTENSIONS } from '@/features/institutions/services/tenantService'
+import { LOGO_ACCEPTED_EXTENSIONS } from '@/features/institutions/model/logoConfig'
 
 const CharCounter = ({ current, max }) => {
   const isNearLimit = current > max * 0.85

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { FieldGroup } from '@/shared/components/ui/field'
 import { Button } from '@/shared/components/ui/button'
 import { AuthFeedbackMessage } from '@/features/authentication/components/AuthFeedbackMessage'
-import { AuthSubmitButton } from '@/features/authentication/components/AuthSubmitButton'
+import { SubmitButton } from '@/shared/components/buttons/SubmitButton'
 import { CpfField } from '@/shared/components/form-fields/CpfField'
 import { useRecoverPassword } from '@/features/authentication/hooks/useRecoverPassword'
 
@@ -33,9 +33,13 @@ export function RecoverPasswordForm() {
 
         {feedbackMessage && <AuthFeedbackMessage>{feedbackMessage}</AuthFeedbackMessage>}
 
-        <AuthSubmitButton disabled={!isValid} isLoading={isSubmitting}>
+        <SubmitButton
+          className="mt-3 h-13 rounded-[8px] text-lg"
+          disabled={!isValid}
+          isLoading={isSubmitting}
+        >
           Enviar link
-        </AuthSubmitButton>
+        </SubmitButton>
 
         <Button asChild variant="link" className="mt-2 h-auto text-emerald-200">
           <Link to="/login" className="text-sm text-emerald-600 hover:text-emerald-800">

@@ -8,7 +8,6 @@ import { MetricCard } from '@/features/dashboard/components/dashboard/MetricCard
 import { CreateOperatorDialog } from '@/features/users/components/users/CreateOperatorDialog'
 import { UserDetailsPanel } from '@/features/users/components/users/UserDetailsPanel'
 import { UsersTable } from '@/features/users/components/users/UsersTable'
-import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import {
   Select,
@@ -18,6 +17,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select'
 import { useUsersManagement, USERS_STATUS_FILTERS } from '@/features/users/hooks/useUsersManagement'
+import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
 
 export default function UsersManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -48,14 +48,11 @@ export default function UsersManagement() {
         title="Gestão de Usuários"
         description="Cadastro e controle de acesso dos operadores da comarca"
         action={
-          <Button
-            size="sm"
-            className="bg-primary hover:bg-primary/90 min-w-40 cursor-pointer gap-2 px-4 text-sm font-medium shadow-sm"
+          <HeaderButton
+            icon={UserPlus}
+            text="Novo Usuário"
             onClick={() => setIsCreateDialogOpen(true)}
-          >
-            <UserPlus />
-            Novo Usuário
-          </Button>
+          />
         }
       />
 

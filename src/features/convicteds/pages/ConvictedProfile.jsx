@@ -57,10 +57,10 @@ export default function ApenadoProfile() {
                 </div>
               )}
             </div>
-            <h2 className="text-foreground text-xl leading-tight font-bold break-words">
+            <h2 className="text-foreground text-xl leading-tight font-bold wrap-break-word">
               {apenado.nomeCompleto}
             </h2>
-            <p className="text-muted-foreground mt-1 text-sm font-medium break-words">
+            <p className="text-muted-foreground mt-1 text-sm font-medium wrap-break-word">
               CPF: {apenado.cpf}
             </p>
             <div className="mt-4">
@@ -115,7 +115,7 @@ export default function ApenadoProfile() {
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Endereço Completo
                 </label>
-                <p className="text-foreground text-sm leading-relaxed font-medium break-words">
+                <p className="text-foreground text-sm leading-relaxed font-medium wrap-break-word">
                   {apenado.endereco}
                 </p>
               </div>
@@ -130,7 +130,7 @@ export default function ApenadoProfile() {
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Número do Processo
                 </label>
-                <p className="text-foreground text-sm font-medium break-words">
+                <p className="text-foreground text-sm font-medium wrap-break-word">
                   {apenado.processos[0]?.numeroProcesso || 'N/A'}
                 </p>
               </div>
@@ -148,7 +148,7 @@ export default function ApenadoProfile() {
               <label className="text-muted-foreground mb-2 block text-[10px] font-bold tracking-wider uppercase">
                 Observações do Prontuário
               </label>
-              <div className="border-border text-muted-foreground bg-card rounded-lg border p-4 text-sm leading-relaxed break-words italic">
+              <div className="border-border text-muted-foreground bg-card rounded-lg border p-4 text-sm leading-relaxed wrap-break-word italic">
                 {apenado.observacoes || 'Nenhuma observação registrada até o momento.'}
               </div>
             </div>
