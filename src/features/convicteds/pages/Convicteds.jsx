@@ -24,19 +24,19 @@ function maskCPF(cpf) {
 }
 
 function SitTrabalhista({ sit }) {
-  const normalized =
-    sit === 'working_formal' || sit === 'registrado' || sit === 'Trabalho Registrado'
-      ? 'Trabalho Registrado'
-      : sit === 'working_informal' || sit === 'informal' || sit === 'Trabalho Informal'
-        ? 'Trabalho Informal'
-        : 'Nao Trabalha'
+  const map = {
+    working_formal: 'Trabalho Registrado',
+    working_informal: 'Trabalho Informal',
+    not_working: 'Não Trabalha',
+  }
+  const normalized = map[sit] || 'Não Trabalha'
 
   const variants = {
     'Trabalho Registrado':
       'bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-400 dark:ring-emerald-800',
     'Trabalho Informal':
       'bg-blue-100 text-blue-700 ring-blue-200 dark:bg-blue-950/80 dark:text-blue-400 dark:ring-blue-800',
-    'Nao Trabalha':
+    'Não Trabalha':
       'bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800/80 dark:text-gray-400 dark:ring-gray-700',
   }
 
