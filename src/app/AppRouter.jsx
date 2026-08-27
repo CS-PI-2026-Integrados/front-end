@@ -20,6 +20,7 @@ import RoleGuard from '@/app/guards/RoleGuard'
 import MustChangePasswordGuard from '@/app/guards/MustChangePasswordGuard'
 import { canAccessUsersPage } from '@/features/users/utils/userPermissionsUtils'
 import GroupManagement from '@/features/reflection-group/pages/GroupManagement'
+import Documents from '@/features/documents/pages/Documents'
 
 const AppRouter = () => {
   return (
@@ -49,6 +50,7 @@ const AppRouter = () => {
             />
             <Route path="instituicoes" element={<Institutions />} />
             <Route path="comprovante" element={<Certificate />} />
+            <Route path="documentos" element={<Documents />} />
             <Route path="apenados/:id" element={<ApenadoProfile />} />
             <Route path="configuracoes" element={<Settings />} />
             <Route element={<RoleGuard canAccess={canAccessUsersPage} />}>
