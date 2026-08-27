@@ -47,7 +47,7 @@ export function SelectConvicted() {
               className="h-10 w-full justify-between bg-transparent"
             >
               {apenado ? (
-                apenado.nomeCompleto
+                apenado.fullName
               ) : (
                 <span className="text-muted-foreground font-normal">Selecione um apenado</span>
               )}
@@ -74,7 +74,7 @@ export function SelectConvicted() {
                     >
                       <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
                         <span className="w-full truncate text-left text-sm leading-none font-medium">
-                          {a.nomeCompleto}
+                          {a.fullName}
                         </span>
                         <span className="text-muted-foreground w-full truncate text-left text-xs leading-none">
                           {a.cpf}

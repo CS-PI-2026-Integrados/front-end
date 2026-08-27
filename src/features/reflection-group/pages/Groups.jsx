@@ -71,13 +71,8 @@ const Groups = () => {
 
   const availableParticipants = useMemo(() => {
     const comarca = session?.tenant?.id ? String(session.tenant.id) : ''
-    if (!comarca)
-      return listarApenados().filter((a) => a.situacao === 'ativo' || a.status === 'Ativo')
-    return listarApenados().filter(
-      (a) =>
-        (String(a.tenantId) === comarca || String(a.tenant_id) === comarca) &&
-        (a.situacao === 'ativo' || a.status === 'Ativo')
-    )
+    if (!comarca) return listarApenados().filter((a) => a.status === 'Ativo')
+    return listarApenados().filter((a) => String(a.tenantId) === comarca && a.status === 'Ativo')
   }, [session?.tenant?.id])
 
   const formatDate = (date) => {

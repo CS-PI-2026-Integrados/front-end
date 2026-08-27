@@ -7,7 +7,9 @@ pdfMake.vfs = pdfFonts.pdfMake?.vfs || pdfFonts.default?.pdfMake?.vfs || pdfFont
 export async function downloadReceiptPDF(atendimento) {
   const docDefinition = await generateReceiptPDF(atendimento)
 
-  const nomeApenado = atendimento.apenado?.nomeCompleto?.replace(/\s+/g, '_') || 'Apenado'
+  const nomeApenado =
+    (atendimento.apenado?.fullName || atendimento.apenado?.nomeCompleto)?.replace(/\s+/g, '_') ||
+    'Apenado'
   const dataStr = new Date().toISOString().split('T')[0].replace(/-/g, '')
   const fileName = `comprovante_${nomeApenado}_${dataStr}.pdf`
 

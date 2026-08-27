@@ -30,10 +30,10 @@ export function ProofHistory() {
     return {
       apenado: apenado || {
         id: comp.apenadoId,
-        nomeCompleto: comp.nomeApenado || comp.fullName || 'Apenado',
+        fullName: comp.nomeApenado || 'Apenado',
         cpf: comp.cpf || comp.cpfApenado || '',
       },
-      processo: processo || (comp.processoId ? { numeroProcesso: comp.processoId } : null),
+      processo: processo || (comp.processoId ? { processNumber: comp.processoId } : null),
       recibo: {
         photoUrl: comp.photoUrl,
         codigoVerificacao: comp.codigoVerificacao || comp.verificationCode,
@@ -143,11 +143,11 @@ export function ProofHistory() {
                         </td>
                         <td className="px-6 py-3.5 align-middle">
                           <span className="text-foreground text-sm font-medium">
-                            {comp.nomeApenado || comp.fullName}
+                            {comp.nomeApenado || 'Apenado'}
                           </span>
                         </td>
                         <td className="text-muted-foreground px-6 py-3.5 align-middle text-sm whitespace-nowrap">
-                          {comp.cpf || comp.cpfApenado}
+                          {comp.cpfApenado || comp.cpf}
                         </td>
                         <td className="px-6 py-3.5 align-middle">
                           <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 font-mono text-xs font-medium">
@@ -196,10 +196,10 @@ export function ProofHistory() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-foreground truncate text-sm font-medium">
-                        {comp.nomeApenado || comp.fullName}
+                        {comp.nomeApenado || 'Apenado'}
                       </p>
                       <p className="text-muted-foreground mt-0.5 text-xs">
-                        {comp.cpf || comp.cpfApenado}
+                        {comp.cpfApenado || comp.cpf}
                       </p>
                     </div>
                     <span className="bg-muted text-muted-foreground shrink-0 rounded-md px-2 py-0.5 font-mono text-[10px] font-medium">

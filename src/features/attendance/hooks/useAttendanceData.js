@@ -14,9 +14,7 @@ export const useAtendimentoData = () => {
   const apenados = useMemo(() => {
     if (!comarca) return listarApenados()
 
-    return listarApenados().filter(
-      (apenado) => String(apenado.tenantId) === comarca || String(apenado.tenant_id) === comarca
-    )
+    return listarApenados().filter((apenado) => String(apenado.tenantId) === comarca)
   }, [comarca])
 
   useSyncExternalStore(observarComprovantes, obterSnapshotComprovantes)

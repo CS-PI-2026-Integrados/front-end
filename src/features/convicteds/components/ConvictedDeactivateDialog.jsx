@@ -17,8 +17,7 @@ export function ApenadoDeactivateDialog({ apenado, onConfirm, onOpenChange }) {
         <DialogHeader>
           <DialogTitle>Excluir Apenado</DialogTitle>
           <DialogDescription>
-            Deseja excluir <strong>{apenado?.nomeCompleto || apenado?.nome}</strong>? Esta ação não
-            poderá ser desfeita.
+            Deseja excluir <strong>{apenado?.fullName}</strong>? Esta ação não poderá ser desfeita.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

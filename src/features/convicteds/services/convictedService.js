@@ -41,23 +41,17 @@ export function toConvicted(a) {
   const procsRaw = procsFromMock !== undefined ? procsFromMock : a.processos || []
 
   const procs = procsRaw.map((p) => {
-    const num = p.processNumber || p.numeroProcesso || ''
+    const num = p.processNumber || p.numeroProcesso || p.numero_processo || ''
     const v = p.court || p.vara || ''
     const inst = p.institution || p.instituicao || ''
     const tipo = p.penaltyType || p.tipoPena || p.judicialStatus || ''
     return {
       id: String(p.id || crypto.randomUUID()),
       processNumber: num,
-      numeroProcesso: num,
       court: v,
-      vara: v,
       penaltyType: tipo,
-      tipoPena: tipo,
-      judicialStatus: p.judicialStatus || tipo,
       institution: inst,
-      instituicao: inst,
-      status: p.status || p.situacao || 'ativo',
-      situacao: p.situacao || p.status || 'ativo',
+      status: p.status || p.situacao || 'regular',
       tenantId: String(p.tenantId || p.tenant_id || a.tenantId || a.tenant_id || '1'),
       apenadoId: String(p.apenadoId || a.id),
       apenadoIds: p.apenadoIds ? p.apenadoIds.map(String) : [String(a.id)],
@@ -66,15 +60,16 @@ export function toConvicted(a) {
 
   const primeiroProcesso = procs.length > 0 ? procs[0] : null
 
-  const numProcesso = primeiroProcesso
-    ? primeiroProcesso.numeroProcesso
-    : a.numeroProcesso || a.processNumber || a.numero_processo || ''
+  const numProcesso =
+    primeiroProcesso?.processNumber ||
+    a.processNumber ||
+    a.numeroProcesso ||
+    a.numero_processo ||
+    ''
 
-  const vara = primeiroProcesso ? primeiroProcesso.vara : a.vara || a.court || ''
+  const vara = primeiroProcesso?.court || a.court || a.vara || ''
 
-  const instituicao = primeiroProcesso
-    ? primeiroProcesso.instituicao
-    : a.instituicao || a.institution || ''
+  const instituicao = primeiroProcesso?.institution || a.institution || a.instituicao || ''
 
   const enderecosPorApenado = getEnderecosPorApenadoMap()
   const endFromMock = enderecosPorApenado[String(a.id)]
@@ -88,7 +83,7 @@ export function toConvicted(a) {
   const uf = a.uf || endFromMock?.uf || ''
 
   const parsed =
-    !logradouro && (a.endereco || a.address) ? parsearEndereco(a.endereco || a.address) : {}
+    !logradouro && (a.address || a.endereco) ? parsearEndereco(a.address || a.endereco) : {}
 
   const finalLogradouro = logradouro || parsed.logradouro || ''
   const finalNumero = numero || parsed.numero || ''
@@ -106,48 +101,33 @@ export function toConvicted(a) {
     uf: finalUf,
   }
 
-  const enderecoFormatado = a.endereco || a.address || montarEnderecoStr(formEndereco)
+  const enderecoFormatado = a.address || a.endereco || montarEnderecoStr(formEndereco)
 
   const sitTrab =
-    a.situacaoTrabalhista ||
-    (a.workingStatus === 'working_formal' || a.sit_trabalhista === 'Trabalho Registrado'
-      ? 'registrado'
-      : a.workingStatus === 'working_informal' || a.sit_trabalhista === 'Trabalho Informal'
-        ? 'informal'
-        : 'naoTrabalha')
+    a.workingStatus ||
+    (a.situacaoTrabalhista === 'registrado' || a.sit_trabalhista === 'Trabalho Registrado'
+      ? 'working_formal'
+      : a.situacaoTrabalhista === 'informal' || a.sit_trabalhista === 'Trabalho Informal'
+        ? 'working_informal'
+        : 'not_working')
 
   const workingStatus =
-    sitTrab === 'registrado'
+    sitTrab === 'working_formal' || sitTrab === 'registrado'
       ? 'working_formal'
-      : sitTrab === 'informal'
+      : sitTrab === 'working_informal' || sitTrab === 'informal'
         ? 'working_informal'
         : 'not_working'
 
-  const sitTrabalhistaLabel =
-    sitTrab === 'registrado'
-      ? 'Trabalho Registrado'
-      : sitTrab === 'informal'
-        ? 'Trabalho Informal'
-        : 'Nao Trabalha'
-
-  const nome = a.nomeCompleto || a.nome || a.fullName || ''
-  const foto = a.fotoUrl || a.foto || a.referencePhotoUrl || ''
+  const nome = a.fullName || a.nomeCompleto || a.nome || ''
+  const foto = a.referencePhotoUrl || a.fotoUrl || a.foto || ''
 
   return {
     id: a.id != null ? String(a.id) : crypto.randomUUID(),
     tenantId: String(a.tenantId || a.tenant_id || '1'),
-    tenant_id: String(a.tenantId || a.tenant_id || '1'),
-    nomeCompleto: nome,
-    nome,
     fullName: nome,
     cpf: a.cpf || '',
-    dataNascimento: a.dataNascimento || a.data_nascimento || a.dateOfBirth || '',
-    data_nascimento: a.dataNascimento || a.data_nascimento || a.dateOfBirth || '',
-    dateOfBirth: a.dataNascimento || a.data_nascimento || a.dateOfBirth || '',
-    telefone: a.telefone || a.phone || '',
-    phone: a.telefone || a.phone || '',
-    endereco: enderecoFormatado,
-    address: enderecoFormatado,
+    dateOfBirth: a.dateOfBirth || a.dataNascimento || a.data_nascimento || '',
+    phone: a.phone || a.telefone || '',
     cep,
     logradouro: finalLogradouro,
     numero: finalNumero,
@@ -155,24 +135,17 @@ export function toConvicted(a) {
     bairro: finalBairro,
     cidade: finalCidade,
     uf: finalUf,
-    situacaoTrabalhista: sitTrab,
-    workingStatus,
-    sit_trabalhista: sitTrabalhistaLabel,
-    situacao: a.situacao || (a.status === 'Inativo' ? 'inativo' : 'ativo'),
-    status: a.status || (a.situacao === 'inativo' ? 'Inativo' : 'Ativo'),
-    fotoUrl: foto,
-    foto,
-    referencePhotoUrl: foto,
-    observacoes: a.observacoes || a.observations || '',
-    observations: a.observacoes || a.observations || '',
-    processos: procs,
-    numeroProcesso: numProcesso,
-    processNumber: numProcesso,
-    numero_processo: numProcesso,
-    vara,
-    court: vara,
-    instituicao,
+    address: enderecoFormatado,
     institution: instituicao,
+    workingStatus,
+    status: a.status === 'Inativo' || a.situacao === 'inativo' ? 'Inativo' : 'Ativo',
+    observations: a.observations || a.observacoes || '',
+    referencePhotoUrl: foto,
+    processoId: a.processoId ? String(a.processoId) : primeiroProcesso?.id || '',
+    processNumber: numProcesso,
+    court: vara,
+    penaltyType: primeiroProcesso?.penaltyType || a.penaltyType || a.tipoPena || '',
+    processos: procs,
     createdAt: a.createdAt || '2024-01-15',
     lastProof: a.lastProof || null,
   }

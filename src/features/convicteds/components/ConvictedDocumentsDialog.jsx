@@ -19,7 +19,7 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
   const comprovantes = useMemo(
     () =>
       apenado
-        ? listarComprovantes(apenado.tenantId || apenado.tenant_id).filter(
+        ? listarComprovantes(apenado.tenantId).filter(
             (item) => String(item.apenadoId) === String(apenado.id)
           )
         : [],
@@ -31,7 +31,7 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
     <Dialog open={Boolean(apenado)} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{apenado.nomeCompleto || apenado.nome}</DialogTitle>
+          <DialogTitle>{apenado.fullName}</DialogTitle>
           <p className="text-muted-foreground text-sm">CPF: {apenado.cpf}</p>
         </DialogHeader>
         <Tabs value={aba} onValueChange={setAba}>
@@ -59,7 +59,7 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
                     {comprovantes.map((comprovante) => {
                       const proc = (apenado.processos || []).find(
                         (p) => String(p.id) === String(comprovante.processoId)
-                      ) || { numeroProcesso: comprovante.processoId || '' }
+                      ) || { processNumber: comprovante.processoId || '' }
 
                       return (
                         <tr key={comprovante.id} className="border-b">

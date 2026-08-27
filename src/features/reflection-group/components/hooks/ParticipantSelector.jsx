@@ -17,8 +17,9 @@ const ParticipantSelector = ({
 
     const term = searchTerm.toLowerCase().trim()
     return availableParticipants.filter((p) => {
-      const matchNome = p.nome.toLowerCase().includes(term)
-      const cleanCPF = p.cpf.replace(/\D/g, '')
+      const nome = p.fullName || p.nome || ''
+      const matchNome = nome.toLowerCase().includes(term)
+      const cleanCPF = (p.cpf || '').replace(/\D/g, '')
       const cleanTerm = term.replace(/\D/g, '')
       const matchCPF = cleanTerm !== '' && cleanCPF.includes(cleanTerm)
 
@@ -70,7 +71,7 @@ const ParticipantSelector = ({
                   onClick={() => handleSelectParticipant(participant)}
                   className="hover:bg-muted cursor-pointer border-b px-4 py-2 last:border-b-0"
                 >
-                  <p className="text-sm font-medium">{participant.nome}</p>
+                  <p className="text-sm font-medium">{participant.fullName || participant.nome}</p>
                   <p className="text-muted-foreground text-xs">{participant.cpf}</p>
                 </div>
               ))}
@@ -91,7 +92,7 @@ const ParticipantSelector = ({
                 variant="outline"
                 className="flex items-center gap-1 px-2 py-1"
               >
-                <span className="truncate">{participant.nome}</span>
+                <span className="truncate">{participant.fullName || participant.nome}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveParticipant(participant.id)}

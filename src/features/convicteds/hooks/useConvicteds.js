@@ -17,15 +17,18 @@ export function useApenados(tenantId) {
       return apenados
         .filter((a) => {
           if (!tenantId) return true
-          return String(a.tenantId) === String(tenantId) || String(a.tenant_id) === String(tenantId)
+          return String(a.tenantId) === String(tenantId)
         })
         .filter((a) => {
-          if (situacao && situacao !== 'todos' && a.situacao !== situacao) return false
+          if (
+            situacao &&
+            situacao !== 'todos' &&
+            a.status?.toLowerCase() !== situacao.toLowerCase()
+          )
+            return false
           if (!termo) return true
 
-          const matchNome = (a.nomeCompleto || a.nome || a.fullName || '')
-            .toLowerCase()
-            .includes(termo)
+          const matchNome = (a.fullName || '').toLowerCase().includes(termo)
 
           const cleanCpf = (a.cpf || '').replace(/\D/g, '')
           const matchCpf =
@@ -33,10 +36,8 @@ export function useApenados(tenantId) {
             (cpfTermo.length >= 2 && cleanCpf.includes(cpfTermo))
 
           const procs = [
-            a.numeroProcesso,
             a.processNumber,
-            a.numero_processo,
-            ...(a.processos || []).map((p) => p.processNumber || p.numeroProcesso),
+            ...(a.processos || []).map((p) => p.processNumber),
           ].filter(Boolean)
 
           const matchProcesso = procs.some((proc) => {
@@ -59,11 +60,9 @@ export function useApenados(tenantId) {
     if (!tenantId) return {}
     const counts = {}
     apenados
-      .filter(
-        (a) => String(a.tenantId) === String(tenantId) || String(a.tenant_id) === String(tenantId)
-      )
+      .filter((a) => String(a.tenantId) === String(tenantId))
       .forEach((a) => {
-        const proc = (a.numeroProcesso || a.numero_processo || a.processNumber || '').trim()
+        const proc = (a.processNumber || '').trim()
         if (proc) {
           counts[proc] = (counts[proc] || 0) + 1
         }

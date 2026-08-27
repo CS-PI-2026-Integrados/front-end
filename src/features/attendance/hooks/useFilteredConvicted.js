@@ -18,19 +18,16 @@ export function useFilteredConvicted(apenados, search) {
     }
 
     for (const a of apenados) {
-      const nome = (a.nomeCompleto || a.nome || a.fullName || '').toLowerCase()
+      const nome = (a.fullName || '').toLowerCase()
       const matchesNome = nome.includes(s)
 
       const cpf = (a.cpf || '').toLowerCase()
       const cpfDigits = (a.cpf || '').replace(/\D/g, '')
       const matchesCpf = cpf.includes(s) || (sDigits.length >= 2 && cpfDigits.includes(sDigits))
 
-      const procs = [
-        a.numeroProcesso,
-        a.processNumber,
-        a.numero_processo,
-        ...(a.processos || []).map((p) => p.numeroProcesso || p.processNumber),
-      ].filter(Boolean)
+      const procs = [a.processNumber, ...(a.processos || []).map((p) => p.processNumber)].filter(
+        Boolean
+      )
 
       const matchesProcess = procs.some((proc) => {
         const lower = String(proc).toLowerCase()

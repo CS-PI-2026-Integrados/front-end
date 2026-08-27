@@ -33,9 +33,9 @@ export function ReceiptSuccessCard({ className, atendimento, onReset }) {
             )}
           </div>
           <div className="shrink-0 space-y-1 text-center">
-            <p className="font-semibold">{atendimento.apenado?.nomeCompleto || 'Apenado'}</p>
+            <p className="font-semibold">{atendimento.apenado?.fullName || 'Apenado'}</p>
             <p className="text-sm font-medium">
-              {atendimento.processo?.numeroProcesso || 'Sem Processo Vinculado'}
+              {atendimento.processo?.processNumber || 'Sem Processo Vinculado'}
             </p>
             {atendimento.recibo?.codigoVerificacao && (
               <p className="text-muted-foreground mt-1 font-mono text-xs">

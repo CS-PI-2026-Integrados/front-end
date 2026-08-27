@@ -44,15 +44,15 @@ export function useConvictedForm(apenado, tenantId) {
   const buildInitialForm = () => {
     if (!apenado) return FORMULARIO_VAZIO
 
-    const parsed = parsearEndereco(apenado.endereco || apenado.address)
+    const parsed = parsearEndereco(apenado.address || apenado.endereco)
 
     let initialProcessoId = ''
     if (apenado.processoId) {
       initialProcessoId = String(apenado.processoId)
     } else if (apenado.processos?.length > 0) {
       initialProcessoId = String(apenado.processos[0].id)
-    } else if (apenado.numeroProcesso || apenado.processNumber || apenado.numero_processo) {
-      const num = apenado.numeroProcesso || apenado.processNumber || apenado.numero_processo
+    } else if (apenado.processNumber || apenado.numeroProcesso || apenado.numero_processo) {
+      const num = apenado.processNumber || apenado.numeroProcesso || apenado.numero_processo
       const proc = (mockProcessos.processos || []).find(
         (p) => p.processNumber === num || p.numeroProcesso === num
       )
@@ -64,6 +64,9 @@ export function useConvictedForm(apenado, tenantId) {
     )
 
     const sitMap = {
+      working_formal: 'Trabalho Registrado',
+      working_informal: 'Trabalho Informal',
+      not_working: 'Nao Trabalha',
       registrado: 'Trabalho Registrado',
       informal: 'Trabalho Informal',
       naoTrabalha: 'Nao Trabalha',
@@ -74,11 +77,11 @@ export function useConvictedForm(apenado, tenantId) {
     }
 
     return {
-      nomeCompleto: apenado.nomeCompleto || apenado.nome || apenado.fullName || '',
+      nomeCompleto: apenado.fullName || apenado.nomeCompleto || apenado.nome || '',
       cpf: apenado.cpf || '',
       dataNascimento:
-        apenado.dataNascimento || apenado.data_nascimento || apenado.dateOfBirth || '',
-      telefone: apenado.telefone || apenado.phone || '',
+        apenado.dateOfBirth || apenado.dataNascimento || apenado.data_nascimento || '',
+      telefone: apenado.phone || apenado.telefone || '',
       cep: apenado.cep || '',
       logradouro: apenado.logradouro || parsed.logradouro || '',
       numero: apenado.numero || parsed.numero || '',
@@ -89,12 +92,14 @@ export function useConvictedForm(apenado, tenantId) {
       processoId: initialProcessoId,
       instituicao:
         initialProc?.institution ||
-        apenado.instituicao ||
         apenado.institution ||
+        apenado.instituicao ||
         apenado.processos?.[0]?.institution ||
         '',
-      situacaoTrabalhista: sitMap[apenado.situacaoTrabalhista || apenado.sit_trabalhista] || '',
-      observacoes: apenado.observacoes || apenado.observations || '',
+      situacaoTrabalhista:
+        sitMap[apenado.workingStatus || apenado.situacaoTrabalhista || apenado.sit_trabalhista] ||
+        '',
+      observacoes: apenado.observations || apenado.observacoes || '',
       foto: null,
     }
   }
@@ -102,7 +107,7 @@ export function useConvictedForm(apenado, tenantId) {
   const [form, setForm] = useState(buildInitialForm)
   const [errors, setErrors] = useState({})
   const [preview, setPreview] = useState(
-    apenado?.fotoUrl || apenado?.foto || apenado?.referencePhotoUrl || null
+    apenado?.referencePhotoUrl || apenado?.fotoUrl || apenado?.foto || null
   )
   const [buscandoCep, setBuscandoCep] = useState(false)
 
@@ -123,7 +128,7 @@ export function useConvictedForm(apenado, tenantId) {
     return outrosIds
       .map((id) => {
         const found = apenadosCadastrados.find((a) => String(a.id) === String(id))
-        return found ? found.nomeCompleto || found.nome || found.fullName : null
+        return found ? found.fullName || found.nomeCompleto || found.nome : null
       })
       .filter(Boolean)
   }, [procSelecionado, apenado])
@@ -277,33 +282,22 @@ export function useConvictedForm(apenado, tenantId) {
     const procObj = procSelecionado
       ? {
           id: String(procSelecionado.id),
-          numeroProcesso: procSelecionado.processNumber || procSelecionado.numeroProcesso || '',
           processNumber: procSelecionado.processNumber || procSelecionado.numeroProcesso || '',
           court: procSelecionado.court || procSelecionado.vara || '',
-          vara: procSelecionado.court || procSelecionado.vara || '',
           penaltyType: procSelecionado.penaltyType || procSelecionado.tipoPena || '',
-          tipoPena: procSelecionado.penaltyType || procSelecionado.tipoPena || '',
           institution: procSelecionado.institution || form.instituicao || '',
-          instituicao: procSelecionado.institution || form.instituicao || '',
-          situacao: 'ativo',
           status: 'regular',
-          tenantId: isEditing ? apenado.tenantId : tenantId,
+          tenantId: String(isEditing ? apenado.tenantId : tenantId || '1'),
           apenadoId: String(apenadoId),
         }
       : null
 
     const resultado = {
       id: String(apenadoId),
-      tenantId: String(isEditing ? apenado.tenantId : tenantId),
-      tenant_id: String(isEditing ? apenado.tenantId : tenantId),
-      nomeCompleto: form.nomeCompleto,
-      nome: form.nomeCompleto,
+      tenantId: String(isEditing ? apenado.tenantId : tenantId || '1'),
       fullName: form.nomeCompleto,
       cpf: form.cpf,
-      dataNascimento: form.dataNascimento,
-      data_nascimento: form.dataNascimento,
       dateOfBirth: form.dataNascimento,
-      telefone: form.telefone,
       phone: form.telefone,
       cep: form.cep,
       logradouro: form.logradouro,
@@ -312,32 +306,24 @@ export function useConvictedForm(apenado, tenantId) {
       bairro: form.bairro,
       cidade: form.cidade,
       uf: form.uf,
-      endereco: montarEnderecoStr(form),
       address: montarEnderecoStr(form),
-      instituicao: procSelecionado?.institution || form.instituicao || '',
       institution: procSelecionado?.institution || form.instituicao || '',
-      situacaoTrabalhista: sitTrab,
-      sit_trabalhista: form.situacaoTrabalhista,
       workingStatus:
         sitTrab === 'registrado'
           ? 'working_formal'
           : sitTrab === 'informal'
             ? 'working_informal'
             : 'not_working',
-      situacao: 'ativo',
-      status: 'Ativo',
-      observacoes: form.observacoes,
+      status: isEditing && apenado?.status ? apenado.status : 'Ativo',
       observations: form.observacoes,
-      fotoUrl: preview,
-      foto: preview,
-      referencePhotoUrl: preview,
+      referencePhotoUrl: preview || '',
       processoId: form.processoId,
-      numeroProcesso: procSelecionado?.processNumber || '',
       processNumber: procSelecionado?.processNumber || '',
-      numero_processo: procSelecionado?.processNumber || '',
-      vara: procSelecionado?.court || procSelecionado?.vara || '',
-      court: procSelecionado?.court || procSelecionado?.vara || '',
+      court: procSelecionado?.court || '',
+      penaltyType: procSelecionado?.penaltyType || '',
       processos: procObj ? [procObj] : [],
+      createdAt: isEditing && apenado?.createdAt ? apenado.createdAt : '2024-01-15',
+      lastProof: isEditing && apenado?.lastProof ? apenado.lastProof : null,
     }
 
     onSaveCallback(resultado)

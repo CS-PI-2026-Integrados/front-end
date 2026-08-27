@@ -280,9 +280,9 @@ export const generateReceiptPDF = async (atendimento) => {
     {
       text: [
         { text: 'Processo: ', bold: true },
-        `${processo?.numeroProcesso || 'Sem Processo Vinculado'}\n`,
+        `${processo?.processNumber || processo?.numeroProcesso || 'Sem Processo Vinculado'}\n`,
         { text: 'Nome: ', bold: true },
-        `${apenado?.nomeCompleto || 'Apenado'}\n`,
+        `${apenado?.fullName || apenado?.nomeCompleto || 'Apenado'}\n`,
         ...cpfLine,
         ...processoVaraLine,
         ...operadorLine,

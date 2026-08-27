@@ -28,9 +28,7 @@ export function useGenerateReceipt() {
 
             const now = new Date().toISOString()
             const apenadoFinal = apenado
-            const tenantId = String(
-              apenadoFinal?.tenantId || apenadoFinal?.tenant_id || session?.tenant?.id || '1'
-            )
+            const tenantId = String(apenadoFinal?.tenantId || session?.tenant?.id || '1')
 
             const novaPresenca = {
               id: `${Date.now()}`,
@@ -41,7 +39,7 @@ export function useGenerateReceipt() {
                 : apenadoFinal.processos?.[0]?.id
                   ? String(apenadoFinal.processos[0].id)
                   : 'p1',
-              nomeApenado: apenadoFinal?.nomeCompleto || apenadoFinal?.nome || 'Apenado',
+              nomeApenado: apenadoFinal?.fullName || 'Apenado',
               photoUrl: fotoAtendimento,
               cpfApenado: apenadoFinal.cpf || '',
               emitidoEm: now,

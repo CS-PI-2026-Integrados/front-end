@@ -25,9 +25,9 @@ function maskCPF(cpf) {
 
 function SitTrabalhista({ sit }) {
   const normalized =
-    sit === 'registrado' || sit === 'Trabalho Registrado'
+    sit === 'working_formal' || sit === 'registrado' || sit === 'Trabalho Registrado'
       ? 'Trabalho Registrado'
-      : sit === 'informal' || sit === 'Trabalho Informal'
+      : sit === 'working_informal' || sit === 'informal' || sit === 'Trabalho Informal'
         ? 'Trabalho Informal'
         : 'Nao Trabalha'
 
@@ -73,7 +73,7 @@ export default function Convicteds() {
   const handleInativar = () => {
     if (!apenadoInativar) return
     const atualizados = apenados.map((item) =>
-      item.id === apenadoInativar.id ? { ...item, situacao: 'inativo', status: 'Inativo' } : item
+      item.id === apenadoInativar.id ? { ...item, status: 'Inativo' } : item
     )
     atualizar(atualizados)
     setApenadoInativar(null)
@@ -218,7 +218,7 @@ export default function Convicteds() {
             <ApenadoMobileCard
               key={apenado.id}
               apenado={apenado}
-              processCount={processCounts[apenado.numeroProcesso || apenado.numero_processo] || 0}
+              processCount={processCounts[apenado.processNumber] || 0}
               onEdit={() => setApenadoEditar(apenado)}
               onInactivate={() => setApenadoInativar(apenado)}
               onView={() => setApenadoDocumentos(apenado)}
@@ -255,23 +255,23 @@ export default function Convicteds() {
             </thead>
             <tbody>
               {paginated.map((a) => {
-                const procNum = a.numeroProcesso || a.numero_processo || '-'
+                const procNum = a.processNumber || '-'
                 const count = processCounts[procNum] || 0
                 return (
                   <tr key={a.id} className="hover:bg-muted/50 border-b transition-colors">
                     <td className="w-16 px-4 py-3">
                       <Avatar className="size-9 shrink-0">
                         <AvatarImage
-                          src={a.fotoUrl || a.foto || `https://i.pravatar.cc/150?u=${a.id}`}
-                          alt={a.nomeCompleto || a.nome}
+                          src={a.referencePhotoUrl || `https://i.pravatar.cc/150?u=${a.id}`}
+                          alt={a.fullName}
                         />
                         <AvatarFallback className="text-xs font-semibold">
-                          {(a.nomeCompleto || a.nome || 'A').charAt(0).toUpperCase()}
+                          {(a.fullName || 'A').charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </td>
                     <td className="min-w-36 px-4 py-3.5">
-                      <p className="text-foreground font-semibold">{a.nomeCompleto || a.nome}</p>
+                      <p className="text-foreground font-semibold">{a.fullName}</p>
                       <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(a.cpf)}</p>
                     </td>
                     <td className="text-muted-foreground w-44 px-4 py-3.5">
@@ -294,16 +294,16 @@ export default function Convicteds() {
                       </div>
                     </td>
                     <td className="text-muted-foreground w-36 px-4 py-3.5 whitespace-nowrap">
-                      {a.telefone || a.phone}
+                      {a.phone}
                     </td>
                     <td
                       className="text-muted-foreground max-w-56 min-w-44 truncate px-4 py-3.5"
-                      title={a.endereco || a.address}
+                      title={a.address}
                     >
-                      {a.endereco || a.address}
+                      {a.address}
                     </td>
                     <td className="w-44 px-4 py-3.5 whitespace-nowrap">
-                      <SitTrabalhista sit={a.sit_trabalhista || a.situacaoTrabalhista} />
+                      <SitTrabalhista sit={a.workingStatus} />
                     </td>
                     <td className="w-28 px-4 py-3.5">
                       <div className="flex items-center gap-1">
@@ -351,23 +351,21 @@ export default function Convicteds() {
 }
 
 function ApenadoMobileCard({ apenado, processCount, onEdit, onInactivate, onView }) {
-  const procNum = apenado.numeroProcesso || apenado.numero_processo || '-'
+  const procNum = apenado.processNumber || '-'
   return (
     <article className="border-border bg-card space-y-4 rounded-xl border p-4 shadow-sm">
       <div className="flex items-start gap-3">
         <Avatar className="size-10 shrink-0">
           <AvatarImage
-            src={apenado.fotoUrl || apenado.foto || `https://i.pravatar.cc/150?u=${apenado.id}`}
-            alt={apenado.nomeCompleto || apenado.nome}
+            src={apenado.referencePhotoUrl || `https://i.pravatar.cc/150?u=${apenado.id}`}
+            alt={apenado.fullName}
           />
           <AvatarFallback className="text-sm font-semibold">
-            {(apenado.nomeCompleto || apenado.nome || 'A').charAt(0).toUpperCase()}
+            {(apenado.fullName || 'A').charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <h3 className="text-foreground truncate font-semibold">
-            {apenado.nomeCompleto || apenado.nome}
-          </h3>
+          <h3 className="text-foreground truncate font-semibold">{apenado.fullName}</h3>
           <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(apenado.cpf)}</p>
         </div>
       </div>
@@ -375,12 +373,12 @@ function ApenadoMobileCard({ apenado, processCount, onEdit, onInactivate, onView
       <dl className="grid grid-cols-1 gap-3 text-sm min-[420px]:grid-cols-2">
         <div>
           <dt className="text-muted-foreground text-xs">Telefone</dt>
-          <dd className="mt-0.5 font-medium">{apenado.telefone || apenado.phone}</dd>
+          <dd className="mt-0.5 font-medium">{apenado.phone}</dd>
         </div>
         <div>
           <dt className="text-muted-foreground text-xs">Situação trabalhista</dt>
           <dd className="mt-1">
-            <SitTrabalhista sit={apenado.sit_trabalhista || apenado.situacaoTrabalhista} />
+            <SitTrabalhista sit={apenado.workingStatus} />
           </dd>
         </div>
         <div className="min-[420px]:col-span-2">
@@ -400,7 +398,7 @@ function ApenadoMobileCard({ apenado, processCount, onEdit, onInactivate, onView
         </div>
         <div className="min-[420px]:col-span-2">
           <dt className="text-muted-foreground text-xs">Endereço</dt>
-          <dd className="mt-0.5 font-medium break-words">{apenado.endereco || apenado.address}</dd>
+          <dd className="mt-0.5 font-medium break-words">{apenado.address}</dd>
         </div>
       </dl>
 
