@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { listarComprovantes } from '@/features/attendance'
-import { downloadReceiptPDF, viewReceiptPDF } from '@/features/attendance/services/pdfService.js'
+import { listarComprovantes, downloadReceiptPDF, viewReceiptPDF } from '@/features/attendance'
 import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
