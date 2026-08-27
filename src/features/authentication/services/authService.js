@@ -1,45 +1,29 @@
-import {
-  clearStoredToken,
-  getStoredToken,
-  saveStoredToken,
-} from '@/features/authentication/mock/authSessionMock'
-import {
-  createSessionToken,
-  validateSessionToken,
-} from '@/features/authentication/mock/authTokenMock'
-import {
-  findAuthUserByCredentials,
-  findAuthUserById,
-} from '@/features/authentication/mock/authMock'
-import {
-  subscribeToUsersChanges,
-  updateUserPassword,
-  updateUserLastAccessAt,
-} from '@/features/users/mock/usersMock'
+import { apiService } from '@/shared/infrastructure/http/apiService'
+import { findAuthUserByCredentials } from '@/features/authentication/mock/authMock'
+import { updateUserPassword } from '@/features/users/mock/usersMock'
 import {
   createUserPasswordResetToken,
   findUserByValidPasswordResetToken,
 } from '@/features/authentication/mock/passwordResetMock'
 import { sendPasswordResetEmail } from '@/features/authentication/mock/authEmailMock'
 
-const buildSession = ({ user, tenant }) => ({
-  user,
-  tenant,
-})
+const createApiSession = () => {
+  const payload = apiService.getAccessTokenPayload()
+  if (!payload?.user?.id) return null
 
-const AUTH_RELEVANT_USER_FIELDS = ['isActive', 'roleId', 'tenantId', 'mustChangePassword']
-
-const hasUserAccessChanged = (previousUser, currentUser) => {
-  if (!previousUser || !currentUser) {
-    return previousUser !== currentUser
-  }
-
-  return AUTH_RELEVANT_USER_FIELDS.some((field) => previousUser[field] !== currentUser[field])
-}
-
-const ensureActiveUser = (user) => {
-  if (!user.isActive) {
-    throw new Error('Usuário sem acesso ativo.')
+  return {
+    user: {
+      id: payload.user.id,
+      name: payload.user.name,
+      cpf: payload.user.cpf,
+      mustChangePassword: false,
+    },
+    tenant: payload.judicialDistrict
+      ? {
+          id: payload.judicialDistrict.id,
+          name: payload.judicialDistrict.name,
+        }
+      : null,
   }
 }
 
@@ -52,44 +36,25 @@ const applyDefinedPassword = async ({ userId, password }) => {
 }
 
 export const login = async ({ cpf, password }) => {
-  const authUser = await findAuthUserByCredentials(cpf, password)
+  await apiService.login({ cpf, password })
 
-  ensureActiveUser(authUser.user)
+  const session = createApiSession()
+  if (!session) {
+    apiService.clearTokens()
+    throw new Error('Não foi possível identificar a sessão retornada pela API.')
+  }
 
-  const sessionUser = await updateUserLastAccessAt({
-    userId: authUser.user.id,
-    lastAccessAt: new Date().toISOString(),
-  })
-
-  const token = createSessionToken(sessionUser)
-
-  saveStoredToken(token)
-
-  return buildSession({
-    ...authUser,
-    user: sessionUser,
-  })
+  return session
 }
 
 export const logout = () => {
-  clearStoredToken()
+  apiService.clearTokens()
 }
 
 export const restoreSession = async () => {
-  const token = getStoredToken()
-  const payload = validateSessionToken(token)
-
-  if (!payload) {
-    logout()
-    return null
-  }
-
   try {
-    const authUser = await findAuthUserById(payload.sub)
-
-    ensureActiveUser(authUser.user)
-
-    return buildSession(authUser)
+    await apiService.getValidAccessToken()
+    return createApiSession()
   } catch {
     logout()
     return null
@@ -97,18 +62,8 @@ export const restoreSession = async () => {
 }
 
 export const subscribeToAuthStateChanges = (listener) => {
-  return subscribeToUsersChanges(({ previousUsers, currentUsers }) => {
-    const payload = validateSessionToken(getStoredToken())
-
-    if (!payload?.sub) return
-
-    const previousUser = previousUsers.find((user) => user.id === payload.sub)
-    const currentUser = currentUsers.find((user) => user.id === payload.sub)
-
-    if (hasUserAccessChanged(previousUser, currentUser)) {
-      listener()
-    }
-  })
+  void listener
+  return () => {}
 }
 
 export const requestPasswordReset = async (cpf) => {
