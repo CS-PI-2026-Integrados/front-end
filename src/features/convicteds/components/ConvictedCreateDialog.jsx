@@ -518,7 +518,6 @@ export function ApenadoCreateDialog({ open, tenantId, onSave, onOpenChange }) {
                   onOpenChange(false)
                 })
               }
-              disabled={!form.foto && !preview}
               className="rounded-lg px-5"
             >
               Salvar cadastro

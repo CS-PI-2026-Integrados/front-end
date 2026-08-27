@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo } from 'react'
+import { toast } from 'sonner'
 
 import {
   buscarEnderecoPorCep,
@@ -238,6 +239,7 @@ export function useConvictedForm(apenado, tenantId) {
 
     if (Object.keys(erros).length > 0) {
       setErrors(erros)
+      toast.error('Preencha todos os campos obrigatórios destacados.')
       return
     }
 

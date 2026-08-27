@@ -29,16 +29,22 @@ export const convictedFormSchema = z.object({
 })
 
 export function validateConvictedForm(form, { isEditing = false, preview = null } = {}) {
-  const result = convictedFormSchema.safeParse(form)
+  const result = convictedFormSchema.safeParse(form || {})
   const erros = {}
 
-  if (!isEditing && !form.foto && !preview) {
+  if (!isEditing && !form?.foto && !preview) {
     erros.foto = 'A foto é obrigatória.'
   }
 
-  if (!result.success) {
-    result.error.errors.forEach((err) => {
-      const field = err.path[0]
+  if (!result.success && result.error) {
+    const issues = Array.isArray(result.error.issues)
+      ? result.error.issues
+      : Array.isArray(result.error.errors)
+        ? result.error.errors
+        : []
+
+    issues.forEach((err) => {
+      const field = err?.path?.[0]
       if (field && !erros[field]) {
         erros[field] = err.message
       }
