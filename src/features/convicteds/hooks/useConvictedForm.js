@@ -260,12 +260,14 @@ export function useConvictedForm(apenado, tenantId) {
 
     const apenadoId = isEditing ? apenado.id : crypto.randomUUID()
 
-    if (procSelecionado) {
-      if (!procSelecionado.apenadoIds) procSelecionado.apenadoIds = []
-      if (!procSelecionado.apenadoIds.includes(String(apenadoId))) {
-        procSelecionado.apenadoIds.push(String(apenadoId))
-      }
-    }
+    const updatedProc = procSelecionado
+      ? {
+          ...procSelecionado,
+          apenadoIds: procSelecionado.apenadoIds?.includes(String(apenadoId))
+            ? [...procSelecionado.apenadoIds]
+            : [...(procSelecionado.apenadoIds || []), String(apenadoId)],
+        }
+      : null
 
     const sitMap = {
       'Trabalho Registrado': 'registrado',
@@ -279,16 +281,17 @@ export function useConvictedForm(apenado, tenantId) {
 
     const sitTrab = sitMap[form.situacaoTrabalhista] || 'naoTrabalha'
 
-    const procObj = procSelecionado
+    const procObj = updatedProc
       ? {
-          id: String(procSelecionado.id),
-          processNumber: procSelecionado.processNumber || procSelecionado.numeroProcesso || '',
-          court: procSelecionado.court || procSelecionado.vara || '',
-          penaltyType: procSelecionado.penaltyType || procSelecionado.tipoPena || '',
-          institution: procSelecionado.institution || form.instituicao || '',
+          id: String(updatedProc.id),
+          processNumber: updatedProc.processNumber || '',
+          court: updatedProc.court || '',
+          penaltyType: updatedProc.penaltyType || '',
+          institution: updatedProc.institution || form.instituicao || '',
           status: 'regular',
           tenantId: String(isEditing ? apenado.tenantId : tenantId || '1'),
           apenadoId: String(apenadoId),
+          apenadoIds: updatedProc.apenadoIds,
         }
       : null
 
