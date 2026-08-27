@@ -67,7 +67,8 @@ export function ConvictedInfoCard() {
   }
 
   const handlePhoneBlur = () => {
-    if (localPhone !== formatPhone(apenado.phone || '')) {
+    const currentPhone = apenado.phone || ''
+    if (localPhone !== formatPhone(currentPhone)) {
       updateField('phone', localPhone)
     }
   }
@@ -77,7 +78,8 @@ export function ConvictedInfoCard() {
   }
 
   const handleAddressBlur = () => {
-    if (localAddress !== (apenado.address || '')) {
+    const currentAddress = apenado.address || ''
+    if (localAddress !== currentAddress) {
       updateField('address', localAddress)
     }
   }
@@ -118,9 +120,9 @@ export function ConvictedInfoCard() {
                 <SelectValue placeholder="Selecione um processo" />
               </SelectTrigger>
               <SelectContent>
-                {processosAtivos.map((processo) => (
-                  <SelectItem key={processo.id} value={String(processo.id)}>
-                    {processo.numeroProcesso || processo.numeroProcesso}
+                {processosAtivos.map((proc) => (
+                  <SelectItem key={proc.id} value={String(proc.id)}>
+                    {proc.processNumber || `Processo ${proc.id}`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -131,15 +133,20 @@ export function ConvictedInfoCard() {
             <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
               <p>
                 <span className="text-muted-foreground">Processo:</span>{' '}
-                {processo.numeroProcesso || processo.numeroProcesso}
+                {processo.processNumber || '-'}
               </p>
               <p>
                 <span className="text-muted-foreground">Situação:</span>{' '}
-                {processo.tipoPena || processo.tipoPena}
+                {processo.penaltyType || 'Regular'}
               </p>
               {processo.institution && (
                 <p>
                   <span className="text-muted-foreground">Instituição:</span> {processo.institution}
+                </p>
+              )}
+              {processo.court && (
+                <p>
+                  <span className="text-muted-foreground">Vara:</span> {processo.court}
                 </p>
               )}
             </div>
@@ -224,7 +231,7 @@ export function ConvictedInfoCard() {
               <Select
                 disabled={!canEdit || !isFieldEditable('workingStatus')}
                 name="workingStatus"
-                value={apenado.workingStatus || ''}
+                value={apenado.workingStatus || 'not_working'}
                 onValueChange={(value) => updateField('workingStatus', value)}
               >
                 <SelectTrigger className="w-full">

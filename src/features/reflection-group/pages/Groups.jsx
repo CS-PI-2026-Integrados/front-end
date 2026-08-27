@@ -50,9 +50,9 @@ const Groups = () => {
   const [confirmExcluirAberto, setConfirmExcluirAberto] = useState(false)
 
   const availableParticipants = useMemo(() => {
-    const comarca = session?.tenant?.id
-    if (!comarca) return []
-    return listarApenados().filter((a) => a.tenantId === comarca && a.situacao === 'ativo')
+    const comarca = session?.tenant?.id ? String(session.tenant.id) : ''
+    if (!comarca) return listarApenados().filter((a) => a.status === 'Ativo')
+    return listarApenados().filter((a) => String(a.tenantId) === comarca && a.status === 'Ativo')
   }, [session?.tenant?.id])
 
   const formatDate = (date) => {

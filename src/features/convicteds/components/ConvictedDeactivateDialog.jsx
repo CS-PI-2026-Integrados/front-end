@@ -10,8 +10,8 @@ export function ApenadoDeactivateDialog({ apenado, onConfirm, onOpenChange }) {
       title="Inativar apenado"
       description={
         <>
-          Deseja inativar <strong>{apenado?.nomeCompleto}</strong>? O status será alterado para
-          Inativo.
+          Deseja inativar <strong>{apenado?.fullName || apenado?.nomeCompleto}</strong>? O status
+          será alterado para Inativo.
         </>
       }
       destructive

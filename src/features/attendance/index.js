@@ -6,3 +6,4 @@ export {
   observarComprovantes,
   obterSnapshotComprovantes,
 } from './services/attendanceService'
+export { downloadReceiptPDF, viewReceiptPDF } from './services/pdfService'

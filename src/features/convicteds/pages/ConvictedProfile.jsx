@@ -49,8 +49,12 @@ export default function ApenadoProfile() {
         <div className="space-y-6">
           <div className="border-border bg-card rounded-xl border p-4 text-center shadow-sm sm:p-6">
             <div className="bg-card text-muted-foreground mx-auto mb-4 h-32 w-32 overflow-hidden rounded-2xl border-2 border-green-800 sm:h-40 sm:w-40">
-              {apenado.fotoUrl ? (
-                <img src={apenado.fotoUrl} alt="Foto" className="h-full w-full object-cover" />
+              {apenado.referencePhotoUrl ? (
+                <img
+                  src={apenado.referencePhotoUrl}
+                  alt="Foto"
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="text-muted-foreground flex h-full items-center justify-center">
                   Sem Foto
@@ -58,7 +62,7 @@ export default function ApenadoProfile() {
               )}
             </div>
             <h2 className="text-foreground text-xl leading-tight font-bold wrap-break-word">
-              {apenado.nomeCompleto}
+              {apenado.fullName || apenado.nomeCompleto}
             </h2>
             <p className="text-muted-foreground mt-1 text-sm font-medium wrap-break-word">
               CPF: {apenado.cpf}
@@ -66,12 +70,12 @@ export default function ApenadoProfile() {
             <div className="mt-4">
               <span
                 className={`inline-block rounded-full border px-4 py-1 text-xs font-bold ${
-                  apenado.situacao === 'inativo'
+                  apenado.status === 'Inativo'
                     ? 'border-border dark:border-border dark:text-muted-foreground bg-slate-200 text-slate-700 ring-slate-300 dark:bg-slate-950 dark:ring-slate-700'
                     : 'border-border dark:border-border bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700'
                 }`}
               >
-                {apenado.situacao}
+                {apenado.status}
               </span>
             </div>
           </div>
@@ -103,20 +107,22 @@ export default function ApenadoProfile() {
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Telefone de Contato
                 </label>
-                <p className="text-foreground text-sm font-medium">{apenado.telefone}</p>
+                <p className="text-foreground text-sm font-medium">{apenado.phone || 'N/A'}</p>
               </div>
               <div>
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Data de Nascimento
                 </label>
-                <p className="text-foreground text-sm font-medium">{'N/A' || 'Não informada'}</p>
+                <p className="text-foreground text-sm font-medium">
+                  {apenado.dateOfBirth || 'Não informada'}
+                </p>
               </div>
               <div className="md:col-span-2">
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Endereço Completo
                 </label>
                 <p className="text-foreground text-sm leading-relaxed font-medium wrap-break-word">
-                  {apenado.endereco}
+                  {apenado.address || apenado.endereco || 'Não informado'}
                 </p>
               </div>
 
@@ -131,7 +137,7 @@ export default function ApenadoProfile() {
                   Número do Processo
                 </label>
                 <p className="text-foreground text-sm font-medium wrap-break-word">
-                  {apenado.processos[0]?.numeroProcesso || 'N/A'}
+                  {apenado.processos?.[0]?.processNumber || apenado.processNumber || 'N/A'}
                 </p>
               </div>
               <div>
@@ -139,7 +145,7 @@ export default function ApenadoProfile() {
                   Vara de Execução
                 </label>
                 <p className="text-foreground text-sm font-medium">
-                  {apenado.processos[0]?.vara || 'N/A'}
+                  {apenado.processos?.[0]?.court || apenado.court || 'N/A'}
                 </p>
               </div>
             </div>
@@ -149,7 +155,9 @@ export default function ApenadoProfile() {
                 Observações do Prontuário
               </label>
               <div className="border-border text-muted-foreground bg-card rounded-lg border p-4 text-sm leading-relaxed wrap-break-word italic">
-                {apenado.observacoes || 'Nenhuma observação registrada até o momento.'}
+                {apenado.observations ||
+                  apenado.observacoes ||
+                  'Nenhuma observação registrada até o momento.'}
               </div>
             </div>
           </div>

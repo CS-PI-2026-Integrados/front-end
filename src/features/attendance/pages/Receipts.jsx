@@ -22,6 +22,7 @@ const Service = () => {
     setFoto,
     clearPhoto,
     setPhotoError,
+    errorMessage,
     submit,
   } = useReceiptFlow()
 
@@ -88,7 +89,7 @@ const Service = () => {
                 deviceId={deviceId}
                 isReadyToCapture={isReadyToCapture}
                 isSubmitting={isSubmitting}
-                error={fotoAtendimento.error}
+                error={fotoAtendimento.error || errorMessage}
                 onCapture={setFoto}
                 onClear={clearPhoto}
                 onError={setPhotoError}

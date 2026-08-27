@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { listarComprovantes } from '@/features/attendance'
-import { useReceiptPdfActions } from '@/features/attendance'
+import { listarComprovantes, useReceiptPdfActions } from '@/features/attendance'
 import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
@@ -15,16 +14,22 @@ import {
 } from '@/shared/components/ui/table'
 
 function formatarDataHora(data) {
-  return new Date(data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+  try {
+    return new Date(data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+  } catch {
+    return data || ''
+  }
 }
 
 export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
-  const { download } = useReceiptPdfActions()
+  const { download, view } = useReceiptPdfActions()
   const [aba, setAba] = useState('comprovantes')
   const comprovantes = useMemo(
     () =>
       apenado
-        ? listarComprovantes(apenado.tenantId).filter((item) => item.apenadoId === apenado.id)
+        ? listarComprovantes(apenado.tenantId).filter(
+            (item) => String(item.apenadoId) === String(apenado.id)
+          )
         : [],
     [apenado]
   )
@@ -34,10 +39,10 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
     <Dialog open={Boolean(apenado)} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{apenado.nomeCompleto}</DialogTitle>
+          <DialogTitle>{apenado.fullName}</DialogTitle>
           <p className="text-muted-foreground text-sm">CPF: {apenado.cpf}</p>
         </DialogHeader>
-        <Tabs value={aba} onValueChange={setAba}>
+        <Tabs value={aba} onOpenChange={setAba} valueChange={setAba}>
           <TabsList>
             <TabsTrigger value="comprovantes">Comprovantes ({comprovantes.length})</TabsTrigger>
             <TabsTrigger value="certificados">Certificados (0)</TabsTrigger>
@@ -59,36 +64,57 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {comprovantes.map((comprovante) => (
-                      <TableRow key={comprovante.id} className="border-b">
-                        <TableCell className="p-2">
-                          {formatarDataHora(comprovante.emitidoEm)}
-                        </TableCell>
-                        <TableCell className="p-2 font-mono text-xs">
-                          {comprovante.codigoVerificacao}
-                        </TableCell>
-                        <TableCell className="p-2">
-                          {comprovante.nomeOperador || 'Admin User'}
-                        </TableCell>
-                        <TableCell className="p-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              download({
-                                apenado,
-                                processo: apenado.processos.find(
-                                  (processo) => processo.id === comprovante.processoId
-                                ) || { numeroProcesso: comprovante.processoId },
-                                recibo: comprovante,
-                              })
-                            }
-                          >
-                            Baixar
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {comprovantes.map((comprovante) => {
+                      const proc = (apenado.processos || []).find(
+                        (p) => String(p.id) === String(comprovante.processoId)
+                      ) || { processNumber: comprovante.processoId || '' }
+
+                      return (
+                        <TableRow key={comprovante.id} className="border-b">
+                          <TableCell className="p-2">
+                            {formatarDataHora(comprovante.emitidoEm || comprovante.dateTime)}
+                          </TableCell>
+                          <TableCell className="p-2 font-mono text-xs">
+                            {comprovante.codigoVerificacao || comprovante.verificationCode}
+                          </TableCell>
+                          <TableCell className="p-2">
+                            {comprovante.nomeOperador || comprovante.operatorName || 'Admin User'}
+                          </TableCell>
+                          <TableCell className="p-2">
+                            <div className="flex items-center gap-1.5">
+                              {view && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    view({
+                                      apenado,
+                                      processo: proc,
+                                      recibo: comprovante,
+                                    })
+                                  }
+                                >
+                                  Ver
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  download({
+                                    apenado,
+                                    processo: proc,
+                                    recibo: comprovante,
+                                  })
+                                }
+                              >
+                                Baixar
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
                   </TableBody>
                 </Table>
               </div>

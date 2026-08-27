@@ -9,18 +9,18 @@ import { useSession } from '@/features/authentication/context/sessionContext'
 
 export const useDistrictData = () => {
   const { session } = useSession()
-  const comarca = session?.tenant?.id
+  const comarca = session?.tenant?.id ? String(session.tenant.id) : ''
 
   const apenados = useMemo(() => {
-    if (!comarca) return []
+    if (!comarca) return listarApenados()
 
-    return listarApenados().filter((apenado) => apenado.tenantId === comarca)
+    return listarApenados().filter((apenado) => String(apenado.tenantId) === comarca)
   }, [comarca])
 
   useSyncExternalStore(observarComprovantes, obterSnapshotComprovantes)
 
   const presencas = useMemo(() => {
-    if (!comarca) return []
+    if (!comarca) return listarComprovantes()
     return listarComprovantes(comarca)
   }, [comarca])
 
