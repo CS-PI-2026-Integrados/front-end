@@ -4,8 +4,8 @@ import { toast } from 'sonner'
 import {
   buscarEnderecoPorCep,
   listarApenados,
+  listarProcessos,
 } from '@/features/convicteds/services/convictedService'
-import { mockProcessos } from '@/features/convicteds/mock/processosMock'
 import { validateConvictedForm } from '@/features/convicteds/schemas/convictedSchema'
 import {
   parsearEndereco,
@@ -37,15 +37,14 @@ export function useConvictedForm(apenado, tenantId) {
   const fileRef = useRef(null)
 
   const processosDisponiveis = useMemo(() => {
-    const lista = mockProcessos.processos || []
-    if (!tenantId) return lista
-    return lista.filter((p) => !p.tenantId || String(p.tenantId) === String(tenantId))
+    return listarProcessos(tenantId)
   }, [tenantId])
 
   const buildInitialForm = () => {
     if (!apenado) return FORMULARIO_VAZIO
 
     const parsed = parsearEndereco(apenado.address || apenado.endereco)
+    const todosProcessos = listarProcessos()
 
     let initialProcessoId = ''
     if (apenado.processoId) {
@@ -54,15 +53,11 @@ export function useConvictedForm(apenado, tenantId) {
       initialProcessoId = String(apenado.processos[0].id)
     } else if (apenado.processNumber || apenado.numeroProcesso || apenado.numero_processo) {
       const num = apenado.processNumber || apenado.numeroProcesso || apenado.numero_processo
-      const proc = (mockProcessos.processos || []).find(
-        (p) => p.processNumber === num || p.numeroProcesso === num
-      )
+      const proc = todosProcessos.find((p) => p.processNumber === num || p.numeroProcesso === num)
       if (proc) initialProcessoId = String(proc.id)
     }
 
-    const initialProc = (mockProcessos.processos || []).find(
-      (p) => String(p.id) === String(initialProcessoId)
-    )
+    const initialProc = todosProcessos.find((p) => String(p.id) === String(initialProcessoId))
 
     const sitMap = {
       working_formal: 'Trabalho Registrado',

@@ -1,1 +1,1 @@
-export { listarApenados } from './services/convictedService'
+export { listarApenados, listarProcessos } from './services/convictedService'

@@ -151,6 +151,12 @@ export function toConvicted(a) {
   }
 }
 
+/**
+ * Retorna a lista de apenados armazenada no storage local.
+ * Lê prioritariamente de APENADOS_STORAGE_KEY com fallback para a chave legada 'apenados_data_v6'.
+ *
+ * @returns {Array<Object>}
+ */
 export function listarApenados() {
   let raw = readJson(APENADOS_STORAGE_KEY, null)
   if (!raw) {
@@ -165,6 +171,16 @@ export function listarApenados() {
     : apenadosIniciais.map(toConvicted)
 }
 
+/**
+ * Salva a lista de apenados no storage local.
+ *
+ * TODO(migration): O dual-write na chave legada 'apenados_data_v6' é mantido temporariamente
+ * como estratégia de migração incremental para retrocompatibilidade com consumers legados.
+ * Remover a escrita na chave 'apenados_data_v6' após a migração completa de todas as features.
+ *
+ * @param {Array<Object>} apenados
+ * @returns {Array<Object>}
+ */
 export function salvarApenados(apenados) {
   writeJson(APENADOS_STORAGE_KEY, apenados)
   writeJson('apenados_data_v6', apenados)
@@ -192,4 +208,16 @@ export async function buscarEnderecoPorCep(cep, { signal } = {}) {
   } catch {
     return getEnderecoByCep(cepLimpo)
   }
+}
+
+/**
+ * Retorna a lista de processos jurídicos/executivos, opcionalmente filtrados por comarca/tenant.
+ *
+ * @param {string|number} [tenantId] - ID da comarca/tenant para filtrar.
+ * @returns {Array<Object>} Lista de processos.
+ */
+export function listarProcessos(tenantId) {
+  const lista = mockProcessos?.processos || []
+  if (!tenantId) return lista
+  return lista.filter((p) => !p.tenantId || String(p.tenantId) === String(tenantId))
 }
