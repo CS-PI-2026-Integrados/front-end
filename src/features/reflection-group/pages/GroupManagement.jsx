@@ -41,7 +41,7 @@ import {
 } from '@/shared/components/ui/dialog.jsx'
 import toast from 'react-hot-toast'
 import { Checkbox } from '@/shared/components/ui/checkbox.jsx'
-import { listarGrupos, salvarGrupos } from '@/features/reflection-group/services/groupsService'
+import { useGroupsStorage } from '@/features/reflection-group/hooks/useGroupsStorage'
 import {
   Card,
   CardHeader,
@@ -76,26 +76,11 @@ const StatusBadge = ({ situacao }) => (
   </span>
 )
 
-function getStoredList() {
-  // return mock
-
-  const local = null
-
-  if (!local) return listarGrupos()
-
-  try {
-    const parsed = JSON.parse(local)
-
-    return Array.isArray(parsed) ? parsed : listarGrupos()
-  } catch {
-    return mock
-  }
-}
-
 const GroupManagement = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { session } = useSession()
+  const { loadGroups, saveGroups } = useGroupsStorage()
 
   const [isLoading, setLoading] = useState(false)
   const [group, setGroup] = useState(null)
@@ -231,12 +216,12 @@ const GroupManagement = () => {
     setGroup(updatedGroup)
 
     try {
-      const list = getStoredList()
+      const list = loadGroups()
       const updatedList = list.map((item) =>
         String(item.id) === String(group.id) ? updatedGroup : item
       )
 
-      salvarGrupos(updatedList)
+      saveGroups(updatedList)
     } catch {}
 
     closeNewEncontroModal()
@@ -275,11 +260,11 @@ const GroupManagement = () => {
     setGroup(updatedGroup)
 
     try {
-      const list = getStoredList()
+      const list = loadGroups()
       const updatedList = list.map((item) =>
         String(item.id) === String(group.id) ? updatedGroup : item
       )
-      salvarGrupos(updatedList)
+      saveGroups(updatedList)
     } catch {}
 
     setIsEditEncontroOpen(false)
@@ -301,12 +286,12 @@ const GroupManagement = () => {
     setGroup(updatedGroup)
 
     try {
-      const list = getStoredList()
+      const list = loadGroups()
       const updatedList = list.map((item) =>
         String(item.id) === String(group.id) ? updatedGroup : item
       )
 
-      salvarGrupos(updatedList)
+      saveGroups(updatedList)
     } catch {}
   }
 
@@ -403,12 +388,12 @@ const GroupManagement = () => {
     setGroup(updatedGroup)
 
     try {
-      const list = getStoredList()
+      const list = loadGroups()
       const updatedList = list.map((item) =>
         String(item.id) === String(group.id) ? updatedGroup : item
       )
 
-      salvarGrupos(updatedList)
+      saveGroups(updatedList)
     } catch {}
 
     closePresenceModal()
@@ -418,7 +403,7 @@ const GroupManagement = () => {
     setLoading(true)
 
     try {
-      const list = getStoredList()
+      const list = loadGroups()
       const gid = Number(id)
       const found = list.find((g) => String(g.id) === String(id) || g.id === gid)
 
@@ -433,7 +418,7 @@ const GroupManagement = () => {
     } finally {
       setLoading(false)
     }
-  }, [id, navigate])
+  }, [id, loadGroups, navigate])
 
   return isLoading ? (
     <div className="flex h-full">

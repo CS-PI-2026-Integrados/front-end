@@ -16,6 +16,15 @@ import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Input } from '@/shared/components/ui/input'
 import { cn } from '@/shared/lib/utils'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/components/ui/table'
+import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
 
 const ITEMS_PER_PAGE = 10
 
@@ -170,14 +179,11 @@ export default function Convicteds() {
         title="Gestão de Apenados"
         description="Cadastro e gerenciamento de apenados"
         action={
-          <Button
-            size="sm"
-            className="w-full cursor-pointer gap-2 sm:w-auto sm:min-w-40"
+          <HeaderButton
+            icon={Plus}
+            text="Novo apenado"
             onClick={() => setModalCadastroAberto(true)}
-          >
-            <Plus />
-            Novo Apenado
-          </Button>
+          />
         }
       />
 
@@ -227,39 +233,39 @@ export default function Convicteds() {
         </div>
 
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full min-w-[700px] text-sm">
-            <thead>
-              <tr className="bg-secondary border-y">
-                <th className="text-foreground w-16 px-4 py-3 text-left text-xs font-semibold">
+          <Table className="w-full min-w-[700px] text-sm">
+            <TableHeader>
+              <TableRow className="bg-secondary border-y">
+                <TableHead className="text-foreground w-16 px-4 py-3 text-left text-xs font-semibold">
                   Foto
-                </th>
-                <th className="text-foreground min-w-36 px-4 py-3 text-left text-xs font-semibold">
+                </TableHead>
+                <TableHead className="text-foreground min-w-36 px-4 py-3 text-left text-xs font-semibold">
                   Nome
-                </th>
-                <th className="text-foreground w-44 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                </TableHead>
+                <TableHead className="text-foreground w-44 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
                   Processo
-                </th>
-                <th className="text-foreground w-36 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                </TableHead>
+                <TableHead className="text-foreground w-36 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
                   Telefone
-                </th>
-                <th className="text-foreground min-w-44 px-4 py-3 text-left text-xs font-semibold">
+                </TableHead>
+                <TableHead className="text-foreground min-w-44 px-4 py-3 text-left text-xs font-semibold">
                   Endereço
-                </th>
-                <th className="text-foreground w-44 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                </TableHead>
+                <TableHead className="text-foreground w-44 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
                   Sit. Trabalhista
-                </th>
-                <th className="text-foreground w-28 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                </TableHead>
+                <TableHead className="text-foreground w-28 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
                   Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paginated.map((a) => {
                 const procNum = a.processNumber || '-'
                 const count = processCounts[procNum] || 0
                 return (
-                  <tr key={a.id} className="hover:bg-muted/50 border-b transition-colors">
-                    <td className="w-16 px-4 py-3">
+                  <TableRow key={a.id} className="hover:bg-muted/50 border-b transition-colors">
+                    <TableCell className="w-16 px-4 py-3">
                       <Avatar className="size-9 shrink-0">
                         <AvatarImage
                           src={a.referencePhotoUrl || `https://i.pravatar.cc/150?u=${a.id}`}
@@ -269,12 +275,12 @@ export default function Convicteds() {
                           {(a.fullName || 'A').charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                    </td>
-                    <td className="min-w-36 px-4 py-3.5">
+                    </TableCell>
+                    <TableCell className="min-w-36 px-4 py-3.5">
                       <p className="text-foreground font-semibold">{a.fullName}</p>
                       <p className="text-muted-foreground mt-0.5 text-xs">{maskCPF(a.cpf)}</p>
-                    </td>
-                    <td className="text-muted-foreground w-44 px-4 py-3.5">
+                    </TableCell>
+                    <TableCell className="text-muted-foreground w-44 px-4 py-3.5">
                       <div className="flex items-center gap-2">
                         <span
                           className="text-foreground block max-w-36 truncate font-medium"
@@ -292,20 +298,20 @@ export default function Convicteds() {
                           </span>
                         )}
                       </div>
-                    </td>
-                    <td className="text-muted-foreground w-36 px-4 py-3.5 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="text-muted-foreground w-36 px-4 py-3.5 whitespace-nowrap">
                       {a.phone}
-                    </td>
-                    <td
+                    </TableCell>
+                    <TableCell
                       className="text-muted-foreground max-w-56 min-w-44 truncate px-4 py-3.5"
                       title={a.address}
                     >
                       {a.address}
-                    </td>
-                    <td className="w-44 px-4 py-3.5 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="w-44 px-4 py-3.5 whitespace-nowrap">
                       <SitTrabalhista sit={a.workingStatus} />
-                    </td>
-                    <td className="w-28 px-4 py-3.5">
+                    </TableCell>
+                    <TableCell className="w-28 px-4 py-3.5">
                       <div className="flex items-center gap-1">
                         <Button
                           type="button"
@@ -338,12 +344,12 @@ export default function Convicteds() {
                           <span className="sr-only">Excluir</span>
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </DataTableCard>
     </div>

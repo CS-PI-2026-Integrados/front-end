@@ -14,7 +14,7 @@ import { useState } from 'react'
 import { Button } from '@/shared/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
 import { useAtendimento } from '@/features/attendance'
-import { ConvictedInfoCard } from '@/features/attendance/components/service/ConvictedInfoCard.jsx'
+import { ConvictedInfoCard } from '@/features/attendance/components/ConvictedInfoCard.jsx'
 
 export function SelectConvicted() {
   const { apenado, selectApenado } = useAtendimento()
@@ -62,7 +62,7 @@ export function SelectConvicted() {
           >
             <Command shouldFilter={false}>
               <CommandInput placeholder="Buscar por nome ou CPF" onValueChange={setSearch} />
-              <CommandList className="max-h-[200px]">
+              <CommandList className="max-h-50">
                 <CommandEmpty>Nenhum apenado encontrado.</CommandEmpty>
                 <CommandGroup>
                   {apenadosFiltrados.map((a) => (

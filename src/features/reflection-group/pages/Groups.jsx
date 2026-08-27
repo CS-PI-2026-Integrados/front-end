@@ -2,23 +2,14 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Plus, Users, Pencil, Trash, Settings } from 'lucide-react'
 import { useSession } from '@/features/authentication/context/sessionContext'
-import { listarGrupos, salvarGrupos } from '@/features/reflection-group/services/groupsService'
+import { useGroupsStorage } from '@/features/reflection-group/hooks/useGroupsStorage'
 import { listarApenados } from '@/features/convicteds'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Input } from '@/shared/components/ui/input'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,26 +33,15 @@ import {
 } from '@/shared/components/ui/table'
 import NewGroupForm from '@/features/reflection-group/components/hooks/NewGroupForm'
 import GroupEditModal from '@/features/reflection-group/components/hooks/GroupEditModal'
-
-function getStoredList() {
-  const salvo = null
-
-  if (!salvo) return listarGrupos()
-
-  try {
-    const parsed = JSON.parse(salvo)
-
-    return Array.isArray(parsed) ? parsed : listarGrupos()
-  } catch {
-    return mockGroups
-  }
-}
+import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
+import { ConfirmationDialog } from '@/shared/components/ConfirmationDialog'
 
 const Groups = () => {
   const { session } = useSession()
   const navigate = useNavigate()
   const [novoGrupoAberto, setNovoGrupoAberto] = useState(false)
-  const [grupos, setGrupos] = useState(getStoredList)
+  const { loadGroups, saveGroups } = useGroupsStorage()
+  const [grupos, setGrupos] = useState(loadGroups)
   const [search, setSearch] = useState('')
   const [situacaoFilter, setSituacaoFilter] = useState('TODOS')
   const [grupoSelecionado, setGrupoSelecionado] = useState(null)
@@ -86,7 +66,8 @@ const Groups = () => {
   const filtered = useMemo(() => {
     return grupos.filter((grupo) => {
       const matchesSearch = grupo.nome?.toLowerCase().includes(search.toLowerCase())
-      const matchesSituacao = situacaoFilter === 'TODOS' || grupo.situacao === situacaoFilter
+      const groupStatus = grupo.situacao ?? grupo.status
+      const matchesSituacao = situacaoFilter === 'TODOS' || groupStatus === situacaoFilter
       return matchesSearch && matchesSituacao
     })
   }, [grupos, search, situacaoFilter])
@@ -102,7 +83,7 @@ const Groups = () => {
 
       const newGroupsList = [novoGrupo, ...grupos]
       setGrupos(newGroupsList)
-      salvarGrupos(newGroupsList)
+      saveGroups(newGroupsList)
       setNovoGrupoAberto(false)
     } catch (error) {
       throw error
@@ -123,200 +104,208 @@ const Groups = () => {
       grupo.id === updatedGrupo.id ? updatedGrupo : grupo
     )
     setGrupos(newGroupsList)
-    salvarGrupos(newGroupsList)
+    saveGroups(newGroupsList)
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="space-y-6">
-        <PageHeader
-          title="Grupos reflexivos"
-          description="Gerencie grupos de reflexão e acompanhe participantes"
-          action={
-            <Button size="sm" onClick={() => setNovoGrupoAberto(true)}>
-              <Plus />
-              Novo grupo
-            </Button>
-          }
-        />
+    <div className="space-y-5">
+      <PageHeader
+        title="Grupos reflexivos"
+        description="Gerencie grupos de reflexão e acompanhe participantes"
+        action={
+          <HeaderButton icon={Plus} text="Novo Grupo" onClick={() => setNovoGrupoAberto(true)} />
+        }
+      />
 
-        <NewGroupForm
-          isOpen={novoGrupoAberto}
-          onOpenChange={setNovoGrupoAberto}
-          availableParticipants={availableParticipants}
-          onSubmit={handleCreateGroup}
-        />
+      <NewGroupForm
+        isOpen={novoGrupoAberto}
+        onOpenChange={setNovoGrupoAberto}
+        availableParticipants={availableParticipants}
+        onSubmit={handleCreateGroup}
+      />
 
-        <GroupEditModal
-          key={grupoSelecionado?.id ?? 'none'}
-          group={grupoSelecionado}
-          isOpen={visualizarGrupoAberto}
-          onOpenChange={setVisualizarGrupoAberto}
-          availableParticipants={availableParticipants}
-          onUpdate={handleUpdateGroup}
-        />
+      <GroupEditModal
+        key={grupoSelecionado?.id ?? 'none'}
+        group={grupoSelecionado}
+        isOpen={visualizarGrupoAberto}
+        onOpenChange={setVisualizarGrupoAberto}
+        availableParticipants={availableParticipants}
+        onUpdate={handleUpdateGroup}
+      />
 
-        <FiltersPanel description="Pesquise e filtre os grupos cadastrados">
-          <div className="relative min-w-0 flex-1">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-            <Input
-              placeholder="Buscar por nome ou CPF..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              className="pl-9"
-            />
-          </div>
+      <FiltersPanel description="Pesquise e filtre os grupos cadastrados">
+        <div className="relative min-w-0 flex-1">
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Input
+            placeholder="Buscar por nome ou CPF..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className="pl-9"
+          />
+        </div>
 
-          <Select defaultValue={situacaoFilter} onValueChange={setSituacaoFilter}>
-            <SelectTrigger className="w-full md:w-55">
-              <SelectValue />
-            </SelectTrigger>
+        <Select value={situacaoFilter} onValueChange={setSituacaoFilter}>
+          <SelectTrigger className="hover:bg-muted w-full cursor-pointer lg:w-44">
+            <SelectValue />
+          </SelectTrigger>
 
-            <SelectContent>
-              <SelectItem value="TODOS">Todos</SelectItem>
-              <SelectItem value="PLANEJAMENTO">Planejamento</SelectItem>
-              <SelectItem value="ANDAMENTO">Em andamento</SelectItem>
-              <SelectItem value="CONCLUIDO">Concluído</SelectItem>
-              <SelectItem value="CANCELADO">Cancelado</SelectItem>
-            </SelectContent>
-          </Select>
-        </FiltersPanel>
+          <SelectContent>
+            <SelectItem value="TODOS">Todos</SelectItem>
+            <SelectItem value="PLANEJAMENTO">Planejamento</SelectItem>
+            <SelectItem value="ANDAMENTO">Em andamento</SelectItem>
+            <SelectItem value="CONCLUIDO">Concluído</SelectItem>
+            <SelectItem value="CANCELADO">Cancelado</SelectItem>
+          </SelectContent>
+        </Select>
+      </FiltersPanel>
 
-        <DataTableCard
-          title="Grupos cadastrados"
-          count={filtered.length}
-          icon={<Users className="text-muted-foreground size-5" />}
-          isEmpty={filtered.length === 0}
-          emptyState={
-            <EmptyTableState
-              title="Nenhum grupo reflexivo encontrado"
-              description={
-                search
-                  ? `Não há resultados para "${search}". Tente outro termo.`
-                  : 'Não há grupos cadastrados com esses filtros.'
-              }
-            />
-          }
-        >
-          <div className="px-4">
-            <Table>
-              <TableHeader>
+      <DataTableCard
+        title="Grupos cadastrados"
+        count={filtered.length}
+        icon={<Users className="text-muted-foreground size-5" />}
+        isEmpty={filtered.length === 0}
+        emptyState={
+          <EmptyTableState
+            title="Nenhum grupo reflexivo encontrado"
+            description={
+              search
+                ? `Não há resultados para "${search}". Tente outro termo.`
+                : 'Não há grupos cadastrados com esses filtros.'
+            }
+          />
+        }
+      >
+        <div className="overflow-x-auto">
+          <Table className="min-w-190 text-sm">
+            <TableHeader>
+              <TableRow className="bg-secondary border-y">
+                <TableHead className="px-4 py-3 text-left text-xs font-semibold">
+                  Nome do Grupo
+                </TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-semibold">Status</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-semibold">
+                  Participantes
+                </TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-semibold">
+                  Encontros
+                </TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-semibold">Início</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-semibold">Fim</TableHead>
+                <TableHead className="px-4 py-3 text-right text-xs font-semibold">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {filtered.length === 0 ? (
                 <TableRow>
-                  <TableHead>Nome do Grupo</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Participantes</TableHead>
-                  <TableHead>Encontros</TableHead>
-                  <TableHead>Início</TableHead>
-                  <TableHead>Fim</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableCell colSpan={7} className="text-muted-foreground h-32 px-4 text-center">
+                    Nenhum grupo encontrado
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-muted-foreground h-32 text-center">
-                      Nenhum grupo encontrado
+              ) : (
+                filtered.map((grupo) => (
+                  <TableRow
+                    key={grupo.id}
+                    className="hover:bg-muted/50 cursor-pointer"
+                    onClick={() => handleRowClick(grupo.id)}
+                  >
+                    <TableCell className="px-4 py-3 font-medium">{grupo.nome}</TableCell>
+                    <TableCell className="px-4 py-3">
+                      {
+                        {
+                          PLANEJAMENTO: 'Planejamento',
+                          ANDAMENTO: 'Em andamento',
+                          CONCLUIDO: 'Concluído',
+                          CANCELADO: 'Cancelado',
+                        }[grupo.situacao ?? grupo.status]
+                      }
                     </TableCell>
-                  </TableRow>
-                ) : (
-                  filtered.map((grupo) => (
-                    <TableRow key={grupo.id} tabIndex={0} role="button">
-                      <TableCell className="font-medium">{grupo.nome}</TableCell>
-                      <TableCell>
-                        <Badge>
-                          {
-                            {
-                              PLANEJAMENTO: 'Planejamento',
-                              ANDAMENTO: 'Em andamento',
-                              CONCLUIDO: 'Concluído',
-                              CANCELADO: 'Cancelado',
-                            }[grupo.situacao]
-                          }
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{grupo.participantes.length}</TableCell>
-                      <TableCell>
-                        {grupo.totalEncontros} ({grupo.frequencia})
-                      </TableCell>
-                      <TableCell>{formatDate(grupo.dataInicio)}</TableCell>
-                      <TableCell>{formatDate(grupo.dataTermino)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button size="sm" onClick={() => handleRowClick(grupo.id)}>
-                          Acessar
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" size="sm">
-                              <Settings />
+                    <TableCell className="px-4 py-3">{grupo.participantes.length}</TableCell>
+                    <TableCell className="px-4 py-3">
+                      {grupo.totalEncontros} ({grupo.frequencia})
+                    </TableCell>
+                    <TableCell className="px-4 py-3">{formatDate(grupo.dataInicio)}</TableCell>
+                    <TableCell className="px-4 py-3">{formatDate(grupo.dataTermino)}</TableCell>
+                    <TableCell className="px-4 py-3 text-right">
+                      <Button
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleRowClick(grupo.id)
+                        }}
+                      >
+                        Acessar
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <Settings />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuGroup>
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              className="w-full justify-start font-normal"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                handleEditGroup(grupo)
+                              }}
+                            >
+                              <Pencil /> Editar
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuGroup>
+                            {session?.user.role?.level >= 2 ? (
                               <Button
                                 size="xs"
-                                variant="ghost"
+                                variant="destructive"
                                 className="w-full justify-start font-normal"
-                                onClick={() => handleEditGroup(grupo)}
+                                onClick={(event) => {
+                                  event.stopPropagation()
+                                  setGrupoParaExcluir(grupo)
+                                  setConfirmExcluirAberto(true)
+                                }}
                               >
-                                <Pencil /> Editar
+                                <Trash /> Excluir
                               </Button>
-                              {session?.user.role?.level >= 2 ? (
-                                <Button
-                                  size="xs"
-                                  variant="destructive"
-                                  className="w-full justify-start font-normal"
-                                  onClick={() => {
-                                    setGrupoParaExcluir(grupo)
-                                    setConfirmExcluirAberto(true)
-                                  }}
-                                >
-                                  <Trash /> Excluir
-                                </Button>
-                              ) : null}
-                            </DropdownMenuGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </DataTableCard>
+                            ) : null}
+                          </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </DataTableCard>
 
-        <Dialog open={confirmExcluirAberto} onOpenChange={setConfirmExcluirAberto}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Excluir grupo reflexivo</DialogTitle>
-              <DialogDescription>
-                Tem certeza de que deseja excluir o grupo reflexivo{' '}
-                <strong>{grupoParaExcluir?.nome}</strong>? Esta ação não pode ser desfeita.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="justify-end gap-2">
-              <Button variant="outline" onClick={() => setConfirmExcluirAberto(false)}>
-                Cancelar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (grupoParaExcluir) {
-                    const newGroupsList = grupos.filter((item) => item.id !== grupoParaExcluir.id)
-                    setGrupos(newGroupsList)
-                    salvarGrupos(newGroupsList)
-                  }
-                  setConfirmExcluirAberto(false)
-                  setGrupoParaExcluir(null)
-                }}
-              >
-                Excluir
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      <ConfirmationDialog
+        open={confirmExcluirAberto}
+        onOpenChange={setConfirmExcluirAberto}
+        title="Excluir grupo reflexivo"
+        description={
+          <>
+            Tem certeza de que deseja excluir o grupo reflexivo{' '}
+            <strong>{grupoParaExcluir?.nome}</strong>? Esta ação não pode ser desfeita.
+          </>
+        }
+        destructive
+        confirmLabel="Excluir"
+        onConfirm={() => {
+          if (grupoParaExcluir) {
+            const newGroupsList = grupos.filter((item) => item.id !== grupoParaExcluir.id)
+            setGrupos(newGroupsList)
+            saveGroups(newGroupsList)
+          }
+          setGrupoParaExcluir(null)
+        }}
+      />
     </div>
   )
 }

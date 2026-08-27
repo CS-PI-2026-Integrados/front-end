@@ -61,10 +61,10 @@ export default function ApenadoProfile() {
                 </div>
               )}
             </div>
-            <h2 className="text-foreground text-xl leading-tight font-bold break-words">
-              {apenado.fullName}
+            <h2 className="text-foreground text-xl leading-tight font-bold wrap-break-word">
+              {apenado.fullName || apenado.nomeCompleto}
             </h2>
-            <p className="text-muted-foreground mt-1 text-sm font-medium break-words">
+            <p className="text-muted-foreground mt-1 text-sm font-medium wrap-break-word">
               CPF: {apenado.cpf}
             </p>
             <div className="mt-4">
@@ -121,8 +121,8 @@ export default function ApenadoProfile() {
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Endereço Completo
                 </label>
-                <p className="text-foreground text-sm leading-relaxed font-medium break-words">
-                  {apenado.address || 'Não informado'}
+                <p className="text-foreground text-sm leading-relaxed font-medium wrap-break-word">
+                  {apenado.address || apenado.endereco || 'Não informado'}
                 </p>
               </div>
 
@@ -136,7 +136,7 @@ export default function ApenadoProfile() {
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Número do Processo
                 </label>
-                <p className="text-foreground text-sm font-medium break-words">
+                <p className="text-foreground text-sm font-medium wrap-break-word">
                   {apenado.processos?.[0]?.processNumber || apenado.processNumber || 'N/A'}
                 </p>
               </div>
@@ -154,8 +154,10 @@ export default function ApenadoProfile() {
               <label className="text-muted-foreground mb-2 block text-[10px] font-bold tracking-wider uppercase">
                 Observações do Prontuário
               </label>
-              <div className="border-border text-muted-foreground bg-card rounded-lg border p-4 text-sm leading-relaxed break-words italic">
-                {apenado.observations || 'Nenhuma observação registrada até o momento.'}
+              <div className="border-border text-muted-foreground bg-card rounded-lg border p-4 text-sm leading-relaxed wrap-break-word italic">
+                {apenado.observations ||
+                  apenado.observacoes ||
+                  'Nenhuma observação registrada até o momento.'}
               </div>
             </div>
           </div>

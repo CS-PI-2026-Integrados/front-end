@@ -1,13 +1,12 @@
-import { ConvictedCard } from '@/features/attendance/components/service/ConvictedCard.jsx'
-import { useAtendimento } from '@/features/attendance'
+import { ConvictedCard } from '@/features/attendance/components/ConvictedCard.jsx'
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/shared/components/ui/tabs.jsx'
-import { PhotoCaptureCard } from '@/features/attendance/components/service/PhotoCaptureCard.jsx'
-import { ProofHistory } from '@/features/attendance/components/service/ProofHistory.jsx'
-import { useGenerateReceipt } from '@/features/attendance/hooks/useGenerateReceipt.js'
+import { PhotoCaptureCard } from '@/features/attendance/components/PhotoCaptureCard.jsx'
+import { ProofHistory } from '@/features/attendance/components/ProofHistory.jsx'
+import { useReceiptFlow } from '@/features/attendance/hooks/useReceiptFlow.js'
 import { useAtendimentoData } from '@/features/attendance/hooks/useAttendanceData.js'
-import { ReceiptSuccessCard } from '@/features/attendance/components/service/ReceiptSuccessCard.jsx'
-import { getMudancasAtivas } from '@/features/attendance/utils/attendanceUtils'
+import { ReceiptSuccessCard } from '@/features/attendance/components/ReceiptSuccessCard.jsx'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
+import { useReceiptPdfActions } from '@/features/attendance/hooks/useReceiptPdfActions'
 
 const Service = () => {
   const {
@@ -15,59 +14,19 @@ const Service = () => {
     processo,
     fotoAtendimento,
     isSuccess,
-    mudancas,
     isReadyToCapture,
     reciboGerado,
-    setSubmitting,
-    setSuccess,
-    setReciboGerado,
-    setError,
     resetAtendimento,
-  } = useAtendimento()
+    deviceId,
+    isSubmitting,
+    setFoto,
+    clearPhoto,
+    setPhotoError,
+    submit,
+  } = useReceiptFlow()
 
   const { presencas } = useAtendimentoData()
-
-  const { generateReceipt } = useGenerateReceipt()
-
-  const handleFinalSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-
-    if (!apenado) {
-      setError('Selecione um apenado para continuar')
-      return
-    }
-
-    const temProcessosAtivos = (apenado.processos || []).length > 0
-    if (!processo && temProcessosAtivos) {
-      setError('Selecione um processo para continuar')
-      return
-    }
-
-    if (!fotoAtendimento) {
-      setError('Capture ou selecione uma foto para gerar o comprovante')
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const mudancasAtivas = getMudancasAtivas(mudancas)
-
-      const recibo = await generateReceipt({
-        apenado,
-        processo,
-        fotoAtendimento: fotoAtendimento.data,
-        mudancasDetectadas: mudancasAtivas,
-      })
-
-      setReciboGerado(recibo)
-      setSuccess(true)
-    } catch (error) {
-      setError(error.message || 'Falha ao gerar comprovante. Tente novamente.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
+  const { download, view } = useReceiptPdfActions()
 
   return (
     <Tabs defaultValue="novo" className="flex h-full min-h-0 w-full flex-1 flex-col">
@@ -98,7 +57,7 @@ const Service = () => {
       >
         <form
           id="form-atendimento"
-          onSubmit={handleFinalSubmit}
+          onSubmit={submit}
           className="grid min-h-0 w-full shrink-0 grid-cols-1 gap-4 p-0.5 lg:h-full lg:flex-1 lg:grid-cols-2 lg:gap-6"
         >
           <ConvictedCard
@@ -118,9 +77,22 @@ const Service = () => {
                 className="w-full lg:h-full"
                 atendimento={{ apenado, processo, recibo: reciboGerado }}
                 onReset={resetAtendimento}
+                onDownload={download}
+                onView={view}
               />
             ) : (
-              <PhotoCaptureCard className="w-full lg:h-full" />
+              <PhotoCaptureCard
+                className="w-full lg:h-full"
+                file={fotoAtendimento.data}
+                referencePhotoUrl={apenado?.referencePhotoUrl}
+                deviceId={deviceId}
+                isReadyToCapture={isReadyToCapture}
+                isSubmitting={isSubmitting}
+                error={fotoAtendimento.error}
+                onCapture={setFoto}
+                onClear={clearPhoto}
+                onError={setPhotoError}
+              />
             )}
           </div>
         </form>
