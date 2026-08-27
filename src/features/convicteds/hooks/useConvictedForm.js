@@ -5,7 +5,7 @@ import {
   listarApenados,
 } from '@/features/convicteds/services/convictedService'
 import { mockProcessos } from '@/features/convicteds/mock/processosMock'
-import { validateCPF } from '@/shared/lib/cpf'
+import { validateConvictedForm } from '@/features/convicteds/schemas/convictedSchema'
 import {
   parsearEndereco,
   montarEnderecoStr,
@@ -230,24 +230,7 @@ export function useConvictedForm(apenado, tenantId) {
   }
 
   function validar() {
-    const erros = {}
-    if (!isEditing && !form.foto && !preview) erros.foto = 'A foto é obrigatória.'
-    if (!form.nomeCompleto.trim()) erros.nomeCompleto = 'O nome é obrigatório.'
-    if (!form.cpf || form.cpf.replace(/\D/g, '').length < 11) erros.cpf = 'O CPF é obrigatório.'
-    else if (!validateCPF(form.cpf)) erros.cpf = 'CPF inválido.'
-    if (!form.dataNascimento) erros.dataNascimento = 'A data de nascimento é obrigatória.'
-    if (!form.telefone || form.telefone.replace(/\D/g, '').length < 10)
-      erros.telefone = 'O telefone é obrigatório.'
-    if (!form.logradouro.trim()) erros.logradouro = 'O logradouro é obrigatório.'
-    if (!form.numero.trim()) erros.numero = 'O número é obrigatório.'
-    if (!form.bairro.trim()) erros.bairro = 'O bairro é obrigatório.'
-    if (!form.cidade.trim()) erros.cidade = 'A cidade é obrigatória.'
-    if (!form.uf.trim()) erros.uf = 'A UF é obrigatória.'
-    if (!form.processoId) erros.processoId = 'O número do processo é obrigatório.'
-    if (!form.situacaoTrabalhista)
-      erros.situacaoTrabalhista = 'A situação trabalhista é obrigatória.'
-
-    return erros
+    return validateConvictedForm(form, { isEditing, preview })
   }
 
   function tentarSalvar(onSaveCallback) {
