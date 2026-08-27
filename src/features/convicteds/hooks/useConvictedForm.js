@@ -134,9 +134,7 @@ export function useConvictedForm(apenado, tenantId) {
       .filter(Boolean)
   }, [procSelecionado, apenado])
 
-  function handleChange(event) {
-    const { name, value } = event.target
-
+  function handleSelect(name, value) {
     if (name === 'processoId') {
       const proc = processosDisponiveis.find((p) => String(p.id) === String(value))
       setForm((prev) => ({
@@ -150,6 +148,11 @@ export function useConvictedForm(apenado, tenantId) {
 
     setForm((prev) => ({ ...prev, [name]: value }))
     setErrors((prev) => ({ ...prev, [name]: '' }))
+  }
+
+  function handleChange(event) {
+    const { name, value } = event.target
+    handleSelect(name, value)
   }
 
   function handleMask(name, value) {
@@ -329,6 +332,7 @@ export function useConvictedForm(apenado, tenantId) {
     outrosApenadosNoProcesso,
     actions: {
       handleChange,
+      handleSelect,
       handleMask,
       handleFoto,
       removerFoto,

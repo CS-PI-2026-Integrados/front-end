@@ -11,6 +11,13 @@ import {
   DialogTitle,
   DialogClose,
 } from '@/shared/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Separator } from '@/shared/components/ui/separator'
@@ -32,7 +39,15 @@ export function ApenadoEditDialog({ apenado, onSave, onOpenChange }) {
 
   if (!apenado) return null
 
-  const { handleChange, handleMask, handleFoto, removerFoto, buscarCep, tentarSalvar } = actions
+  const {
+    handleChange,
+    handleSelect,
+    handleMask,
+    handleFoto,
+    removerFoto,
+    buscarCep,
+    tentarSalvar,
+  } = actions
 
   const inputClass = (field) =>
     `w-full rounded-md border px-2.5 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none bg-transparent placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 ${
@@ -391,21 +406,30 @@ export function ApenadoEditDialog({ apenado, onSave, onOpenChange }) {
                 >
                   Número do Processo <span className="text-destructive">*</span>
                 </Label>
-                <select
-                  id="modal-edit-processoId"
+                <Select
                   name="processoId"
-                  value={form.processoId}
-                  onChange={handleChange}
-                  className={inputClass('processoId')}
+                  value={form.processoId ? String(form.processoId) : ''}
+                  onValueChange={(val) => handleSelect('processoId', val)}
                 >
-                  <option value="">Selecione o processo</option>
-                  {processosDisponiveis.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.processNumber || p.numeroProcesso}{' '}
-                      {p.court || p.vara ? `(${p.court || p.vara})` : ''}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    id="modal-edit-processoId"
+                    className={
+                      errors.processoId
+                        ? 'border-destructive ring-destructive/20 ring-3'
+                        : 'border-input dark:bg-input/30'
+                    }
+                  >
+                    <SelectValue placeholder="Selecione o processo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {processosDisponiveis.map((p) => (
+                      <SelectItem key={p.id} value={String(p.id)}>
+                        {p.processNumber || p.numeroProcesso}{' '}
+                        {p.court || p.vara ? `(${p.court || p.vara})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.processoId && (
                   <p className="text-destructive mt-0.5 text-xs">{errors.processoId}</p>
                 )}
@@ -418,20 +442,29 @@ export function ApenadoEditDialog({ apenado, onSave, onOpenChange }) {
                 >
                   Situação Trabalhista <span className="text-destructive">*</span>
                 </Label>
-                <select
-                  id="modal-edit-sit"
+                <Select
                   name="situacaoTrabalhista"
-                  value={form.situacaoTrabalhista}
-                  onChange={handleChange}
-                  className={inputClass('situacaoTrabalhista')}
+                  value={form.situacaoTrabalhista || ''}
+                  onValueChange={(val) => handleSelect('situacaoTrabalhista', val)}
                 >
-                  <option value="">Selecione</option>
-                  {SITUACOES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    id="modal-edit-sit"
+                    className={
+                      errors.situacaoTrabalhista
+                        ? 'border-destructive ring-destructive/20 ring-3'
+                        : 'border-input dark:bg-input/30'
+                    }
+                  >
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SITUACOES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.situacaoTrabalhista && (
                   <p className="text-destructive mt-0.5 text-xs">{errors.situacaoTrabalhista}</p>
                 )}
