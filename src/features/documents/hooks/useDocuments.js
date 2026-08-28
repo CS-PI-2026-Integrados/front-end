@@ -3,19 +3,11 @@ import { observarComprovantes, obterSnapshotComprovantes } from '@/features/atte
 import {
   listDocuments,
   listGroupDocuments,
-  listDocumentConvicteds,
   readViewPreference,
   saveViewPreference,
 } from '../services/documentsService'
 
 const MONTH_COUNT = 12
-
-function attendanceProcessNumber(document, convicteds) {
-  const convicted = convicteds.find((item) => String(item.id) === String(document.convictedId))
-  if (!convicted) return '—'
-  const process = convicted.processes.find((item) => String(item.id) === String(document.processId))
-  return process?.processNumber || '—'
-}
 
 export function useDocuments(tenantId, source = 'attendance') {
   const [search, setSearch] = useState('')
@@ -25,20 +17,10 @@ export function useDocuments(tenantId, source = 'attendance') {
 
   useSyncExternalStore(observarComprovantes, obterSnapshotComprovantes)
 
-  const convicteds = useMemo(() => (tenantId ? listDocumentConvicteds(tenantId) : []), [tenantId])
-
   const documents = useMemo(() => {
     if (!tenantId) return []
     return source === 'group' ? listGroupDocuments(tenantId) : listDocuments(tenantId)
   }, [tenantId, source])
-
-  const getProcessNumber = useCallback(
-    (document) => {
-      if (source === 'group') return document.processNumber || '—'
-      return attendanceProcessNumber(document, convicteds)
-    },
-    [source, convicteds]
-  )
 
   const availableYears = useMemo(() => {
     const years = new Set(documents.map((document) => new Date(document.issuedAt).getFullYear()))
@@ -78,10 +60,10 @@ export function useDocuments(tenantId, source = 'attendance') {
 
     return monthDocuments.filter((document) => {
       const name = (document.convictedName || '').toLowerCase()
-      const process = getProcessNumber(document).toLowerCase()
+      const process = (document.processNumber || '').toLowerCase()
       return name.includes(term) || process.includes(term)
     })
-  }, [monthDocuments, search, getProcessNumber])
+  }, [monthDocuments, search])
 
   const selectYear = useCallback((year) => {
     setSelectedYear(year)
@@ -113,6 +95,5 @@ export function useDocuments(tenantId, source = 'attendance') {
     changeViewMode,
     monthDocuments,
     filteredDocuments,
-    getProcessNumber,
   }
 }

@@ -5,10 +5,8 @@ import { useDocuments } from '../hooks/useDocuments'
 import { YearSelector } from './YearSelector'
 import { MonthCarousel } from './MonthCarousel'
 import { DocumentSearch } from './DocumentSearch'
-import { DocumentGrid } from './DocumentGrid'
-import { DocumentList } from './DocumentList'
-import { GroupDocumentGrid } from './GroupDocumentGrid'
-import { GroupDocumentList } from './GroupDocumentList'
+import { AttendanceDocumentGrid, AttendanceDocumentList } from './AttendanceDocuments'
+import { GroupDocumentGrid, GroupDocumentList } from './GroupDocuments'
 
 const MONTHS_LONG = [
   'Janeiro',
@@ -25,7 +23,7 @@ const MONTHS_LONG = [
   'Dezembro',
 ]
 
-export function DocumentArchive({ tenantId, source, onOpenGroup }) {
+export function DocumentArchive({ tenantId, source, onOpenGroup, onViewPhoto, onDownloadPdf }) {
   const {
     search,
     setSearch,
@@ -40,7 +38,6 @@ export function DocumentArchive({ tenantId, source, onOpenGroup }) {
     changeViewMode,
     monthDocuments,
     filteredDocuments,
-    getProcessNumber,
   } = useDocuments(tenantId, source)
 
   const isGroup = source === 'group'
@@ -53,6 +50,38 @@ export function DocumentArchive({ tenantId, source, onOpenGroup }) {
   const emptyLabel = hasSearch
     ? `Nenhum documento encontrado para "${search}" em ${periodLabel}.`
     : 'Nenhum documento neste período'
+
+  function renderDocuments() {
+    if (isGroup) {
+      return viewMode === 'grid' ? (
+        <GroupDocumentGrid
+          documents={filteredDocuments}
+          onOpenGroup={onOpenGroup}
+          onDownloadPdf={onDownloadPdf}
+        />
+      ) : (
+        <GroupDocumentList
+          documents={filteredDocuments}
+          onOpenGroup={onOpenGroup}
+          onDownloadPdf={onDownloadPdf}
+        />
+      )
+    }
+
+    return viewMode === 'grid' ? (
+      <AttendanceDocumentGrid
+        documents={filteredDocuments}
+        onViewPhoto={onViewPhoto}
+        onDownloadPdf={onDownloadPdf}
+      />
+    ) : (
+      <AttendanceDocumentList
+        documents={filteredDocuments}
+        onViewPhoto={onViewPhoto}
+        onDownloadPdf={onDownloadPdf}
+      />
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -113,16 +142,8 @@ export function DocumentArchive({ tenantId, source, onOpenGroup }) {
               <FileText className="text-muted-foreground/40 h-10 w-10" />
               <p className="mt-3 text-sm font-medium">{emptyLabel}</p>
             </div>
-          ) : isGroup ? (
-            viewMode === 'grid' ? (
-              <GroupDocumentGrid documents={filteredDocuments} onOpenGroup={onOpenGroup} />
-            ) : (
-              <GroupDocumentList documents={filteredDocuments} onOpenGroup={onOpenGroup} />
-            )
-          ) : viewMode === 'grid' ? (
-            <DocumentGrid documents={filteredDocuments} getProcessNumber={getProcessNumber} />
           ) : (
-            <DocumentList documents={filteredDocuments} getProcessNumber={getProcessNumber} />
+            renderDocuments()
           )}
         </CardContent>
       </Card>

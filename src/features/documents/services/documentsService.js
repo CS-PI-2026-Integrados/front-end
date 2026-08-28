@@ -6,30 +6,34 @@ import { GROUP_DOCUMENTS_STORAGE_KEY, documentosGrupoIniciais } from '../mock/gr
 const VIEW_PREFERENCE_STORAGE_KEY = 'sicape:documentos:view:v1'
 const DEFAULT_VIEW = 'grid'
 
-function toDocument(comprovante) {
+function buildProcessNumberResolver(tenantId) {
+  const convicteds = listarApenados().filter(
+    (apenado) => String(apenado.tenantId) === String(tenantId)
+  )
+
+  return (convictedId, processId) => {
+    const convicted = convicteds.find((item) => String(item.id) === String(convictedId))
+    if (!convicted) return '—'
+    const process = (convicted.processos || []).find(
+      (item) => String(item.id) === String(processId)
+    )
+    return process?.numeroProcesso || '—'
+  }
+}
+
+function toDocument(comprovante, resolveProcessNumber) {
   return {
     id: comprovante.id,
     tenantId: comprovante.tenantId,
     convictedId: comprovante.apenadoId,
-    processId: comprovante.processoId,
     convictedName: comprovante.nomeApenado,
     convictedCpf: comprovante.cpfApenado,
+    processNumber: resolveProcessNumber(comprovante.apenadoId, comprovante.processoId),
     photoUrl: comprovante.photoUrl,
     pdfUrl: comprovante.pdfUrl,
     issuedAt: comprovante.emitidoEm,
     operatorName: comprovante.nomeOperador,
     verificationCode: comprovante.codigoVerificacao,
-  }
-}
-
-function toConvicted(apenado) {
-  return {
-    id: apenado.id,
-    tenantId: apenado.tenantId,
-    processes: (apenado.processos || []).map((processo) => ({
-      id: processo.id,
-      processNumber: processo.numeroProcesso,
-    })),
   }
 }
 
@@ -48,13 +52,10 @@ function toGroupDocument(documento) {
 }
 
 export function listDocuments(tenantId) {
-  return listarComprovantes(tenantId).map(toDocument)
-}
-
-export function listDocumentConvicteds(tenantId) {
-  return listarApenados()
-    .filter((apenado) => String(apenado.tenantId) === String(tenantId))
-    .map(toConvicted)
+  const resolveProcessNumber = buildProcessNumberResolver(tenantId)
+  return listarComprovantes(tenantId).map((comprovante) =>
+    toDocument(comprovante, resolveProcessNumber)
+  )
 }
 
 export function listGroupDocuments(tenantId) {
