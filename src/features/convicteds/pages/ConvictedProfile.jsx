@@ -1,35 +1,19 @@
+import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useApenado } from '@/features/convicteds/hooks/useConvicteds'
-
-function formatarStatus(status) {
-  if (status === 'INACTIVE') return 'Inativo'
-  if (status === 'PENDING_PHOTO') return 'Pendente de foto'
-  return 'Ativo'
-}
-
-function formatarEndereco(address) {
-  if (!address) return 'Não informado'
-  const { street, number, neighborhood, city, state } = address
-  const partes = [
-    [street, number].filter(Boolean).join(', '),
-    neighborhood,
-    [city, state].filter(Boolean).join('/'),
-  ].filter(Boolean)
-  return partes.join(' - ') || 'Não informado'
-}
+import { useSession } from '@/features/authentication/context/sessionContext'
+import { useApenados } from '@/features/convicteds/hooks/useConvicteds'
 
 export default function ApenadoProfile() {
   const { id } = useParams()
+  const { session } = useSession()
   const navigate = useNavigate()
-  const { apenado, loading } = useApenado(id)
 
-  if (loading) {
-    return (
-      <div className="bg-background text-card-foreground min-h-screen p-4">
-        <p className="text-muted-foreground font-medium">Carregando apenado...</p>
-      </div>
-    )
-  }
+  const comarcaId = session?.tenant?.id
+  const { apenados } = useApenados(comarcaId)
+  const apenado = useMemo(
+    () => apenados.find((item) => String(item.id) === String(id) && item.tenantId === comarcaId),
+    [apenados, comarcaId, id]
+  )
 
   if (!apenado)
     return (
@@ -45,8 +29,6 @@ export default function ApenadoProfile() {
         </button>
       </div>
     )
-
-  const processoPrincipal = apenado.processes?.find((p) => p.principal) ?? apenado.processes?.[0]
 
   return (
     <div className="bg-background text-card-foreground min-h-screen p-1 sm:p-4">
@@ -67,8 +49,8 @@ export default function ApenadoProfile() {
         <div className="space-y-6">
           <div className="border-border bg-card rounded-xl border p-4 text-center shadow-sm sm:p-6">
             <div className="bg-card text-muted-foreground mx-auto mb-4 h-32 w-32 overflow-hidden rounded-2xl border-2 border-green-800 sm:h-40 sm:w-40">
-              {apenado.photo_url ? (
-                <img src={apenado.photo_url} alt="Foto" className="h-full w-full object-cover" />
+              {apenado.fotoUrl ? (
+                <img src={apenado.fotoUrl} alt="Foto" className="h-full w-full object-cover" />
               ) : (
                 <div className="text-muted-foreground flex h-full items-center justify-center">
                   Sem Foto
@@ -76,7 +58,7 @@ export default function ApenadoProfile() {
               )}
             </div>
             <h2 className="text-foreground text-xl leading-tight font-bold wrap-break-word">
-              {apenado.name}
+              {apenado.nomeCompleto}
             </h2>
             <p className="text-muted-foreground mt-1 text-sm font-medium wrap-break-word">
               CPF: {apenado.cpf}
@@ -84,12 +66,12 @@ export default function ApenadoProfile() {
             <div className="mt-4">
               <span
                 className={`inline-block rounded-full border px-4 py-1 text-xs font-bold ${
-                  apenado.status === 'INACTIVE'
+                  apenado.situacao === 'inativo'
                     ? 'border-border dark:border-border dark:text-muted-foreground bg-slate-200 text-slate-700 ring-slate-300 dark:bg-slate-950 dark:ring-slate-700'
                     : 'border-border dark:border-border bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700'
                 }`}
               >
-                {formatarStatus(apenado.status)}
+                {apenado.situacao}
               </span>
             </div>
           </div>
@@ -121,24 +103,20 @@ export default function ApenadoProfile() {
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Telefone de Contato
                 </label>
-                <p className="text-foreground text-sm font-medium">
-                  {apenado.phone || 'Não informado'}
-                </p>
+                <p className="text-foreground text-sm font-medium">{apenado.telefone}</p>
               </div>
               <div>
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Data de Nascimento
                 </label>
-                <p className="text-foreground text-sm font-medium">
-                  {apenado.birth_date || 'Não informada'}
-                </p>
+                <p className="text-foreground text-sm font-medium">{'N/A' || 'Não informada'}</p>
               </div>
               <div className="md:col-span-2">
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
                   Endereço Completo
                 </label>
                 <p className="text-foreground text-sm leading-relaxed font-medium wrap-break-word">
-                  {formatarEndereco(apenado.address)}
+                  {apenado.endereco}
                 </p>
               </div>
 
@@ -153,15 +131,15 @@ export default function ApenadoProfile() {
                   Número do Processo
                 </label>
                 <p className="text-foreground text-sm font-medium wrap-break-word">
-                  {processoPrincipal?.number || 'N/A'}
+                  {apenado.processos[0]?.numeroProcesso || 'N/A'}
                 </p>
               </div>
               <div>
                 <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
-                  Situação Trabalhista
+                  Vara de Execução
                 </label>
                 <p className="text-foreground text-sm font-medium">
-                  {apenado.employment_status || 'Não informado'}
+                  {apenado.processos[0]?.vara || 'N/A'}
                 </p>
               </div>
             </div>
@@ -171,7 +149,7 @@ export default function ApenadoProfile() {
                 Observações do Prontuário
               </label>
               <div className="border-border text-muted-foreground bg-card rounded-lg border p-4 text-sm leading-relaxed wrap-break-word italic">
-                {'Nenhuma observação registrada até o momento.'}
+                {apenado.observacoes || 'Nenhuma observação registrada até o momento.'}
               </div>
             </div>
           </div>

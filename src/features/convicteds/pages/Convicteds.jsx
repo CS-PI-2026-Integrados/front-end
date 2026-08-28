@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react'
 import { Ban, FileText, Pencil, Plus, Search, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { useNavigate } from 'react-router-dom'
 
 import { useSession } from '@/features/authentication/context/sessionContext'
 import { ApenadoCreateDialog } from '@/features/convicteds/components/ConvictedCreateDialog'
 import { ApenadoDeactivateDialog } from '@/features/convicteds/components/ConvictedDeactivateDialog'
 import { ApenadoDocumentsDialog } from '@/features/convicteds/components/ConvictedDocumentsDialog'
 import { ApenadoEditDialog } from '@/features/convicteds/components/ConvictedEditDialog'
+import {
+  rotuloSituacaoApenado,
+  rotuloSituacaoTrabalhista,
+} from '@/features/convicteds/utils/convictedUtils'
 import { useApenados } from '@/features/convicteds/hooks/useConvicteds'
 import { Button } from '@/shared/components/ui/button'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
@@ -33,9 +36,11 @@ import {
 import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
 
 const POR_PAGINA = 10
+function cpfMascarado(cpf) {
+  return cpf.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**')
+}
 
 export default function Convicteds() {
-  const navigate = useNavigate()
   const { session } = useSession()
   const [busca, setBusca] = useState('')
   const [situacao, setSituacao] = useState('todos')
@@ -45,19 +50,21 @@ export default function Convicteds() {
   const [inativar, setInativar] = useState(null)
   const [documentos, setDocumentos] = useState(null)
   const tenantId = String(session?.tenant?.id || '')
-  const { apenados, atualizar } = useApenados()
+  const { apenados, atualizar } = useApenados(tenantId)
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
     const cpfTermo = termo.replace(/\D/g, '')
-    return apenados.filter(
-      (apenado) =>
-        (situacao === 'todos' || apenado.status?.toLowerCase() === situacao) &&
-        (!termo ||
-          apenado.name.toLowerCase().includes(termo) ||
-          (cpfTermo && apenado.cpf.replace(/\D/g, '').includes(cpfTermo)))
-    )
-  }, [apenados, busca, situacao])
+    return apenados
+      .filter((apenado) => apenado.tenantId === tenantId)
+      .filter(
+        (apenado) =>
+          (situacao === 'todos' || apenado.situacao === situacao) &&
+          (!termo ||
+            apenado.nomeCompleto.toLowerCase().includes(termo) ||
+            (cpfTermo && apenado.cpf.replace(/\D/g, '').includes(cpfTermo)))
+      )
+  }, [apenados, busca, situacao, tenantId])
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA))
   const paginaVisivel = Math.min(pagina, totalPaginas)
   const exibidos = filtrados.slice((paginaVisivel - 1) * POR_PAGINA, paginaVisivel * POR_PAGINA)
@@ -65,7 +72,6 @@ export default function Convicteds() {
     acao()
     setPagina(1)
   }
-  const abrirPerfil = (id) => navigate(`/apenados/${id}`)
 
   return (
     <div className="space-y-5">
@@ -100,7 +106,7 @@ export default function Convicteds() {
         onConfirm={() => {
           atualizar(
             apenados.map((item) =>
-              item.id === inativar.id ? { ...item, status: 'inativo' } : item
+              item.id === inativar.id ? { ...item, situacao: 'inativo' } : item
             )
           )
           setInativar(null)
@@ -187,7 +193,6 @@ export default function Convicteds() {
             <ApenadoMobileCard
               key={apenado.id}
               apenado={apenado}
-              onOpen={() => abrirPerfil(apenado.id)}
               onEdit={() => setEditar(apenado)}
               onDeactivate={() => setInativar(apenado)}
               onDocuments={() => setDocumentos(apenado)}
@@ -209,20 +214,22 @@ export default function Convicteds() {
             </TableHeader>
             <TableBody>
               {exibidos.map((apenado) => (
-                <TableRow
-                  key={apenado.id}
-                  className="hover:bg-muted/50 cursor-pointer border-b"
-                  onClick={() => abrirPerfil(apenado.id)}
-                >
+                <TableRow key={apenado.id} className="hover:bg-muted/50 border-b">
                   <TableCell className="px-4 py-3">
-                    <strong>{apenado.name}</strong>
-                    <span className="text-muted-foreground block text-xs">{apenado.cpf}</span>
+                    <strong>{apenado.nomeCompleto}</strong>
+                    <span className="text-muted-foreground block text-xs">
+                      {cpfMascarado(apenado.cpf)}
+                    </span>
                   </TableCell>
-                  <TableCell className="px-4 py-3">—</TableCell>
-                  <TableCell className="max-w-64 truncate px-4 py-3">—</TableCell>
-                  <TableCell className="px-4 py-3">—</TableCell>
-                  <TableCell className="px-4 py-3">—</TableCell>
-                  <TableCell className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
+                  <TableCell className="px-4 py-3">{apenado.telefone}</TableCell>
+                  <TableCell className="max-w-64 truncate px-4 py-3">{apenado.endereco}</TableCell>
+                  <TableCell className="px-4 py-3">
+                    {rotuloSituacaoTrabalhista(apenado.situacaoTrabalhista)}
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
+                    {rotuloSituacaoApenado(apenado.situacao)}
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
                     <Acoes
                       onDocuments={() => setDocumentos(apenado)}
                       onEdit={() => setEditar(apenado)}
@@ -254,14 +261,16 @@ function Acoes({ onDocuments, onEdit, onDeactivate }) {
     </div>
   )
 }
-function ApenadoMobileCard({ apenado, onOpen, onEdit, onDeactivate, onDocuments }) {
+function ApenadoMobileCard({ apenado, onEdit, onDeactivate, onDocuments }) {
   return (
     <article className="space-y-3 p-4">
-      <div onClick={onOpen} className="cursor-pointer">
-        <strong>{apenado.name}</strong>
-        <span className="text-muted-foreground block text-xs">{apenado.cpf}</span>
+      <div>
+        <strong>{apenado.nomeCompleto}</strong>
+        <span className="text-muted-foreground block text-xs">{cpfMascarado(apenado.cpf)}</span>
       </div>
-      <p className="text-sm">—</p>
+      <p className="text-sm">
+        {apenado.telefone} · {rotuloSituacaoApenado(apenado.situacao)}
+      </p>
       <div className="flex gap-2">
         <Button size="sm" variant="outline" onClick={onDocuments}>
           Documentos

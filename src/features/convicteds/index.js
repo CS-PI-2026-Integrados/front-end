@@ -1,3 +1,1 @@
-import { convictedService } from './services/convictedService'
-
-export const listarApenados = () => convictedService.listApenados()
+export { listarApenados } from './services/convictedService'

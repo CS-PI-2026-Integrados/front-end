@@ -1,66 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
-import { convictedService } from '@/features/convicteds/services/convictedService'
+import { useCallback, useState } from 'react'
+import { listarApenados, salvarApenados } from '@/features/convicteds/services/convictedService'
 
-export function useApenados() {
-  const [apenados, setApenados] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    let active = true
-
-    convictedService
-      .list({ signal: controller.signal })
-      .then((items) => {
-        if (active) {
-          setApenados(items)
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false)
-        }
-      })
-
-    return () => {
-      active = false
-      controller.abort()
-    }
-  }, [])
-
+export function useApenados(_tenantId) {
+  const [apenados, setApenados] = useState(listarApenados)
   const atualizar = useCallback((proximo) => {
     setApenados(proximo)
+    salvarApenados(proximo)
   }, [])
-
-  return { apenados, atualizar, loading }
-}
-
-export function useApenado(id) {
-  const [apenado, setApenado] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    let active = true
-
-    convictedService
-      .getById(id, { signal: controller.signal })
-      .then((item) => {
-        if (active) {
-          setApenado(item)
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false)
-        }
-      })
-
-    return () => {
-      active = false
-      controller.abort()
-    }
-  }, [id])
-
-  return { apenado, loading }
+  return { apenados, atualizar }
 }
