@@ -1,7 +1,8 @@
-import { useMemo, useState, useSyncExternalStore } from 'react'
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { observarComprovantes, obterSnapshotComprovantes } from '@/features/attendance'
 import {
   listDocuments,
+  listGroupDocuments,
   listDocumentConvicteds,
   readViewPreference,
   saveViewPreference,
@@ -9,15 +10,14 @@ import {
 
 const MONTH_COUNT = 12
 
-function getProcessNumber(document, convicteds) {
+function attendanceProcessNumber(document, convicteds) {
   const convicted = convicteds.find((item) => String(item.id) === String(document.convictedId))
   if (!convicted) return '—'
   const process = convicted.processes.find((item) => String(item.id) === String(document.processId))
   return process?.processNumber || '—'
 }
 
-export function useDocuments(tenantId) {
-  const [activeTab, setActiveTab] = useState('attendance')
+export function useDocuments(tenantId, source = 'attendance') {
   const [search, setSearch] = useState('')
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [manualMonth, setManualMonth] = useState(null)
@@ -25,8 +25,20 @@ export function useDocuments(tenantId) {
 
   useSyncExternalStore(observarComprovantes, obterSnapshotComprovantes)
 
-  const documents = useMemo(() => (tenantId ? listDocuments(tenantId) : []), [tenantId])
   const convicteds = useMemo(() => (tenantId ? listDocumentConvicteds(tenantId) : []), [tenantId])
+
+  const documents = useMemo(() => {
+    if (!tenantId) return []
+    return source === 'group' ? listGroupDocuments(tenantId) : listDocuments(tenantId)
+  }, [tenantId, source])
+
+  const getProcessNumber = useCallback(
+    (document) => {
+      if (source === 'group') return document.processNumber || '—'
+      return attendanceProcessNumber(document, convicteds)
+    },
+    [source, convicteds]
+  )
 
   const availableYears = useMemo(() => {
     const years = new Set(documents.map((document) => new Date(document.issuedAt).getFullYear()))
@@ -66,30 +78,28 @@ export function useDocuments(tenantId) {
 
     return monthDocuments.filter((document) => {
       const name = (document.convictedName || '').toLowerCase()
-      const process = getProcessNumber(document, convicteds).toLowerCase()
+      const process = getProcessNumber(document).toLowerCase()
       return name.includes(term) || process.includes(term)
     })
-  }, [monthDocuments, search, convicteds])
+  }, [monthDocuments, search, getProcessNumber])
 
-  function selectYear(year) {
+  const selectYear = useCallback((year) => {
     setSelectedYear(year)
     setManualMonth(null)
     setSearch('')
-  }
+  }, [])
 
-  function selectMonth(month) {
+  const selectMonth = useCallback((month) => {
     setManualMonth(month)
     setSearch('')
-  }
+  }, [])
 
-  function changeViewMode(mode) {
+  const changeViewMode = useCallback((mode) => {
     setViewMode(mode)
     saveViewPreference(mode)
-  }
+  }, [])
 
   return {
-    activeTab,
-    setActiveTab,
     search,
     setSearch,
     hasSearch: search.trim() !== '',
@@ -103,6 +113,6 @@ export function useDocuments(tenantId) {
     changeViewMode,
     monthDocuments,
     filteredDocuments,
-    getProcessNumber: (document) => getProcessNumber(document, convicteds),
+    getProcessNumber,
   }
 }

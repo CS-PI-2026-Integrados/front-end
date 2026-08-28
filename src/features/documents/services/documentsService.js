@@ -1,6 +1,7 @@
 import { readJson, writeJson } from '@/shared/infrastructure/storage/jsonStorage'
 import { listarComprovantes } from '@/features/attendance'
 import { listarApenados } from '@/features/convicteds'
+import { GROUP_DOCUMENTS_STORAGE_KEY, documentosGrupoIniciais } from '../mock/groupDocumentsMock'
 
 const VIEW_PREFERENCE_STORAGE_KEY = 'sicape:documentos:view:v1'
 const DEFAULT_VIEW = 'grid'
@@ -32,6 +33,20 @@ function toConvicted(apenado) {
   }
 }
 
+function toGroupDocument(documento) {
+  return {
+    id: documento.id,
+    tenantId: documento.tenantId,
+    convictedId: documento.apenadoId,
+    groupId: documento.grupoId,
+    convictedName: documento.nomeApenado,
+    processNumber: documento.numeroProcesso,
+    groupName: documento.nomeGrupo,
+    type: documento.tipo,
+    issuedAt: documento.geradoEm,
+  }
+}
+
 export function listDocuments(tenantId) {
   return listarComprovantes(tenantId).map(toDocument)
 }
@@ -40,6 +55,13 @@ export function listDocumentConvicteds(tenantId) {
   return listarApenados()
     .filter((apenado) => String(apenado.tenantId) === String(tenantId))
     .map(toConvicted)
+}
+
+export function listGroupDocuments(tenantId) {
+  const documentos = readJson(GROUP_DOCUMENTS_STORAGE_KEY, documentosGrupoIniciais)
+  return documentos
+    .filter((documento) => String(documento.tenantId) === String(tenantId))
+    .map(toGroupDocument)
 }
 
 export function readViewPreference() {
