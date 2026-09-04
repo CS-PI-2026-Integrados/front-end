@@ -3,7 +3,7 @@ export const mockProcessos = {
     {
       id: 'p1',
       processNumber: '0001234-56.2023.8.00.0001',
-      tenantId: '1',
+      tenantId: '00000000-0000-0000-0000-000000000001',
       apenadoIds: ['1', '2', '3'],
       judicialStatus: 'Prestação de Serviços',
       institution: 'Unidade Central',
@@ -14,7 +14,7 @@ export const mockProcessos = {
     {
       id: 'p1_2',
       processNumber: '0009999-99.2024.8.00.0001',
-      tenantId: '1',
+      tenantId: '00000000-0000-0000-0000-000000000001',
       apenadoIds: ['1'],
       judicialStatus: 'Pagamento de Pecúlia',
       institution: 'Fórum Central',
@@ -25,7 +25,7 @@ export const mockProcessos = {
     {
       id: 'p2',
       processNumber: '0002345-67.2023.8.00.0001',
-      tenantId: '1',
+      tenantId: '00000000-0000-0000-0000-000000000001',
       apenadoIds: ['3'],
       judicialStatus: 'Liberdade Condicional',
       institution: 'Unidade Norte',
@@ -36,7 +36,7 @@ export const mockProcessos = {
     {
       id: 'p3',
       processNumber: '0003456-78.2023.8.00.0001',
-      tenantId: '1',
+      tenantId: '00000000-0000-0000-0000-000000000001',
       apenadoIds: ['4'],
       judicialStatus: 'Prestação de Serviços',
       institution: 'Unidade Leste',
@@ -47,7 +47,7 @@ export const mockProcessos = {
     {
       id: 'p4',
       processNumber: '0004567-89.2023.8.00.0001',
-      tenantId: '1',
+      tenantId: '00000000-0000-0000-0000-000000000001',
       apenadoIds: ['5'],
       judicialStatus: 'Prestação de Serviços',
       institution: 'Unidade Central',
