@@ -5,7 +5,7 @@ import {
   buscarEnderecoPorCep,
   listarApenados,
   listarProcessos,
-} from '@/features/convicteds/services/convictedService'
+} from '@/features/convicteds/services/mockedConvictedService'
 import { validateConvictedForm } from '@/features/convicteds/schemas/convictedSchema'
 import {
   parsearEndereco,

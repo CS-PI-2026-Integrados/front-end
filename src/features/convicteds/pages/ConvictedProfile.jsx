@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSession } from '@/features/authentication/context/sessionContext'
-import { useApenados } from '@/features/convicteds/hooks/useConvicteds'
+import { useApenados } from '@/features/convicteds/hooks/mockedUseConvicteds'
 
 export default function ApenadoProfile() {
   const { id } = useParams()
