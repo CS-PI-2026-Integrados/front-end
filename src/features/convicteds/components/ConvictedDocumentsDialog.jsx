@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 
-import { listarComprovantes, useReceiptPdfActions } from '@/features/attendance'
 import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
@@ -21,17 +20,20 @@ function formatarDataHora(data) {
   }
 }
 
-export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
-  const { download, view } = useReceiptPdfActions()
+export function ApenadoDocumentsDialog({
+  apenado,
+  comprovantes: allComprovantes = [],
+  onDownload,
+  onOpenChange,
+  onView,
+}) {
   const [aba, setAba] = useState('comprovantes')
   const comprovantes = useMemo(
     () =>
       apenado
-        ? listarComprovantes(apenado.tenantId).filter(
-            (item) => String(item.apenadoId) === String(apenado.id)
-          )
+        ? allComprovantes.filter((item) => String(item.apenadoId) === String(apenado.id))
         : [],
-    [apenado]
+    [allComprovantes, apenado]
   )
   if (!apenado) return null
 
@@ -82,12 +84,12 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
                           </TableCell>
                           <TableCell className="p-2">
                             <div className="flex items-center gap-1.5">
-                              {view && (
+                              {onView && (
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   onClick={() =>
-                                    view({
+                                    onView({
                                       apenado,
                                       processo: proc,
                                       recibo: comprovante,
@@ -100,8 +102,9 @@ export function ApenadoDocumentsDialog({ apenado, onOpenChange }) {
                               <Button
                                 size="sm"
                                 variant="outline"
+                                disabled={!onDownload}
                                 onClick={() =>
-                                  download({
+                                  onDownload?.({
                                     apenado,
                                     processo: proc,
                                     recibo: comprovante,

@@ -1,13 +1,12 @@
 ---
 name: js-ts-async
-description: 'Implemente ou revise código assíncrono em JavaScript e TypeScript, incluindo Promises, async/await, concorrência, cancelamento, tratamento de erros e operações em Node.js ou React.'
+description: 'Implemente ou revise código assíncrono em JavaScript e TypeScript, incluindo Promises, async/await, concorrência, cancelamento, tratamento de erros e operações em React.'
 ---
 
 Seu objetivo é aplicar as melhores práticas de programação assíncrona em JavaScript e TypeScript.
 
 Leia referências somente quando forem aplicáveis:
 
-- Para Node.js, consulte [references/node.md](references/node.md).
 - Para React, consulte [references/react.md](references/react.md).
 
 ## Promises e async/await

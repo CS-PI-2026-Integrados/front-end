@@ -16,11 +16,10 @@ import { Button } from '@/shared/components/ui/button'
 import { Label } from '@/shared/components/ui/label'
 import { Video, RefreshCw, Loader2, AlertCircle, Clock, ShieldCheck } from 'lucide-react'
 import { useEffect } from 'react'
-import { useSession } from '@/features/authentication/context/sessionContext'
-import { useTenant } from '@/features/institutions/context/tenantContext'
+import { PasswordChangePanel, useSession } from '@/features/authentication'
+import { useTenant } from '@/features/institutions'
 import { maskCpf, getRoleLabel } from '@/features/users/utils/userFormattersUtils'
 import { useUserProfile } from '@/features/users/hooks/useUserProfile'
-import PasswordChange from '@/features/users/components/PasswordChange'
 
 const ReadField = ({ label, value }) => (
   <div className="space-y-1">
@@ -33,10 +32,10 @@ const ReadField = ({ label, value }) => (
 
 export function UserProfile() {
   const { session } = useSession()
-  const { sessionTimeout } = useTenant()
+  const { state: tenantState } = useTenant()
   const user = session?.user
 
-  const sessionTimeoutHours = sessionTimeout || 8
+  const sessionTimeoutHours = tenantState.sessionTimeout || 8
   const { cameras, selectedCamera, cameraLoading, cameraError, loadCameras, handleCameraChange } =
     useUserProfile()
 
@@ -156,7 +155,7 @@ export function UserProfile() {
         </CardContent>
       </Card>
 
-      <PasswordChange />
+      <PasswordChangePanel />
     </div>
   )
 }

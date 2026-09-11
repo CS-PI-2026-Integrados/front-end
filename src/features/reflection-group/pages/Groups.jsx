@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Plus, Users, Pencil, Trash, Settings } from 'lucide-react'
-import { useSession } from '@/features/authentication/context/sessionContext'
+import { useSession } from '@/features/authentication'
 import { useGroupsStorage } from '@/features/reflection-group/hooks/useGroupsStorage'
 import { listarApenados } from '@/features/convicteds'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
@@ -31,8 +31,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table'
-import NewGroupForm from '@/features/reflection-group/components/hooks/NewGroupForm'
-import GroupEditModal from '@/features/reflection-group/components/hooks/GroupEditModal'
+import NewGroupForm from '@/features/reflection-group/components/NewGroupForm'
+import GroupEditModal from '@/features/reflection-group/components/GroupEditModal'
 import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
 import { ConfirmationDialog } from '@/shared/components/ConfirmationDialog'
 

@@ -1,11 +1,11 @@
 import { apiService } from '@/shared/infrastructure/http/apiService'
 import { findAuthUserByCredentials } from '@/features/authentication/mock/authMock'
-import { updateUserPassword } from '@/features/users/mock/usersMock'
+import { updateIdentityPassword } from '@/features/authentication/mock/identityRepository'
 import {
   createUserPasswordResetToken,
   findUserByValidPasswordResetToken,
 } from '@/features/authentication/mock/passwordResetMock'
-import { sendPasswordResetEmail } from '@/features/authentication/mock/authEmailMock'
+import { sendPasswordResetEmail } from '@/shared/infrastructure/notifications/mockEmailGateway'
 
 const createApiSession = () => {
   const payload = apiService.getAccessTokenPayload()
@@ -16,6 +16,8 @@ const createApiSession = () => {
       id: payload.user.id,
       name: payload.user.name,
       cpf: payload.user.cpf,
+      tenantId: payload.judicialDistrict?.id || null,
+      role: payload.user.role ? { key: payload.user.role } : null,
       mustChangePassword: false,
     },
     tenant: payload.judicialDistrict
@@ -28,7 +30,7 @@ const createApiSession = () => {
 }
 
 const applyDefinedPassword = async ({ userId, password }) => {
-  return updateUserPassword({
+  return updateIdentityPassword({
     userId,
     password,
     mustChangePassword: false,

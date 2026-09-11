@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { SessionContext } from '@/features/authentication/context/sessionContext'
-import {
-  logout,
-  restoreSession,
-  subscribeToAuthStateChanges,
-} from '@/features/authentication/services/authService'
+import { SessionContext } from '../context/sessionContext'
+import { logout, restoreSession, subscribeToAuthStateChanges } from '../services/authService'
 
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null)

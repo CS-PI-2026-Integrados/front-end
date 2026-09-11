@@ -5,7 +5,7 @@ import {
   observarComprovantes,
   obterSnapshotComprovantes,
 } from '@/features/attendance'
-import { useSession } from '@/features/authentication/context/sessionContext'
+import { useSession } from '@/features/authentication'
 
 export const useAtendimentoData = () => {
   const { session } = useSession()

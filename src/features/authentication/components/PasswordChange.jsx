@@ -10,9 +10,9 @@ import { Label } from '@/shared/components/ui/label'
 import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'
 import toast from 'react-hot-toast'
-import { usePasswordChange } from '@/features/users/hooks/usePasswordChange'
-import { PasswordStrengthMeter } from '@/features/authentication/components/PasswordStrengthMeter'
-import { obterForcaSenha } from '@/features/authentication/components/passwordStrength'
+import { usePasswordChange } from '../hooks/usePasswordChange'
+import { PasswordStrengthMeter } from './PasswordStrengthMeter'
+import { obterForcaSenha } from './passwordStrength'
 
 const PasswordField = ({ label, value, onChange, error }) => (
   <div className="space-y-2">

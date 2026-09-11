@@ -1,5 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
-import { listarApenados, salvarApenados } from '@/features/convicteds/services/convictedService'
+import {
+  listarApenados,
+  salvarApenados,
+} from '@/features/convicteds/services/mockedConvictedService'
 
 export function useApenados(tenantId) {
   const [apenados, setApenados] = useState(listarApenados)

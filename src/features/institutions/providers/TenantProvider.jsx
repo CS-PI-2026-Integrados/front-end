@@ -1,7 +1,7 @@
 import { useReducer, useEffect } from 'react'
-import { useSession } from '@/features/authentication/context/sessionContext'
-import { mockTenants } from '@/features/institutions/mock/institutionsMock'
-import { TenantContext } from '@/features/institutions/context/tenantContext'
+import { useSession } from '@/features/authentication'
+import { TenantContext } from '../context/tenantContext'
+import { getTenantById } from '../services/tenantService'
 
 const DEFAULT_RECEIPT_CONFIG = {
   mostrarFotoReferencia: true,
@@ -97,7 +97,7 @@ export function TenantProvider({ children }) {
   useEffect(() => {
     if (!session?.tenant?.id) return
 
-    const tenant = mockTenants.tenants.find((t) => t.id === session.tenant.id)
+    const tenant = getTenantById(session.tenant.id)
 
     if (tenant) {
       dispatch({ type: 'LOAD_TENANT', payload: tenant })

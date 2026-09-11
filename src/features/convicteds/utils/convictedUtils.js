@@ -4,6 +4,16 @@ export const situacoesTrabalhistas = {
   naoTrabalha: 'naoTrabalha',
 }
 
+export function formatAddress(address) {
+  if (!address) return ''
+
+  const street = [address.street, address.number].filter(Boolean).join(', ')
+  const city = [address.city, address.state].filter(Boolean).join('/')
+  const location = [address.neighborhood, city].filter(Boolean).join(' - ')
+
+  return [street, address.complement, location].filter(Boolean).join(' · ')
+}
+
 export function rotuloSituacaoApenado(situacao) {
   return situacao === 'inativo' ? 'Inativo' : 'Ativo'
 }

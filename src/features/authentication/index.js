@@ -1,1 +1,7 @@
 export { changePassword } from './services/authService'
+export { default as LoginPage } from './pages/Login'
+export { default as RecoverPasswordPage } from './pages/RecoverPassword'
+export { default as DefinePasswordPage } from './pages/DefinePassword'
+export { SessionProvider } from './providers/SessionProvider'
+export { useSession } from './context/sessionContext'
+export { default as PasswordChangePanel } from './components/PasswordChange'

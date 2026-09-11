@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs'
-import { useSession } from '@/features/authentication/context/sessionContext'
+import { useSession } from '@/features/authentication'
 import { DocumentArchive } from '../components/DocumentArchive'
 
 const Documents = () => {

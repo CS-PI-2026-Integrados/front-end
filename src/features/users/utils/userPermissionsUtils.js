@@ -4,7 +4,9 @@ export const ROLE_KEYS = {
 }
 
 export const isPrivilegedRole = (role) => {
-  return role?.key === ROLE_KEYS.ADMIN
+  const roleKey = typeof role === 'string' ? role : role?.key
+
+  return roleKey === ROLE_KEYS.ADMIN
 }
 
 export const canAccessUsersPage = (user) => {

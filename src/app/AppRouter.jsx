@@ -1,66 +1,60 @@
 import { Routes, Route } from 'react-router-dom'
-import { AtendimentoProvider } from '@/features/attendance'
-import Service from '@/features/attendance/pages/Receipts'
-import Settings from '@/features/settings/pages/Settings'
-import Login from '@/features/authentication/pages/Login'
-import Groups from '@/features/reflection-group/pages/Groups'
-import Dashboard from '@/features/dashboard/pages/Dashboard'
-import Convicteds from '@/features/convicteds/pages/Convicteds'
-import Institutions from '@/features/institutions/pages/Institutions'
-import Certificate from '@/features/certificates/pages/Certificate'
-import NotFound from '@/features/not-found/pages/NotFound'
+import { AtendimentoProvider, ReceiptsPage } from '@/features/attendance'
+import { SettingsPage } from '@/features/settings'
+import { DefinePasswordPage, LoginPage, RecoverPasswordPage } from '@/features/authentication'
+import { GroupManagementPage, GroupsPage } from '@/features/reflection-group'
+import { DashboardPage } from '@/features/dashboard'
+import { ConvictedProfilePage, ConvictedsPage } from '@/features/convicteds'
+import { InstitutionsPage } from '@/features/institutions'
+import { CertificatePage } from '@/features/certificates'
+import { NotFoundPage } from '@/features/not-found'
 import DashboardLayout from '@/app/layouts/DashboardLayout'
-import ApenadoProfile from '@/features/convicteds/pages/ConvictedProfile'
 import AuthGuard from '@/app/guards/AuthGuard'
 import GuestGuard from '@/app/guards/GuestGuard'
-import RecoverPassword from '@/features/authentication/pages/RecoverPassword'
-import DefinePassword from '@/features/authentication/pages/DefinePassword'
-import UsersManagement from '@/features/users/pages/UsersManagement'
+import { UsersManagementPage, canAccessUsersPage } from '@/features/users'
 import RoleGuard from '@/app/guards/RoleGuard'
 import MustChangePasswordGuard from '@/app/guards/MustChangePasswordGuard'
-import { canAccessUsersPage } from '@/features/users/utils/userPermissionsUtils'
-import GroupManagement from '@/features/reflection-group/pages/GroupManagement'
-import Documents from '@/features/documents/pages/Documents'
+import { DocumentsPage } from '@/features/documents'
 
 const AppRouter = () => {
   return (
     <Routes>
       <Route element={<GuestGuard />}>
-        <Route path="login" element={<Login />} />
-        <Route path="recuperar-senha" element={<RecoverPassword />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="recuperar-senha" element={<RecoverPasswordPage />} />
       </Route>
 
-      <Route path="definir-senha" element={<DefinePassword />} />
+      <Route path="definir-senha" element={<DefinePasswordPage />} />
 
       <Route element={<AuthGuard />}>
         <Route element={<MustChangePasswordGuard />}>
           <Route element={<DashboardLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="grupos-reflexivos" element={<Groups />} />
-            <Route path="grupos-reflexivos/:id" element={<GroupManagement />} />
-            <Route path="apenados" element={<Convicteds />} />
+            <Route index element={<DashboardPage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="grupos-reflexivos" element={<GroupsPage />} />
+            <Route path="grupos-reflexivos/:id" element={<GroupManagementPage />} />
+            <Route path="apenados" element={<ConvictedsPage />} />
             <Route
               path="atendimento"
               element={
                 <AtendimentoProvider>
-                  <Service />
+                  <ReceiptsPage />
                 </AtendimentoProvider>
               }
             />
-            <Route path="instituicoes" element={<Institutions />} />
-            <Route path="comprovante" element={<Certificate />} />
-            <Route path="documentos" element={<Documents />} />
-            <Route path="apenados/:id" element={<ApenadoProfile />} />
-            <Route path="configuracoes" element={<Settings />} />
+            <Route path="instituicoes" element={<InstitutionsPage />} />
+            <Route path="comprovante" element={<CertificatePage />} />
+            <Route path="documentos" element={<DocumentsPage />} />
+            <Route path="apenados/:id" element={<ConvictedProfilePage />} />
+            <Route path="configuracoes" element={<SettingsPage />} />
             <Route element={<RoleGuard canAccess={canAccessUsersPage} />}>
-              <Route path="usuarios" element={<UsersManagement />} />
+              <Route path="usuarios" element={<UsersManagementPage />} />
             </Route>
           </Route>
         </Route>
       </Route>
 
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

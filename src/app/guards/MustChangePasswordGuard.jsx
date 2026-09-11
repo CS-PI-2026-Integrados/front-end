@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useSession } from '@/features/authentication/context/sessionContext'
+import { useSession } from '@/features/authentication'
 
 export default function MustChangePasswordGuard() {
   const { session } = useSession()

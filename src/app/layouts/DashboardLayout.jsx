@@ -21,10 +21,10 @@ import {
   DropdownMenuItem,
 } from '@/shared/components/ui/dropdown-menu'
 import { useState } from 'react'
-import { useSession } from '@/features/authentication/context/sessionContext'
-import { useTenant } from '@/features/institutions/context/tenantContext'
+import { useSession } from '@/features/authentication'
+import { useTenant } from '@/features/institutions'
 import { useTheme } from '@/shared/hooks/useTheme'
-import { canAccessUsersPage } from '@/features/users/utils/userPermissionsUtils'
+import { canAccessUsersPage } from '@/features/users'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)

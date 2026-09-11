@@ -1,14 +1,12 @@
-import InstitutionInfo from '@/features/institutions/components/InstitutionInfo'
-import ReceiptFields from '@/features/institutions/components/ReceiptFields'
-import UserProfile from '@/features/users/components/UserProfile'
+import { InstitutionSettingsPanel, ReceiptFieldsPanel } from '@/features/institutions'
+import { UserProfilePanel, canAccessUsersPage } from '@/features/users'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs'
-import { useSession } from '@/features/authentication/context/sessionContext'
-import { isPrivilegedRole } from '@/features/users/utils/userPermissionsUtils'
+import { useSession } from '@/features/authentication'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 
 export const Settings = () => {
   const { session } = useSession()
-  const isAdmin = isPrivilegedRole(session?.user?.role)
+  const isAdmin = canAccessUsersPage(session?.user)
 
   const defaultTab = isAdmin ? 'instituicao' : 'perfil'
 
@@ -44,14 +42,14 @@ export const Settings = () => {
       {isAdmin && (
         <TabsContent value="instituicao" className="w-full outline-none">
           <div className="space-y-6">
-            <InstitutionInfo />
-            <ReceiptFields />
+            <InstitutionSettingsPanel />
+            <ReceiptFieldsPanel />
           </div>
         </TabsContent>
       )}
 
       <TabsContent value="perfil" className="mt-0 w-full outline-none">
-        <UserProfile />
+        <UserProfilePanel />
       </TabsContent>
     </Tabs>
   )

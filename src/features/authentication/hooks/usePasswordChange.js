@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useSession } from '@/features/authentication/context/sessionContext'
-import { changePassword } from '@/features/authentication'
+import { useSession } from '../context/sessionContext'
+import { changePassword } from '../services/authService'
 
 export function usePasswordChange() {
   const { session } = useSession()

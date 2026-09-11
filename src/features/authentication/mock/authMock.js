@@ -1,39 +1,35 @@
-import { mockTenants } from '@/features/institutions/mock/institutionsMock'
-import {
-  findUserByCpf,
-  findUserById,
-  removeSensitiveUserFields,
-} from '@/features/users/mock/usersMock'
+import { findIdentityByCpf, findIdentityById } from './identityRepository'
 
 const buildAuthUserResponse = (user, fallbackMessage) => {
   if (!user) {
     throw new Error(fallbackMessage)
   }
 
-  const tenant = mockTenants.tenants.find((mockTenant) => mockTenant.id === user.tenantId)
-
-  if (!tenant) {
-    throw new Error('Tenant não encontrado.')
-  }
-
   return {
     user,
-    tenant,
   }
 }
 
 export const findAuthUserByCredentials = async (cpf, password) => {
-  const privateUser = await findUserByCpf(cpf, { includeSensitive: true })
+  const privateUser = await findIdentityByCpf(cpf, { includeSensitive: true })
 
   if (!privateUser || privateUser.password !== password) {
     throw new Error('CPF ou senha incorretos.')
   }
 
-  return buildAuthUserResponse(removeSensitiveUserFields(privateUser), 'CPF ou senha incorretos.')
+  return buildAuthUserResponse(
+    {
+      ...privateUser,
+      password: undefined,
+      resetToken: undefined,
+      resetTokenExpiresAt: undefined,
+    },
+    'CPF ou senha incorretos.'
+  )
 }
 
 export const findAuthUserById = async (id) => {
-  const user = await findUserById(id)
+  const user = await findIdentityById(id)
 
   return buildAuthUserResponse(user, 'Usuário não encontrado.')
 }

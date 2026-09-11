@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import ParticipantSelector from '@/features/reflection-group/components/hooks/ParticipantSelector'
+import ParticipantSelector from '@/features/reflection-group/components/ParticipantSelector'
 import { Label } from '@/shared/components/ui/label'
 import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'

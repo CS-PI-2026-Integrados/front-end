@@ -1,7 +1,7 @@
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { SessionProvider } from './SessionProvider'
-import { TenantProvider } from './TenantProvider'
+import { SessionProvider } from '@/features/authentication'
+import { TenantProvider } from '@/features/institutions'
 import { ThemeProvider } from './ThemeProvider'
 
 export function AppProviders({ children }) {

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { gerarComprovante } from '@/features/attendance/services/attendanceService'
-import { useSession } from '@/features/authentication/context/sessionContext'
-import { useTenant } from '@/features/institutions/context/tenantContext'
+import { useSession } from '@/features/authentication'
+import { useTenant } from '@/features/institutions'
 
 export function useGenerateReceipt() {
   const { session } = useSession()

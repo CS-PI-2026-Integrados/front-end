@@ -1,8 +1,8 @@
 import {
-  findUserByCpf,
-  findUserByResetToken,
-  updateUserPasswordResetToken,
-} from '@/features/users/mock/usersMock'
+  findIdentityByCpf,
+  findIdentityByResetToken,
+  updateIdentityPasswordResetToken,
+} from './identityRepository'
 
 const PASSWORD_RESET_TOKEN_DURATION_MS = 30 * 60 * 1000
 
@@ -16,13 +16,13 @@ const createPasswordResetToken = () => {
 }
 
 export const createUserPasswordResetToken = async (cpf) => {
-  const user = await findUserByCpf(cpf, { includeSensitive: true })
+  const user = await findIdentityByCpf(cpf, { includeSensitive: true })
 
   if (!user) return null
 
   const token = createPasswordResetToken()
   const expiresAt = new Date(Date.now() + PASSWORD_RESET_TOKEN_DURATION_MS).toISOString()
-  await updateUserPasswordResetToken({
+  await updateIdentityPasswordResetToken({
     userId: user.id,
     resetToken: token,
     resetTokenExpiresAt: expiresAt,
@@ -38,7 +38,7 @@ export const createUserPasswordResetToken = async (cpf) => {
 export const findUserByValidPasswordResetToken = async (token) => {
   if (!token || typeof token !== 'string') return null
 
-  const user = await findUserByResetToken(token, { includeSensitive: true })
+  const user = await findIdentityByResetToken(token, { includeSensitive: true })
 
   if (!user?.resetTokenExpiresAt) return null
 

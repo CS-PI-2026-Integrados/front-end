@@ -1,5 +1,5 @@
 import { Users, FileText, CheckCircle, TriangleAlert } from 'lucide-react'
-import { MetricCard } from '@/features/dashboard/components/dashboard/MetricCard.jsx'
+import { MetricCard } from '@/shared/components/data-display/MetricCard'
 import { ProofData } from '@/features/dashboard/components/dashboard/ProofData.jsx'
 import { RecentActivities } from '@/features/dashboard/components/dashboard/RecentActivities.jsx'
 import { useDashboardMetrics } from '@/features/dashboard/hooks/useDashboardMetrics.js'

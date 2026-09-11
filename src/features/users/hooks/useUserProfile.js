@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useSession } from '@/features/authentication/context/sessionContext'
+import { useSession } from '@/features/authentication'
 import {
   getCameraPreference,
   saveCameraPreference,

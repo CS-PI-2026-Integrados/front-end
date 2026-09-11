@@ -8,7 +8,7 @@ import {
   updateUserActiveState,
   updateUserPassword,
 } from '@/features/users/mock/usersMock'
-import { sendWelcomeEmail } from '@/features/authentication/mock/authEmailMock'
+import { sendWelcomeEmail } from '@/shared/infrastructure/notifications/mockEmailGateway'
 import { registerUserAuditAction } from '@/features/users/services/auditService'
 import {
   ROLE_KEYS,

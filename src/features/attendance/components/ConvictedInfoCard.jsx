@@ -13,7 +13,7 @@ import {
 } from '@/shared/components/ui/select'
 
 import { useAtendimento } from '@/features/attendance'
-import { useTenant } from '@/features/institutions/context/tenantContext'
+import { useTenant } from '@/features/institutions'
 import { formatPhone } from '@/features/attendance/utils/attendanceUtils'
 
 export function ConvictedInfoCard() {

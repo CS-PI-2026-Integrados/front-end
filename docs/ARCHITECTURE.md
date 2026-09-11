@@ -90,10 +90,12 @@ src/
 primitivos do design system pertencem a `shared/components/ui/`; componentes
 genéricos compostos podem ficar em `shared/components/`.
 
-O arquivo `index.js` de uma feature, quando existir, define sua API pública.
+O arquivo `index.js` de uma feature define sua API pública sempre que houver
+um consumidor externo à feature, incluindo `app/`.
 Ele apenas reexporta os poucos elementos que consumidores externos podem usar;
-não contém regra de negócio, efeitos ou inicialização. Pages usadas pelo router e
-integrações deliberadas entre features são candidatas à exportação. Componentes,
+não contém regra de negócio, efeitos ou inicialização. Pages usadas pelo router,
+providers transversais, políticas consumidas por guards e integrações deliberadas
+entre features devem ser exportados quando forem contratos externos. Componentes,
 hooks e services internos não devem ser exportados por conveniência.
 
 As subpastas apresentadas são opcionais. Uma feature só deve criar `pages/`,
@@ -265,17 +267,21 @@ feature, deve permanecer nela.
 ## Regras de dependência
 
 ```txt
-app                -> features, shared
-feature components -> feature hooks, shared
-feature hooks      -> feature services, feature schemas, shared
-feature services   -> shared infrastructure, feature model, feature schemas
-feature public API -> public APIs de outras features
-shared             -> shared apenas
+app                 -> feature public APIs, shared
+feature internals   -> próprios internals, public APIs de outras features, shared
+feature components  -> feature hooks, shared
+feature hooks       -> feature services, feature schemas, shared
+feature services    -> shared infrastructure, feature model, feature schemas
+shared              -> shared apenas
 ```
 
-- Features não importam internals de outras features. Uma integração deliberada
-  pode importar somente a API pública mínima (`index.js`) da feature proprietária;
-  essa API não deve reexportar internals por conveniência.
+- Todo módulo fora de `features/<feature>` — inclusive `app/` e outras
+  features — deve consumir essa feature somente por sua API pública
+  (`@/features/<feature>`). Imports internos são permitidos somente dentro da
+  própria feature.
+- Uma integração deliberada pode importar somente a API pública mínima
+  (`index.js`) da feature proprietária; essa API não deve reexportar internals
+  por conveniência.
 - `shared/components` não conhece domínio, sessão, rotas ou services.
 - Dependências circulares são proibidas.
 - Imports usam aliases consistentes, como `@/features/...` e `@/shared/...`.
@@ -290,9 +296,10 @@ export { default as UsersManagementPage } from './pages/UsersManagementPage'
 import { UsersManagementPage } from '@/features/users'
 ```
 
-Importar `@/features/users/services/usersService` a partir de outra feature viola
-o limite. Se a integração for legítima, a feature proprietária deve oferecer uma
-API pública mínima e estável.
+Importar `@/features/users/services/usersService` a partir de qualquer módulo
+externo a `features/users`, inclusive `app/`, viola o limite. Se a integração
+for legítima, a feature proprietária deve oferecer uma API pública mínima e
+estável.
 
 ## Padrões React e JavaScript
 

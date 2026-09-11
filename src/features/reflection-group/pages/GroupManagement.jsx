@@ -11,9 +11,9 @@ import {
   Settings,
 } from 'lucide-react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSession } from '@/features/authentication/context/sessionContext'
+import { useSession } from '@/features/authentication'
 import { Spinner } from '@/shared/components/ui/spinner'
-import { MetricCard } from '@/features/dashboard/components/dashboard/MetricCard.jsx'
+import { MetricCard } from '@/shared/components/data-display/MetricCard'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Button } from '@/shared/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs.jsx'

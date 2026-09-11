@@ -1,3 +1,6 @@
+import { mockTenants } from '@/features/institutions/mock/institutionsMock'
+import { LOGO_ACCEPTED_EXTENSIONS } from '@/features/institutions/model/logoConfig'
+
 const ACCEPTED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024 // 1 MB
 
@@ -67,4 +70,7 @@ export const saveTenantSettings = (settings) => {
     }, 250)
   })
 }
-import { LOGO_ACCEPTED_EXTENSIONS } from '@/features/institutions/model/logoConfig'
+
+export function getTenantById(tenantId) {
+  return mockTenants.tenants.find((tenant) => String(tenant.id) === String(tenantId)) || null
+}

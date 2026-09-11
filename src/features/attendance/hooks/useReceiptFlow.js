@@ -3,7 +3,7 @@ import { useAtendimento } from '@/features/attendance'
 import { useGenerateReceipt } from '@/features/attendance/hooks/useGenerateReceipt'
 import { getMudancasAtivas } from '@/features/attendance/utils/attendanceUtils'
 import { getCameraPreference } from '@/features/users'
-import { useSession } from '@/features/authentication/context/sessionContext'
+import { useSession } from '@/features/authentication'
 
 export function useReceiptFlow() {
   const attendance = useAtendimento()
