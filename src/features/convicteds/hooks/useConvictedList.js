@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { convictedService } from '@/features/convicteds/services/convictedService'
 
 export function useConvictedList({ search, page = 1, limit = 25 }) {
+  const [reloadTrigger, setReloadTrigger] = useState(0)
   const [state, setState] = useState({
     items: [],
     totalItems: 0,
@@ -9,6 +10,10 @@ export function useConvictedList({ search, page = 1, limit = 25 }) {
     isLoading: true,
     error: null,
   })
+
+  const refetch = useCallback(() => {
+    setReloadTrigger((prev) => prev + 1)
+  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -45,7 +50,10 @@ export function useConvictedList({ search, page = 1, limit = 25 }) {
       isCurrent = false
       controller.abort()
     }
-  }, [limit, page, search])
+  }, [limit, page, search, reloadTrigger])
 
-  return state
+  return {
+    ...state,
+    refetch,
+  }
 }
