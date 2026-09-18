@@ -1,36 +1,26 @@
 import { readJson, writeJson } from '@/shared/infrastructure/storage/jsonStorage'
-import { listarComprovantes } from '@/features/attendance'
-import { listarApenados } from '@/features/convicteds'
+import { listarComprovantes, obterSnapshotComprovantes } from '@/features/attendance'
+import { listarApenados, listarProcessos } from '@/features/convicteds'
 import { GROUP_DOCUMENTS_STORAGE_KEY, documentosGrupoIniciais } from '../mock/groupDocumentsMock'
 
 const VIEW_PREFERENCE_STORAGE_KEY = 'sicape:documentos:view:v1'
 const DEFAULT_VIEW = 'grid'
 
-function buildProcessNumberResolver(tenantId) {
-  const convicteds = listarApenados().filter(
-    (apenado) => String(apenado.tenantId) === String(tenantId)
-  )
-
-  return (convictedId, processId) => {
-    const convicted = convicteds.find((item) => String(item.id) === String(convictedId))
-    if (!convicted) return '—'
-    const process = (convicted.processos || []).find(
-      (item) => String(item.id) === String(processId)
-    )
-    return process?.numeroProcesso || '—'
-  }
+function findProcess(processId) {
+  return listarProcessos().find((process) => String(process.id) === String(processId)) || null
 }
 
-function toDocument(comprovante, resolveProcessNumber) {
+function toDocument(comprovante) {
+  const process = findProcess(comprovante.processoId)
   return {
     id: comprovante.id,
     tenantId: comprovante.tenantId,
     convictedId: comprovante.apenadoId,
+    processId: comprovante.processoId,
     convictedName: comprovante.nomeApenado,
     convictedCpf: comprovante.cpfApenado,
-    processNumber: resolveProcessNumber(comprovante.apenadoId, comprovante.processoId),
+    processNumber: process?.processNumber || '—',
     photoUrl: comprovante.photoUrl,
-    pdfUrl: comprovante.pdfUrl,
     issuedAt: comprovante.emitidoEm,
     operatorName: comprovante.nomeOperador,
     verificationCode: comprovante.codigoVerificacao,
@@ -52,10 +42,7 @@ function toGroupDocument(documento) {
 }
 
 export function listDocuments(tenantId) {
-  const resolveProcessNumber = buildProcessNumberResolver(tenantId)
-  return listarComprovantes(tenantId).map((comprovante) =>
-    toDocument(comprovante, resolveProcessNumber)
-  )
+  return listarComprovantes(tenantId).map(toDocument)
 }
 
 export function listGroupDocuments(tenantId) {
@@ -63,6 +50,17 @@ export function listGroupDocuments(tenantId) {
   return documentos
     .filter((documento) => String(documento.tenantId) === String(tenantId))
     .map(toGroupDocument)
+}
+
+export function getReceiptPayload(documentId) {
+  const recibo = obterSnapshotComprovantes().find((item) => String(item.id) === String(documentId))
+  if (!recibo) return null
+
+  const apenado =
+    listarApenados().find((item) => String(item.id) === String(recibo.apenadoId)) || null
+  const processo = findProcess(recibo.processoId)
+
+  return { apenado, processo, recibo }
 }
 
 export function readViewPreference() {
