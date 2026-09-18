@@ -3,12 +3,14 @@ import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs'
 import { useSession } from '@/features/authentication'
 import { DocumentArchive } from '../components/DocumentArchive'
+import { PhotoModal } from '../components/PhotoModal'
 
 const Documents = () => {
   const { session } = useSession()
   const tenantId = session?.tenant?.id
 
   const [activeTab, setActiveTab] = useState('attendance')
+  const [photoDocument, setPhotoDocument] = useState(null)
 
   function openGroup(groupId) {
     window.open(`/grupos-reflexivos/${groupId}`, '_blank', 'noopener,noreferrer')
@@ -28,13 +30,15 @@ const Documents = () => {
         </TabsList>
 
         <TabsContent value="attendance">
-          <DocumentArchive tenantId={tenantId} source="attendance" />
+          <DocumentArchive tenantId={tenantId} source="attendance" onViewPhoto={setPhotoDocument} />
         </TabsContent>
 
         <TabsContent value="groups">
           <DocumentArchive tenantId={tenantId} source="group" onOpenGroup={openGroup} />
         </TabsContent>
       </Tabs>
+
+      <PhotoModal document={photoDocument} onClose={() => setPhotoDocument(null)} />
     </div>
   )
 }
