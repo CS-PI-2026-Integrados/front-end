@@ -5,7 +5,7 @@ import { cn } from '@/shared/lib/utils'
 
 export function PasswordField({
   id,
-  label,
+  label = 'Senha',
   error,
   registration,
   value,
