@@ -1,5 +1,4 @@
 import { LoginForm } from '@/features/authentication/components/LoginForm'
-import { AuthFormCard } from '@/features/authentication/components/AuthFormCard'
 import { useTheme } from '@/shared/hooks/useTheme'
 import loginBg from '@/features/authentication/assets/login-bg.jpg'
 import logoWhite from '@/shared/assets/logos/to-dark-background.svg'
@@ -41,9 +40,7 @@ const Login = () => {
             />
           </div>
 
-          <AuthFormCard>
-            <LoginForm />
-          </AuthFormCard>
+          <LoginForm />
         </div>
       </div>
     </div>
