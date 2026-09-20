@@ -7,6 +7,7 @@ import { useAtendimentoData } from '@/features/attendance/hooks/useAttendanceDat
 import { ReceiptSuccessCard } from '@/features/attendance/components/ReceiptSuccessCard.jsx'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { useReceiptPdfActions } from '@/features/attendance/hooks/useReceiptPdfActions'
+import { useConvictedPhoto } from '@/features/convicteds'
 
 const Service = () => {
   const {
@@ -28,6 +29,8 @@ const Service = () => {
 
   const { presencas } = useAtendimentoData()
   const { download, view } = useReceiptPdfActions()
+  const { url: referencePhotoUrl } = useConvictedPhoto(apenado?.id)
+  const apenadoComFoto = apenado ? { ...apenado, photoUrl: referencePhotoUrl } : apenado
 
   return (
     <Tabs defaultValue="novo" className="flex h-full min-h-0 w-full flex-1 flex-col">
@@ -76,7 +79,7 @@ const Service = () => {
             {isSuccess ? (
               <ReceiptSuccessCard
                 className="w-full lg:h-full"
-                atendimento={{ apenado, processo, recibo: reciboGerado }}
+                atendimento={{ apenado: apenadoComFoto, processo, recibo: reciboGerado }}
                 onReset={resetAtendimento}
                 onDownload={download}
                 onView={view}
@@ -85,7 +88,7 @@ const Service = () => {
               <PhotoCaptureCard
                 className="w-full lg:h-full"
                 file={fotoAtendimento.data}
-                referencePhotoUrl={apenado?.referencePhotoUrl}
+                referencePhotoUrl={referencePhotoUrl}
                 deviceId={deviceId}
                 isReadyToCapture={isReadyToCapture}
                 isSubmitting={isSubmitting}

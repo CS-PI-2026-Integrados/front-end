@@ -2,8 +2,8 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Plus, Users, Pencil, Trash, Settings } from 'lucide-react'
 import { useSession } from '@/features/authentication'
+import { useAllConvicted } from '@/features/convicteds'
 import { useGroupsStorage } from '@/features/reflection-group/hooks/useGroupsStorage'
-import { listarApenados } from '@/features/convicteds'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
@@ -49,11 +49,11 @@ const Groups = () => {
   const [grupoParaExcluir, setGrupoParaExcluir] = useState(null)
   const [confirmExcluirAberto, setConfirmExcluirAberto] = useState(false)
 
-  const availableParticipants = useMemo(() => {
-    const comarca = session?.tenant?.id ? String(session.tenant.id) : ''
-    if (!comarca) return listarApenados().filter((a) => a.status === 'Ativo')
-    return listarApenados().filter((a) => String(a.tenantId) === comarca && a.status === 'Ativo')
-  }, [session?.tenant?.id])
+  const {
+    items: availableParticipants,
+    isLoading: isLoadingParticipants,
+    error: participantsError,
+  } = useAllConvicted()
 
   const formatDate = (date) => {
     try {
@@ -116,6 +116,11 @@ const Groups = () => {
           <HeaderButton icon={Plus} text="Novo Grupo" onClick={() => setNovoGrupoAberto(true)} />
         }
       />
+
+      {isLoadingParticipants && (
+        <p className="text-muted-foreground text-sm">Carregando participantes...</p>
+      )}
+      {participantsError && <p className="text-destructive text-sm">{participantsError}</p>}
 
       <NewGroupForm
         isOpen={novoGrupoAberto}

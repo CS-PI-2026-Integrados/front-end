@@ -1,5 +1,5 @@
 import { useMemo, useSyncExternalStore } from 'react'
-import { listarApenados } from '@/features/convicteds'
+import { useAllConvicted } from '@/features/convicteds'
 import {
   listarComprovantes,
   observarComprovantes,
@@ -8,14 +8,9 @@ import {
 import { useSession } from '@/features/authentication'
 
 export const useDistrictData = () => {
+  const { items: apenados, isLoading, error } = useAllConvicted()
   const { session } = useSession()
   const comarca = session?.tenant?.id ? String(session.tenant.id) : ''
-
-  const apenados = useMemo(() => {
-    if (!comarca) return listarApenados()
-
-    return listarApenados().filter((apenado) => String(apenado.tenantId) === comarca)
-  }, [comarca])
 
   useSyncExternalStore(observarComprovantes, obterSnapshotComprovantes)
 
@@ -24,5 +19,5 @@ export const useDistrictData = () => {
     return listarComprovantes(comarca)
   }, [comarca])
 
-  return { apenados, presencas }
+  return { apenados, presencas, isLoading, error }
 }

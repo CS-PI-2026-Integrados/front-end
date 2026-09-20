@@ -1,9 +1,9 @@
-import { useRef } from 'react'
 import { IMaskInput } from 'react-imask'
 import { Loader2, Search, Upload, X } from 'lucide-react'
 
 import { useConvictedForm } from '@/features/convicteds/hooks/useConvictedForm'
-import { EMPLOYMENT_STATUS_OPTIONS } from '@/features/convicteds/utils/convictedUtils'
+import { useConvictedPhoto } from '@/features/convicteds/hooks/useConvictedPhoto'
+import { ProcessSelector } from '@/features/convicteds/components/ProcessSelector'
 import { Button } from '@/shared/components/ui/button'
 import {
   Dialog,
@@ -16,20 +16,15 @@ import {
 } from '@/shared/components/ui/dialog'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/ui/select'
 import { Separator } from '@/shared/components/ui/separator'
 
 export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSuccess }) {
   const isEditing = Boolean(convicted?.id)
+  const { url: authenticatedPhotoUrl } = useConvictedPhoto(convicted?.id)
 
   const { form, errors, preview, fileRef, isSubmitting, isSearchingCep, actions } =
     useConvictedForm(convicted, {
+      photoUrl: authenticatedPhotoUrl,
       onSuccess: (result) => {
         onSuccess?.(result)
         onOpenChange?.(false)
@@ -90,7 +85,10 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
           </DialogClose>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <form
+          onSubmit={handleSubmit}
+          className="flex min-h-0 flex-1 flex-col overflow-hidden [&_label]:mb-1.5 [&_label]:block"
+        >
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 text-left">
             <div className="mb-6">
               <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-widest uppercase">
@@ -225,7 +223,7 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
                 <div>
                   <Label htmlFor="convicted-phone">
                     Telefone de Contato <span className="text-destructive">*</span>
@@ -244,37 +242,6 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
                     className={getInputClass('phone')}
                   />
                   {errors.phone && <p className="text-destructive mt-1 text-xs">{errors.phone}</p>}
-                </div>
-
-                <div>
-                  <Label htmlFor="convicted-employmentStatus">
-                    Situação Trabalhista <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={form.employmentStatus || ''}
-                    onValueChange={(val) => handleSelect('employmentStatus', val)}
-                  >
-                    <SelectTrigger
-                      id="convicted-employmentStatus"
-                      className={
-                        errors.employmentStatus
-                          ? 'border-destructive ring-destructive/20 ring-3'
-                          : ''
-                      }
-                    >
-                      <SelectValue placeholder="Selecione a situação..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EMPLOYMENT_STATUS_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.employmentStatus && (
-                    <p className="text-destructive mt-1 text-xs">{errors.employmentStatus}</p>
-                  )}
                 </div>
               </div>
             </div>
@@ -306,7 +273,7 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
                       disabled={isSearchingCep}
                       onClick={buscarCep}
                       title="Buscar CEP"
-                      className="shrink-0"
+                      className="h-auto shrink-0 self-stretch"
                     >
                       {isSearchingCep ? (
                         <Loader2 className="size-4 animate-spin" />
@@ -435,6 +402,20 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
                 </div>
               </div>
             </div>
+
+            <Separator className="my-6" />
+
+            <div className="space-y-4">
+              <p className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+                Processos
+              </p>
+
+              <ProcessSelector
+                processes={form.processes}
+                onChange={(processes) => handleSelect('processes', processes)}
+                error={errors.processes}
+              />
+            </div>
           </div>
 
           <DialogFooter className="flex-row items-center justify-end gap-2 border-t px-6 py-4">
@@ -465,6 +446,5 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
   )
 }
 
-// Aliases para manter compatibilidade com eventuais imports legados
 export const ApenadoCreateDialog = ConvictedFormDialog
 export const ApenadoEditDialog = ConvictedFormDialog

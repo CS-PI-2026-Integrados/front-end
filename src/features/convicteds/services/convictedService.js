@@ -57,7 +57,6 @@ const toConvictedDetail = (item) => ({
 
 class ConvictedService {
   async list({ search, page = 1, limit = 25, signal }) {
-    // A paginação no Spring Boot começa em 0
     const pageIndex = Math.max(0, page - 1)
 
     const params = new URLSearchParams({
@@ -100,7 +99,12 @@ class ConvictedService {
         city: data.address?.city?.trim(),
         state: data.address?.state?.trim()?.toUpperCase(),
       },
-      employment_status: data.employmentStatus || null,
+      processes: Array.isArray(data.processes)
+        ? data.processes.map((process) => ({
+            id: process.id,
+            principal: Boolean(process.principal),
+          }))
+        : [],
     }
 
     const response = await apiService.post('/convicted', payload)
@@ -116,8 +120,6 @@ class ConvictedService {
     if (data.cpf !== undefined) payload.cpf = data.cpf.replace(/\D/g, '')
     if (data.birthDate !== undefined) payload.birth_date = data.birthDate
     if (data.phone !== undefined) payload.phone = data.phone.trim()
-    if (data.employmentStatus !== undefined) payload.employment_status = data.employmentStatus
-
     if (data.address) {
       payload.address = {
         zip_code: (data.address.zipCode || '').replace(/\D/g, ''),
@@ -130,7 +132,6 @@ class ConvictedService {
       }
     }
 
-    // Vinculação de processos: [{ id: UUID, principal: boolean }]
     if (Array.isArray(data.processes)) {
       payload.processes = data.processes.map((p) => ({
         id: p.id,
@@ -158,6 +159,11 @@ class ConvictedService {
 
     const response = await apiService.put(`/convicted/${id}/photo`, formData)
     return toConvictedDetail(response)
+  }
+
+  async getPhoto(id, { signal } = {}) {
+    if (!id) throw new Error('ID do apenado é obrigatório.')
+    return apiService.getBlob(`/convicted/${id}/photo`, { signal })
   }
 
   async searchCep(cep, { signal } = {}) {

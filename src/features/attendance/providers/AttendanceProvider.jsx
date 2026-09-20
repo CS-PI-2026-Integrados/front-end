@@ -29,7 +29,7 @@ function atendimentoReducer(state, action) {
   switch (action.type) {
     case 'SELECT_APENADO': {
       const apenado = action.payload
-      const processo = getProcessoPadrao(apenado?.processos)
+      const processo = getProcessoPadrao(apenado?.processes)
 
       return {
         ...state,
@@ -184,7 +184,7 @@ export function AtendimentoProvider({ children }) {
   const [state, dispatch] = useReducer(atendimentoReducer, initialState)
 
   const isReadyToCapture = Boolean(
-    state.apenado && (state.apenado.processos?.length === 0 || state.processo)
+    state.apenado && (state.apenado.processes?.length === 0 || state.processo)
   )
 
   const hasChanges = Object.values(state.mudancas).some((m) => m.mudou === true)

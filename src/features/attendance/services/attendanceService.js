@@ -76,12 +76,15 @@ export async function gerarComprovante({
   apenado,
   processo,
   photoFile,
+  tenantId,
   mudancasDetectadas = {},
   operatorName,
   institution,
 }) {
   if (!apenado) throw new Error('Selecione um apenado para continuar')
-  if (apenado.processos?.length && !processo)
+  if (!tenantId && !apenado.tenantId)
+    throw new Error('A comarca do atendimento não foi identificada')
+  if (apenado.processes?.length && !processo)
     throw new Error('Selecione um processo para continuar')
 
   const emitidoEm = new Date().toISOString()
@@ -89,12 +92,13 @@ export async function gerarComprovante({
   return salvarComprovante({
     id: `${Date.now()}`,
     apenadoId: String(apenado.id),
-    tenantId: String(apenado.tenantId || '1'),
+    tenantId: String(tenantId || apenado.tenantId),
     processoId: processo?.id
       ? String(processo.id)
-      : apenado.processos?.[0]?.id
-        ? String(apenado.processos[0].id)
+      : apenado.processes?.[0]?.id
+        ? String(apenado.processes[0].id)
         : 'p1',
+    processNumber: processo?.number || apenado.processes?.[0]?.number || null,
     nomeApenado: apenado.fullName || apenado.nomeCompleto || 'Apenado',
     cpfApenado: apenado.cpf || '',
     photoUrl,

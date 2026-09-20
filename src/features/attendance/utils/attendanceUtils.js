@@ -21,7 +21,7 @@ export const validateAtendimento = ({ apenado, processo, foto }) => {
     }
   }
 
-  if (!processo && apenado.processos?.length > 0) {
+  if (!processo && apenado.processes?.length > 0) {
     return {
       isValid: false,
       error: 'Selecione um processo para continuar',

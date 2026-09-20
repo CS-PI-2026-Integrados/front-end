@@ -25,7 +25,7 @@ export function useFilteredConvicted(apenados, search) {
       const cpfDigits = (a.cpf || '').replace(/\D/g, '')
       const matchesCpf = cpf.includes(s) || (sDigits.length >= 2 && cpfDigits.includes(sDigits))
 
-      const procs = [a.processNumber, ...(a.processos || []).map((p) => p.processNumber)].filter(
+      const procs = [a.mainProcessNumber, ...(a.processes || []).map((p) => p.number)].filter(
         Boolean
       )
 

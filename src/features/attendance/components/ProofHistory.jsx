@@ -34,7 +34,7 @@ export function ProofHistory() {
   const buildAtendimento = (comp) => {
     const apenado = apenados.find((a) => String(a.id) === String(comp.apenadoId))
     const processo =
-      apenado?.processos?.find((p) => String(p.id) === String(comp.processoId)) || null
+      apenado?.processes?.find((p) => String(p.id) === String(comp.processoId)) || null
 
     return {
       apenado: apenado || {
@@ -42,7 +42,7 @@ export function ProofHistory() {
         fullName: comp.nomeApenado || 'Apenado',
         cpf: comp.cpf || comp.cpfApenado || '',
       },
-      processo: processo || (comp.processoId ? { processNumber: comp.processoId } : null),
+      processo: processo || (comp.processoId ? { number: comp.processoId } : null),
       recibo: {
         photoUrl: comp.photoUrl,
         codigoVerificacao: comp.codigoVerificacao || comp.verificationCode,

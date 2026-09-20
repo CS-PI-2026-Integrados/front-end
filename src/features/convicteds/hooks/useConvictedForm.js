@@ -9,7 +9,7 @@ export const INITIAL_CONVICTED_FORM = {
   cpf: '',
   birthDate: '',
   phone: '',
-  employmentStatus: '',
+  processes: [],
   address: {
     zipCode: '',
     street: '',
@@ -30,7 +30,14 @@ export function convictedToFormState(convicted) {
     cpf: convicted.cpf || '',
     birthDate: convicted.birthDate ? String(convicted.birthDate).substring(0, 10) : '',
     phone: convicted.phone || '',
-    employmentStatus: convicted.employmentStatus || '',
+    processes: Array.isArray(convicted.processes)
+      ? convicted.processes.map((process) => ({
+          id: process.id,
+          number: process.number,
+          status: process.status,
+          principal: Boolean(process.principal),
+        }))
+      : [],
     address: {
       zipCode: convicted.address?.zipCode || '',
       street: convicted.address?.street || '',
@@ -44,22 +51,21 @@ export function convictedToFormState(convicted) {
   }
 }
 
-export function useConvictedForm(convicted = null, { onSuccess } = {}) {
+export function useConvictedForm(convicted = null, { onSuccess, photoUrl } = {}) {
   const isEditing = Boolean(convicted?.id)
   const fileRef = useRef(null)
 
   const [form, setForm] = useState(() => convictedToFormState(convicted))
   const [errors, setErrors] = useState({})
-  const [preview, setPreview] = useState(convicted?.photoUrl || null)
+  const [preview, setPreview] = useState(photoUrl || convicted?.photoUrl || null)
   const [isSearchingCep, setIsSearchingCep] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Sincroniza se a prop convicted mudar
   useEffect(() => {
     setForm(convictedToFormState(convicted))
-    setPreview(convicted?.photoUrl || null)
+    setPreview(photoUrl || convicted?.photoUrl || null)
     setErrors({})
-  }, [convicted])
+  }, [convicted, photoUrl])
 
   const clearFieldError = useCallback((field) => {
     setErrors((prev) => {
@@ -134,7 +140,7 @@ export function useConvictedForm(convicted = null, { onSuccess } = {}) {
         return
       }
 
-      const maxSize = 5 * 1024 * 1024 // 5 MB
+      const maxSize = 5 * 1024 * 1024
       if (file.size > maxSize) {
         setErrors((prev) => ({
           ...prev,
@@ -248,6 +254,13 @@ export function useConvictedForm(convicted = null, { onSuccess } = {}) {
         }
         return result
       } catch (err) {
+        if (Array.isArray(err?.body?.fields)) {
+          const fieldErrors = err.body.fields.reduce((result, field) => {
+            if (field?.field && field?.message) result[field.field] = field.message
+            return result
+          }, {})
+          setErrors((current) => ({ ...current, ...fieldErrors }))
+        }
         const message = err?.message || 'Erro ao salvar os dados do apenado.'
         toast.error(message)
         return false
@@ -260,12 +273,12 @@ export function useConvictedForm(convicted = null, { onSuccess } = {}) {
 
   const resetForm = useCallback(() => {
     setForm(convictedToFormState(convicted))
-    setPreview(convicted?.photoUrl || null)
+    setPreview(photoUrl || convicted?.photoUrl || null)
     setErrors({})
     if (fileRef.current) {
       fileRef.current.value = ''
     }
-  }, [convicted])
+  }, [convicted, photoUrl])
 
   return {
     form,
@@ -276,7 +289,7 @@ export function useConvictedForm(convicted = null, { onSuccess } = {}) {
     isEditing,
     isSubmitting,
     isSearchingCep,
-    buscandoCep: isSearchingCep, // retrocompatibilidade
+    buscandoCep: isSearchingCep,
     actions: {
       handleChange,
       handleSelect,
@@ -288,7 +301,7 @@ export function useConvictedForm(convicted = null, { onSuccess } = {}) {
       buscarCep,
       validate,
       submit,
-      tentarSalvar: submit, // retrocompatibilidade
+      tentarSalvar: submit,
       resetForm,
     },
   }

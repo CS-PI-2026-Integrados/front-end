@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { validateCPF } from '@/shared/lib/cpf'
-import { EMPLOYMENT_STATUS } from '@/features/convicteds/utils/convictedUtils'
 
 const addressSchema = z.object({
   zipCode: z.string().optional().default(''),
@@ -10,6 +9,13 @@ const addressSchema = z.object({
   neighborhood: z.string().trim().min(1, 'O bairro é obrigatório.'),
   city: z.string().trim().min(1, 'A cidade é obrigatória.'),
   state: z.string().trim().min(1, 'A UF é obrigatória.'),
+})
+
+const processSchema = z.object({
+  id: z.string().min(1),
+  number: z.string().min(1),
+  status: z.string().optional(),
+  principal: z.boolean(),
 })
 
 export const convictedFormSchema = z.object({
@@ -27,14 +33,7 @@ export const convictedFormSchema = z.object({
     .min(1, 'O telefone é obrigatório.')
     .refine((val) => val.replace(/\D/g, '').length >= 10, 'O telefone é obrigatório.'),
   address: addressSchema,
-  employmentStatus: z
-    .string()
-    .trim()
-    .min(1, 'A situação trabalhista é obrigatória.')
-    .refine(
-      (val) => Object.values(EMPLOYMENT_STATUS).includes(val),
-      'Situação trabalhista inválida.'
-    ),
+  processes: z.array(processSchema).optional(),
 })
 
 export function validateConvictedForm(form, { isEditing = false, preview = null } = {}) {

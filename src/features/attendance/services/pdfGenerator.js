@@ -54,8 +54,8 @@ export const generateReceiptPDF = async (atendimento) => {
   }
 
   let referencePhotoBase64 = null
-  if (apenado?.referencePhotoUrl) {
-    referencePhotoBase64 = await getBase64ImageFromUrl(apenado.referencePhotoUrl)
+  if (apenado?.photoUrl) {
+    referencePhotoBase64 = await getBase64ImageFromUrl(apenado.photoUrl)
   }
 
   let capturedPhotoBase64 = null
@@ -280,7 +280,7 @@ export const generateReceiptPDF = async (atendimento) => {
     {
       text: [
         { text: 'Processo: ', bold: true },
-        `${processo?.processNumber || processo?.numeroProcesso || 'Sem Processo Vinculado'}\n`,
+        `${processo?.number || processo?.numeroProcesso || 'Sem Processo Vinculado'}\n`,
         { text: 'Nome: ', bold: true },
         `${apenado?.fullName || apenado?.nomeCompleto || 'Apenado'}\n`,
         ...cpfLine,
