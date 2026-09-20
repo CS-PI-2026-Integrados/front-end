@@ -133,7 +133,15 @@ export default function Convicteds() {
         }
       >
         <div className="overflow-x-auto md:block">
-          <Table className="w-full min-w-175 text-sm">
+          <Table className="w-full min-w-225 table-fixed text-sm">
+            <colgroup>
+              <col className="w-16" />
+              <col className="w-64" />
+              <col className="w-52" />
+              <col className="w-40" />
+              <col className="w-72" />
+              <col className="w-32" />
+            </colgroup>
             <TableHeader>
               <TableRow className="bg-secondary border-y">
                 <TableHead className="text-foreground w-16 px-4 py-3 text-left text-xs font-semibold">
@@ -151,7 +159,7 @@ export default function Convicteds() {
                 <TableHead className="text-foreground min-w-44 px-4 py-3 text-left text-xs font-semibold">
                   Endereço
                 </TableHead>
-                <TableHead className="text-foreground w-28 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                <TableHead className="text-foreground w-32 px-4 py-3 text-right text-xs font-semibold whitespace-nowrap">
                   Ações
                 </TableHead>
               </TableRow>
@@ -207,8 +215,8 @@ export default function Convicteds() {
                     >
                       {address || '-'}
                     </TableCell>
-                    <TableCell className="w-28 px-4 py-3.5">
-                      <div className="flex items-center gap-1">
+                    <TableCell className="w-32 px-4 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <Button
                           type="button"
                           title="Visualizar perfil"

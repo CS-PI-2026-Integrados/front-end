@@ -8,9 +8,9 @@ import {
 import { useSession } from '@/features/authentication'
 
 export const useDistrictData = () => {
-  const { items: apenados, isLoading, error } = useAllConvicted()
   const { session } = useSession()
   const comarca = session?.tenant?.id ? String(session.tenant.id) : ''
+  const { items: apenados, isLoading, error } = useAllConvicted({ cacheKey: comarca })
 
   useSyncExternalStore(observarComprovantes, obterSnapshotComprovantes)
 

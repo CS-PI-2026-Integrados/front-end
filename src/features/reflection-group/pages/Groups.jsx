@@ -10,6 +10,7 @@ import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { Button } from '@/shared/components/ui/button'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Input } from '@/shared/components/ui/input'
+import { Pagination } from '@/shared/components/ui/pagination'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,12 +49,13 @@ const Groups = () => {
   const [visualizarGrupoAberto, setVisualizarGrupoAberto] = useState(false)
   const [grupoParaExcluir, setGrupoParaExcluir] = useState(null)
   const [confirmExcluirAberto, setConfirmExcluirAberto] = useState(false)
+  const [page, setPage] = useState(1)
 
   const {
     items: availableParticipants,
     isLoading: isLoadingParticipants,
     error: participantsError,
-  } = useAllConvicted()
+  } = useAllConvicted({ cacheKey: String(session?.tenant?.id || '') })
 
   const formatDate = (date) => {
     try {
@@ -71,6 +73,11 @@ const Groups = () => {
       return matchesSearch && matchesSituacao
     })
   }, [grupos, search, situacaoFilter])
+
+  const pageSize = 5
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const paginatedGroups = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   const handleCreateGroup = async (formData) => {
     try {
@@ -144,12 +151,21 @@ const Groups = () => {
           <Input
             placeholder="Buscar por nome ou CPF..."
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setPage(1)
+              setSearch(event.target.value)
+            }}
             className="pl-9"
           />
         </div>
 
-        <Select value={situacaoFilter} onValueChange={setSituacaoFilter}>
+        <Select
+          value={situacaoFilter}
+          onValueChange={(value) => {
+            setPage(1)
+            setSituacaoFilter(value)
+          }}
+        >
           <SelectTrigger className="hover:bg-muted w-full cursor-pointer lg:w-44">
             <SelectValue />
           </SelectTrigger>
@@ -179,9 +195,26 @@ const Groups = () => {
             }
           />
         }
+        footer={
+          <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <span className="font-medium">
+              Página {currentPage} de {totalPages} · {filtered.length} registros
+            </span>
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
+          </div>
+        }
       >
         <div className="overflow-x-auto">
-          <Table className="min-w-190 text-sm">
+          <Table className="min-w-225 table-fixed text-sm">
+            <colgroup>
+              <col className="w-64" />
+              <col className="w-40" />
+              <col className="w-32" />
+              <col className="w-48" />
+              <col className="w-40" />
+              <col className="w-40" />
+              <col className="w-48" />
+            </colgroup>
             <TableHeader>
               <TableRow className="bg-secondary border-y">
                 <TableHead className="px-4 py-3 text-left text-xs font-semibold">
@@ -208,7 +241,7 @@ const Groups = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((grupo) => (
+                paginatedGroups.map((grupo) => (
                   <TableRow
                     key={grupo.id}
                     className="hover:bg-muted/50 cursor-pointer"
@@ -231,56 +264,58 @@ const Groups = () => {
                     </TableCell>
                     <TableCell className="px-4 py-3">{formatDate(grupo.dataInicio)}</TableCell>
                     <TableCell className="px-4 py-3">{formatDate(grupo.dataTermino)}</TableCell>
-                    <TableCell className="px-4 py-3 text-right">
-                      <Button
-                        size="sm"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          handleRowClick(grupo.id)
-                        }}
-                      >
-                        Acessar
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            <Settings />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuGroup>
+                    <TableCell className="px-4 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          size="sm"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            handleRowClick(grupo.id)
+                          }}
+                        >
+                          Acessar
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
                             <Button
-                              size="xs"
-                              variant="ghost"
-                              className="w-full justify-start font-normal"
-                              onClick={(event) => {
-                                event.stopPropagation()
-                                handleEditGroup(grupo)
-                              }}
+                              variant="secondary"
+                              size="sm"
+                              onClick={(event) => event.stopPropagation()}
                             >
-                              <Pencil /> Editar
+                              <Settings />
                             </Button>
-                            {session?.user.role?.level >= 2 ? (
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuGroup>
                               <Button
                                 size="xs"
-                                variant="destructive"
+                                variant="ghost"
                                 className="w-full justify-start font-normal"
                                 onClick={(event) => {
                                   event.stopPropagation()
-                                  setGrupoParaExcluir(grupo)
-                                  setConfirmExcluirAberto(true)
+                                  handleEditGroup(grupo)
                                 }}
                               >
-                                <Trash /> Excluir
+                                <Pencil /> Editar
                               </Button>
-                            ) : null}
-                          </DropdownMenuGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                              {session?.user.role?.level >= 2 ? (
+                                <Button
+                                  size="xs"
+                                  variant="destructive"
+                                  className="w-full justify-start font-normal"
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    setGrupoParaExcluir(grupo)
+                                    setConfirmExcluirAberto(true)
+                                  }}
+                                >
+                                  <Trash /> Excluir
+                                </Button>
+                              ) : null}
+                            </DropdownMenuGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

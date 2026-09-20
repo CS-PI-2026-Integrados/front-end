@@ -21,7 +21,9 @@ const Dashboard = () => {
     <div className="space-y-5">
       <PageHeader title="Dashboard" description="Visão geral" />
 
-      {isLoading && <p className="text-muted-foreground text-sm">Carregando dados...</p>}
+      {isLoading && apenados.length === 0 && (
+        <p className="text-muted-foreground text-sm">Carregando dados...</p>
+      )}
       {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">

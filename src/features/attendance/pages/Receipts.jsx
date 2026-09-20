@@ -62,7 +62,7 @@ const Service = () => {
         <form
           id="form-atendimento"
           onSubmit={submit}
-          className="grid min-h-0 w-full shrink-0 grid-cols-1 gap-4 p-0.5 lg:h-full lg:flex-1 lg:grid-cols-2 lg:gap-6"
+          className="grid min-h-0 w-full shrink-0 grid-cols-1 gap-4 lg:h-full lg:flex-1 lg:grid-cols-2 lg:gap-6"
         >
           <ConvictedCard
             className={`min-h-0 w-full min-w-0 transition-all duration-300 lg:h-full ${
