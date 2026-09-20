@@ -5,42 +5,33 @@ import { useSession } from '@/features/authentication'
 import { DocumentArchive } from '../components/DocumentArchive'
 import { PhotoModal } from '../components/PhotoModal'
 import { PdfPreviewModal } from '../components/PdfPreviewModal'
-import { getReceiptPayload } from '../services/documentsService'
-import { registerDocumentReissue } from '../services/documentsAuditService'
+import { useDocumentActions } from '../hooks/useDocumentActions'
 
 const Documents = () => {
   const { session } = useSession()
   const tenantId = session?.tenant?.id
 
   const [activeTab, setActiveTab] = useState('attendance')
-  const [photoDocument, setPhotoDocument] = useState(null)
-  const [pdfDocument, setPdfDocument] = useState(null)
-  const [pdfPayload, setPdfPayload] = useState(null)
+
+  const {
+    photoDocument,
+    openPhoto,
+    closePhoto,
+    pdfDocument,
+    openPdf,
+    closePdf,
+    downloadPdf,
+    viewPdf,
+    isProcessing,
+    pdfError,
+  } = useDocumentActions(tenantId)
 
   function openGroup(groupId) {
     window.open(`/grupos-reflexivos/${groupId}`, '_blank', 'noopener,noreferrer')
   }
 
-  function openPdf(document) {
-    setPdfDocument(document)
-    setPdfPayload(getReceiptPayload(document.id))
-  }
-
-  function closePdf(result) {
-    if (result?.downloaded && pdfDocument) {
-      registerDocumentReissue({
-        tenantId,
-        actorId: session?.user?.id,
-        documentId: pdfDocument.id,
-        documentType: 'attendance',
-      })
-    }
-    setPdfDocument(null)
-    setPdfPayload(null)
-  }
-
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div className="space-y-5">
       <PageHeader
         title="Arquivo de Documentos"
         description="Repositório centralizado de comprovantes e documentos"
@@ -56,7 +47,7 @@ const Documents = () => {
           <DocumentArchive
             tenantId={tenantId}
             source="attendance"
-            onViewPhoto={setPhotoDocument}
+            onViewPhoto={openPhoto}
             onDownloadPdf={openPdf}
           />
         </TabsContent>
@@ -66,8 +57,15 @@ const Documents = () => {
         </TabsContent>
       </Tabs>
 
-      <PhotoModal document={photoDocument} onClose={() => setPhotoDocument(null)} />
-      <PdfPreviewModal document={pdfDocument} payload={pdfPayload} onClose={closePdf} />
+      <PhotoModal document={photoDocument} onClose={closePhoto} />
+      <PdfPreviewModal
+        document={pdfDocument}
+        isProcessing={isProcessing}
+        error={pdfError}
+        onDownload={downloadPdf}
+        onView={viewPdf}
+        onClose={closePdf}
+      />
     </div>
   )
 }

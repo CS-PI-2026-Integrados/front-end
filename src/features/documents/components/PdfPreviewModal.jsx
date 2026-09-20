@@ -1,6 +1,5 @@
 import { Download, ExternalLink } from 'lucide-react'
 import { formatDateTime } from '@/shared/lib/formatDateTime'
-import { useReceiptPdfActions } from '@/features/attendance'
 import { Button } from '@/shared/components/ui/button'
 import {
   Dialog,
@@ -10,23 +9,11 @@ import {
   DialogTitle,
 } from '@/shared/components/ui/dialog'
 
-export function PdfPreviewModal({ document, payload, onClose }) {
+export function PdfPreviewModal({ document, isProcessing, error, onDownload, onView, onClose }) {
   const open = Boolean(document)
-  const { download, view } = useReceiptPdfActions()
-
-  function handleDownload() {
-    if (!payload) return
-    download(payload)
-    onClose?.({ downloaded: true })
-  }
-
-  function handleView() {
-    if (!payload) return
-    view(payload)
-  }
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose?.()}>
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Pré-visualização do comprovante</DialogTitle>
@@ -55,18 +42,20 @@ export function PdfPreviewModal({ document, payload, onClose }) {
           </p>
         </div>
 
+        {error && <p className="text-destructive text-sm font-medium">{error}</p>}
+
         <DialogFooter className="gap-2 sm:justify-between">
-          <Button type="button" variant="outline" onClick={handleView} disabled={!payload}>
+          <Button type="button" variant="outline" onClick={onView} disabled={isProcessing}>
             <ExternalLink className="mr-1.5 h-4 w-4" />
             Abrir no navegador
           </Button>
           <div className="flex gap-2">
-            <Button type="button" variant="ghost" onClick={() => onClose?.()}>
+            <Button type="button" variant="ghost" onClick={onClose} disabled={isProcessing}>
               Fechar
             </Button>
-            <Button type="button" onClick={handleDownload} disabled={!payload}>
+            <Button type="button" onClick={onDownload} disabled={isProcessing}>
               <Download className="mr-1.5 h-4 w-4" />
-              Baixar PDF
+              {isProcessing ? 'Gerando...' : 'Baixar PDF'}
             </Button>
           </div>
         </DialogFooter>

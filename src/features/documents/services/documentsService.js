@@ -6,12 +6,14 @@ import { GROUP_DOCUMENTS_STORAGE_KEY, documentosGrupoIniciais } from '../mock/gr
 const VIEW_PREFERENCE_STORAGE_KEY = 'sicape:documentos:view:v1'
 const DEFAULT_VIEW = 'grid'
 
-function findProcess(processId) {
-  return listarProcessos().find((process) => String(process.id) === String(processId)) || null
+function findProcess(processId, tenantId) {
+  return (
+    listarProcessos(tenantId).find((process) => String(process.id) === String(processId)) || null
+  )
 }
 
 function toDocument(comprovante) {
-  const process = findProcess(comprovante.processoId)
+  const process = findProcess(comprovante.processoId, comprovante.tenantId)
   return {
     id: comprovante.id,
     tenantId: comprovante.tenantId,
@@ -52,15 +54,24 @@ export function listGroupDocuments(tenantId) {
     .map(toGroupDocument)
 }
 
-export function getReceiptPayload(documentId) {
+export function getReceiptPayload(documentId, tenantId, receiptConfig) {
   const recibo = obterSnapshotComprovantes().find((item) => String(item.id) === String(documentId))
   if (!recibo) return null
 
   const apenado =
     listarApenados().find((item) => String(item.id) === String(recibo.apenadoId)) || null
-  const processo = findProcess(recibo.processoId)
+  const processo = findProcess(recibo.processoId, tenantId)
 
-  return { apenado, processo, recibo }
+  const reciboComWhiteLabel = receiptConfig
+    ? { ...recibo, configuracaoInstituicao: receiptConfig }
+    : recibo
+
+  return {
+    apenado,
+    processo,
+    recibo: reciboComWhiteLabel,
+    mudancasDetectadas: recibo.alteracoesRastreadas || {},
+  }
 }
 
 export function readViewPreference() {
