@@ -25,6 +25,8 @@ export function useAllConvicted({ cacheKey = 'default' } = {}) {
     async function loadAllConvicted() {
       setState((current) => ({
         ...current,
+        items: hasCachedData ? current.items : [],
+        totalItems: hasCachedData ? current.totalItems : 0,
         isLoading: !hasCachedData,
         error: null,
       }))
