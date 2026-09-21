@@ -60,13 +60,13 @@ export function useDocumentActions(tenantId) {
         documentId: pdfDocument.id,
         documentType: 'attendance',
       })
-      setPdfDocument(null)
+      closePdf()
     } catch {
       setPdfError('Não foi possível gerar o PDF. Tente novamente.')
     } finally {
       setProcessing(false)
     }
-  }, [buildPayload, download, pdfDocument, session?.user?.id, tenantId])
+  }, [buildPayload, closePdf, download, pdfDocument, session?.user?.id, tenantId])
 
   const viewPdf = useCallback(async () => {
     const payload = buildPayload()
