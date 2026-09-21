@@ -150,10 +150,7 @@ class ConvictedService {
   }
 
   async remove(id) {
-    if (!id) throw new Error('ID do apenado é obrigatório.')
-
-    await apiService.delete(`/convicted/${id}`)
-    return true
+    return this.deactivate(id)
   }
 
   async uploadPhoto(id, file) {
