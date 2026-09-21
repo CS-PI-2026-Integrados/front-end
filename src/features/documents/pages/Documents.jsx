@@ -31,7 +31,7 @@ const Documents = () => {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="">
       <PageHeader
         title="Arquivo de Documentos"
         description="Repositório centralizado de comprovantes e documentos"
