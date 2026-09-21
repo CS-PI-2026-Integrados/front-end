@@ -37,7 +37,13 @@ export default function Convicteds() {
     page,
     limit: 5,
   })
-  const { convicted: editingConvicted, isLoading: isLoadingDetail } = useConvictedDetail(editingId)
+  const {
+    convicted: editingConvicted,
+    isLoading: isLoadingDetail,
+    error: detailError,
+  } = useConvictedDetail(editingId)
+  const canRenderEditDialog =
+    !editingId || (!isLoadingDetail && Boolean(editingConvicted) && !detailError)
 
   const openCreate = () => {
     setEditingId(null)
@@ -66,13 +72,16 @@ export default function Convicteds() {
 
   return (
     <div className="space-y-5">
-      {formOpen && (!editingId || !isLoadingDetail) && (
+      {formOpen && canRenderEditDialog && (
         <ConvictedFormDialog
           open
           convicted={editingId ? editingConvicted : null}
           onOpenChange={closeForm}
           onSuccess={handleFormSuccess}
         />
+      )}
+      {formOpen && editingId && detailError && (
+        <p className="text-destructive text-sm">{detailError}</p>
       )}
       <ConvictedDeactivateDialog
         convicted={deactivating}
