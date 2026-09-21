@@ -1,7 +1,31 @@
-export const situacoesTrabalhistas = {
-  registrado: 'registrado',
-  informal: 'informal',
-  naoTrabalha: 'naoTrabalha',
+export const EMPLOYMENT_STATUS = {
+  FORMAL_WORK: 'FORMAL_WORK',
+  INFORMAL_WORK: 'INFORMAL_WORK',
+  UNEMPLOYED: 'UNEMPLOYED',
+}
+
+export const EMPLOYMENT_STATUS_LABELS = {
+  FORMAL_WORK: 'Trabalho Registrado',
+  INFORMAL_WORK: 'Trabalho Informal',
+  UNEMPLOYED: 'Não Trabalha',
+}
+
+export const EMPLOYMENT_STATUS_OPTIONS = [
+  { value: EMPLOYMENT_STATUS.FORMAL_WORK, label: EMPLOYMENT_STATUS_LABELS.FORMAL_WORK },
+  { value: EMPLOYMENT_STATUS.INFORMAL_WORK, label: EMPLOYMENT_STATUS_LABELS.INFORMAL_WORK },
+  { value: EMPLOYMENT_STATUS.UNEMPLOYED, label: EMPLOYMENT_STATUS_LABELS.UNEMPLOYED },
+]
+
+export const CONVICTED_STATUS = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  PENDING_PHOTO: 'PENDING_PHOTO',
+}
+
+export const CONVICTED_STATUS_LABELS = {
+  ACTIVE: 'Ativo',
+  INACTIVE: 'Inativo',
+  PENDING_PHOTO: 'Pendente de Foto',
 }
 
 export function formatAddress(address) {
@@ -14,41 +38,10 @@ export function formatAddress(address) {
   return [street, address.complement, location].filter(Boolean).join(' · ')
 }
 
-export function rotuloSituacaoApenado(situacao) {
-  return situacao === 'inativo' ? 'Inativo' : 'Ativo'
+export function getEmploymentStatusLabel(status) {
+  return EMPLOYMENT_STATUS_LABELS[status] || status || '-'
 }
 
-export function rotuloSituacaoTrabalhista(situacao) {
-  return (
-    {
-      registrado: 'Trabalho Registrado',
-      informal: 'Trabalho Informal',
-      naoTrabalha: 'Não Trabalha',
-    }[situacao] ?? 'Não Trabalha'
-  )
+export function getConvictedStatusLabel(status) {
+  return CONVICTED_STATUS_LABELS[status] || status || '-'
 }
-
-export function parsearEndereco(endereco) {
-  if (!endereco) return {}
-  const partes = endereco.split(/[,\-\u2013]/).map((p) => p.trim())
-  if (partes.length >= 4) {
-    const logradouro = partes[0] || ''
-    const numero = partes[1] || ''
-    const bairro = partes[2] || ''
-    const cidadeUf = partes[3] || ''
-    const ufMatch = cidadeUf.match(/\b([A-Z]{2})$/)
-    const uf = ufMatch ? ufMatch[1] : ''
-    const cidade = uf ? cidadeUf.replace(uf, '').trim().replace(/\s*$/, '') : cidadeUf
-    return { logradouro, numero, bairro, cidade, uf }
-  }
-  return { logradouro: endereco }
-}
-
-export function montarEnderecoStr(form) {
-  const parts = [form.logradouro, form.numero].filter(Boolean).join(', ')
-  const rest = [form.bairro, form.cidade].filter(Boolean).join(', ')
-  const full = [parts, rest].filter(Boolean).join(' - ')
-  return form.uf ? `${full} - ${form.uf}` : full
-}
-
-export { compressImage } from '@/shared/lib/image'

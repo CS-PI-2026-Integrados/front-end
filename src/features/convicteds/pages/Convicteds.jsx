@@ -1,6 +1,11 @@
-import { FileText, Pencil, Search, Trash2, Users } from 'lucide-react'
+import { Eye, Pencil, Plus, Search, Trash2, Users } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useConvictedList } from '@/features/convicteds/hooks/useConvictedList'
+import { useConvictedDetail } from '@/features/convicteds/hooks/useConvictedDetail'
+import { ConvictedDeactivateDialog } from '@/features/convicteds/components/ConvictedDeactivateDialog'
+import { ConvictedFormDialog } from '@/features/convicteds/components/ConvictedFormDialog'
+import { AuthenticatedConvictedImage } from '@/features/convicteds/components/AuthenticatedConvictedImage'
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
 import { Button } from '@/shared/components/ui/button'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
@@ -8,6 +13,8 @@ import { EmptyTableState } from '@/shared/components/data-display/EmptyTableStat
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Input } from '@/shared/components/ui/input'
+import { Pagination } from '@/shared/components/ui/pagination'
+import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
 import { formatAddress } from '../utils/convictedUtils'
 import {
   Table,
@@ -18,90 +25,77 @@ import {
   TableRow,
 } from '@/shared/components/ui/table'
 
-const employmentStatusLabels = {
-  FORMAL_WORK: 'Trabalho registrado',
-  INFORMAL_WORK: 'Trabalho informal',
-  UNEMPLOYED: 'Não trabalha',
-}
-
 export default function Convicteds() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
-  const { error, isLoading, items, totalItems, totalPages } = useConvictedList({ search, page })
+  const [formOpen, setFormOpen] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [deactivating, setDeactivating] = useState(null)
+  const { error, isLoading, items, totalItems, totalPages, refetch } = useConvictedList({
+    search,
+    page,
+    limit: 5,
+  })
+  const {
+    convicted: editingConvicted,
+    isLoading: isLoadingDetail,
+    error: detailError,
+  } = useConvictedDetail(editingId)
+  const canRenderEditDialog =
+    !editingId || (!isLoadingDetail && Boolean(editingConvicted) && !detailError)
 
-  /* Precisa ser retrabalhado e integrado a API */
-  // const { apenados, atualizar } = useApenados(comarcaId)
+  const openCreate = () => {
+    setEditingId(null)
+    setFormOpen(true)
+  }
 
-  // const handleInativar = () => {
-  //   if (!apenadoInativar) return
-  //   const atualizados = apenados.map((item) =>
-  //     item.id === apenadoInativar.id ? { ...item, status: 'Inativo' } : item
-  //   )
-  //   atualizar(atualizados)
-  //   setApenadoInativar(null)
-  //   toast.success('Apenado inativado com sucesso!')
-  // }
+  const openEdit = (item) => {
+    setEditingId(item.id)
+    setFormOpen(true)
+  }
 
-  // const handleSalvarNovo = (novo) => {
-  //   atualizar([...apenados, novo])
-  //   setModalCadastroAberto(false)
-  //   toast.success('Apenado cadastrado com sucesso!')
-  // }
+  const closeForm = (open) => {
+    setFormOpen(open)
+    if (!open) setEditingId(null)
+  }
 
-  // const handleSalvarEdicao = (editado) => {
-  //   const atualizados = apenados.map((item) => (item.id === editado.id ? editado : item))
-  //   atualizar(atualizados)
-  //   setApenadoEditar(null)
-  //   toast.success('Apenado atualizado com sucesso!')
-  // }
+  const handleFormSuccess = () => {
+    closeForm(false)
+    refetch()
+  }
+
+  const handleDeactivateSuccess = () => {
+    setDeactivating(null)
+    refetch()
+  }
 
   return (
     <div className="space-y-5">
-      {/* Precisa ser retrabalhado e integrado a API */}
-      {/* {modalCadastroAberto && (
-        <ApenadoCreateDialog
+      {formOpen && canRenderEditDialog && (
+        <ConvictedFormDialog
           open
-          tenantId={comarcaId}
-          onOpenChange={setModalCadastroAberto}
-          onSave={handleSalvarNovo}
+          convicted={editingId ? editingConvicted : null}
+          onOpenChange={closeForm}
+          onSuccess={handleFormSuccess}
         />
       )}
-      {apenadoEditar && (
-        <ApenadoEditDialog
-          key={apenadoEditar.id}
-          apenado={apenadoEditar}
-          onOpenChange={(aberto) => {
-            if (!aberto) setApenadoEditar(null)
-          }}
-          onSave={handleSalvarEdicao}
-        />
-      )} */}
-      {/* <ApenadoDeactivateDialog
-        apenado={apenadoInativar}
-        onOpenChange={(aberto) => {
-          if (!aberto) setApenadoInativar(null)
+      {formOpen && editingId && detailError && (
+        <p className="text-destructive text-sm">{detailError}</p>
+      )}
+      <ConvictedDeactivateDialog
+        convicted={deactivating}
+        open={Boolean(deactivating)}
+        onOpenChange={(open) => {
+          if (!open) setDeactivating(null)
         }}
-        onConfirm={handleInativar}
+        onSuccess={handleDeactivateSuccess}
       />
-      <ApenadoDocumentsDialog
-        apenado={apenadoDocumentos}
-        onOpenChange={(aberto) => {
-          if (!aberto) setApenadoDocumentos(null)
-        }}
-      /> */}
 
       <PageHeader
         title="Gestão de Apenados"
         description="Cadastro e gerenciamento de apenados"
-
-        /* Desativo pois precisa ser reconstruido e integrado a API */
-        // action={
-        //   <HeaderButton
-        //     icon={Plus}
-        //     text="Novo apenado"
-        //     onClick={() => setModalCadastroAberto(true)}
-        //   />
-        // }
+        action={<HeaderButton icon={Plus} text="Novo apenado" onClick={openCreate} />}
       />
 
       <FiltersPanel description="Pesquise e filtre os apenados cadastrados">
@@ -140,62 +134,23 @@ export default function Convicteds() {
         }
         footer={
           <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <span>
-              Página {page} de {totalPages}
+            <span className="font-medium">
+              Página {page} de {totalPages} · {totalItems} registros
             </span>
-            <div className="flex w-full justify-between gap-1.5 sm:w-auto sm:justify-start">
-              <Button
-                variant="outline"
-                size="xs"
-                onClick={() => setPage((currentPage) => currentPage - 1)}
-                disabled={page === 1}
-              >
-                Anterior
-              </Button>
-              <div className="hidden gap-1.5 sm:flex">
-                <Button size="xs" disabled={true}>
-                  {page}
-                </Button>
-                {/* ele cria um botão para cada página existente, se houver 100 páginas, então 100 botões vão ser criados :( componente criado totalmente via vibe code e que não foi testado  */}
-                {/* {Array.from({ length: lastPage }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant={page === actualPage ? 'default' : 'outline'}
-                    size="xs"
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </Button>
-                ))} */}
-              </div>
-              <Button
-                variant="outline"
-                size="xs"
-                onClick={() => setPage((currentPage) => currentPage + 1)}
-                disabled={page === totalPages}
-              >
-                Próxima
-              </Button>
-            </div>
+            <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         }
       >
-        {/* vibe codas - ao invés de construir uma tabela responsiva, a IA construiu duas lógicas de listagem diferentes, uma para celular e outra para computador, sempre construia duas tabelas diferentes e escondia uma delas de acordo com o tamanho da tela */}
-        {/* <div className="divide-y md:hidden">
-          {paginated.map((apenado) => (
-            <ApenadoMobileCard
-              key={apenado.id}
-              apenado={apenado}
-              processCount={processCounts[apenado.processNumber] || 0}
-              onEdit={() => setApenadoEditar(apenado)}
-              onInactivate={() => setApenadoInativar(apenado)}
-              onView={() => setApenadoDocumentos(apenado)}
-            />
-          ))}
-        </div> */}
-
         <div className="overflow-x-auto md:block">
-          <Table className="w-full min-w-175 text-sm">
+          <Table className="w-full min-w-225 table-fixed text-sm">
+            <colgroup>
+              <col className="w-16" />
+              <col className="w-64" />
+              <col className="w-52" />
+              <col className="w-40" />
+              <col className="w-72" />
+              <col className="w-32" />
+            </colgroup>
             <TableHeader>
               <TableRow className="bg-secondary border-y">
                 <TableHead className="text-foreground w-16 px-4 py-3 text-left text-xs font-semibold">
@@ -213,10 +168,7 @@ export default function Convicteds() {
                 <TableHead className="text-foreground min-w-44 px-4 py-3 text-left text-xs font-semibold">
                   Endereço
                 </TableHead>
-                <TableHead className="text-foreground w-44 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
-                  Sit. Trabalhista
-                </TableHead>
-                <TableHead className="text-foreground w-28 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                <TableHead className="text-foreground w-32 px-4 py-3 text-right text-xs font-semibold whitespace-nowrap">
                   Ações
                 </TableHead>
               </TableRow>
@@ -229,7 +181,12 @@ export default function Convicteds() {
                   <TableRow key={item.id} className="hover:bg-muted/50 border-b transition-colors">
                     <TableCell className="w-16 px-4 py-3">
                       <Avatar className="size-9 shrink-0">
-                        <AvatarImage src={item.photoUrl || undefined} alt={item.fullName} />
+                        <AuthenticatedConvictedImage
+                          as={AvatarImage}
+                          id={item.id}
+                          alt={item.fullName}
+                          className="size-full object-cover"
+                        />
                         <AvatarFallback className="text-xs font-semibold">
                           {(item.fullName || 'A').charAt(0).toUpperCase()}
                         </AvatarFallback>
@@ -267,43 +224,34 @@ export default function Convicteds() {
                     >
                       {address || '-'}
                     </TableCell>
-                    <TableCell className="w-44 px-4 py-3.5 whitespace-nowrap">
-                      {employmentStatusLabels[item.employmentStatus] || '-'}
-                    </TableCell>
-                    <TableCell className="w-28 px-4 py-3.5">
-                      <div className="flex items-center gap-1">
+                    <TableCell className="w-32 px-4 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <Button
-                          /* desativado propositalmente pois o modal precisa ser reconstruido e integrado a API */
-                          disabled={true}
                           type="button"
-                          title="Documentos"
+                          title="Visualizar perfil"
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => setApenadoDocumentos(item)}
+                          onClick={() => navigate(`/apenados/${item.id}`)}
                         >
-                          <FileText />
+                          <Eye />
                           <span className="sr-only">Visualizar</span>
                         </Button>
                         <Button
-                          /* desativado propositalmente pois o modal precisa ser reconstruido e integrado a API */
-                          disabled={true}
                           type="button"
                           title="Editar"
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => setApenadoEditar(item)}
+                          onClick={() => openEdit(item)}
                         >
                           <Pencil />
                           <span className="sr-only">Editar</span>
                         </Button>
                         <Button
-                          /* desativado propositalmente pois o modal precisa ser reconstruido e integrado a API */
-                          disabled={true}
                           type="button"
-                          title="Excluir"
+                          title="Inativar"
                           variant="destructive"
                           size="icon-sm"
-                          onClick={() => setApenadoInativar(item)}
+                          onClick={() => setDeactivating(item)}
                         >
                           <Trash2 />
                           <span className="sr-only">Excluir</span>

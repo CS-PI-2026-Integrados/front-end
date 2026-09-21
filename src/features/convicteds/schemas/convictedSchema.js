@@ -1,39 +1,50 @@
 import { z } from 'zod'
 import { validateCPF } from '@/shared/lib/cpf'
 
+const addressSchema = z.object({
+  zipCode: z.string().optional().default(''),
+  street: z.string().trim().min(1, 'O logradouro é obrigatório.'),
+  number: z.string().trim().min(1, 'O número é obrigatório.'),
+  complement: z.string().optional().default(''),
+  neighborhood: z.string().trim().min(1, 'O bairro é obrigatório.'),
+  city: z.string().trim().min(1, 'A cidade é obrigatória.'),
+  state: z.string().trim().min(1, 'A UF é obrigatória.'),
+})
+
+const processSchema = z.object({
+  id: z.string().min(1),
+  number: z.string().min(1),
+  status: z.string().optional(),
+  principal: z.boolean(),
+})
+
 export const convictedFormSchema = z.object({
-  nomeCompleto: z.string().trim().min(1, 'O nome é obrigatório.'),
+  name: z.string().trim().min(1, 'O nome é obrigatório.'),
   cpf: z
     .string()
     .trim()
     .min(1, 'O CPF é obrigatório.')
     .refine((val) => val.replace(/\D/g, '').length >= 11, 'O CPF é obrigatório.')
     .refine(validateCPF, 'CPF inválido.'),
-  dataNascimento: z.string().trim().min(1, 'A data de nascimento é obrigatória.'),
-  telefone: z
+  birthDate: z.string().trim().min(1, 'A data de nascimento é obrigatória.'),
+  phone: z
     .string()
     .trim()
     .min(1, 'O telefone é obrigatório.')
-    .refine((val) => val.replace(/\D/g, '').length >= 10, 'O telefone é obrigatório.'),
-  cep: z.string().optional().default(''),
-  logradouro: z.string().trim().min(1, 'O logradouro é obrigatório.'),
-  numero: z.string().trim().min(1, 'O número é obrigatório.'),
-  complemento: z.string().optional().default(''),
-  bairro: z.string().trim().min(1, 'O bairro é obrigatório.'),
-  cidade: z.string().trim().min(1, 'A cidade é obrigatória.'),
-  uf: z.string().trim().min(1, 'A UF é obrigatória.'),
-  processoId: z.string().trim().min(1, 'O número do processo é obrigatório.'),
-  instituicao: z.string().optional().default(''),
-  situacaoTrabalhista: z.string().trim().min(1, 'A situação trabalhista é obrigatória.'),
-  observacoes: z.string().optional().default(''),
+    .refine(
+      (val) => [10, 11].includes(val.replace(/\D/g, '').length),
+      'Informe um telefone válido com DDD.'
+    ),
+  address: addressSchema,
+  processes: z.array(processSchema).optional(),
 })
 
 export function validateConvictedForm(form, { isEditing = false, preview = null } = {}) {
   const result = convictedFormSchema.safeParse(form || {})
   const erros = {}
 
-  if (!isEditing && !form?.foto && !preview) {
-    erros.foto = 'A foto é obrigatória.'
+  if (!isEditing && !form?.photo && !preview) {
+    erros.photo = 'A foto é obrigatória.'
   }
 
   if (!result.success && result.error) {
@@ -44,9 +55,10 @@ export function validateConvictedForm(form, { isEditing = false, preview = null 
         : []
 
     issues.forEach((err) => {
-      const field = err?.path?.[0]
-      if (field && !erros[field]) {
-        erros[field] = err.message
+      const path = err?.path || []
+      const key = path.length > 1 ? `address.${path[1]}` : path[0]
+      if (key && !erros[key]) {
+        erros[key] = err.message
       }
     })
   }

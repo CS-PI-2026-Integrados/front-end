@@ -9,6 +9,7 @@ import { CreateOperatorDialog } from '@/features/users/components/users/CreateOp
 import { UserDetailsPanel } from '@/features/users/components/users/UserDetailsPanel'
 import { UsersTable } from '@/features/users/components/users/UsersTable'
 import { Input } from '@/shared/components/ui/input'
+import { Pagination } from '@/shared/components/ui/pagination'
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
 
 export default function UsersManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [page, setPage] = useState(1)
   const {
     createOperator,
     currentUser,
@@ -41,6 +43,26 @@ export default function UsersManagement() {
     setStatusFilter,
     statusFilter,
   } = useUsersManagement()
+
+  const pageSize = 5
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
+  const handleSearchChange = (value) => {
+    setPage(1)
+    setSearch(value)
+  }
+
+  const handleRoleFilterChange = (value) => {
+    setPage(1)
+    setRoleFilter(value)
+  }
+
+  const handleStatusFilterChange = (value) => {
+    setPage(1)
+    setStatusFilter(value)
+  }
 
   return (
     <div className="space-y-5">
@@ -82,13 +104,13 @@ export default function UsersManagement() {
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             className="pl-9"
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => handleSearchChange(event.target.value)}
             placeholder="Buscar por nome ou CPF..."
             value={search}
           />
         </div>
 
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
+        <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
           <SelectTrigger className="hover:bg-muted w-full cursor-pointer lg:w-44">
             <SelectValue placeholder="Nível" />
           </SelectTrigger>
@@ -102,7 +124,7 @@ export default function UsersManagement() {
           </SelectContent>
         </Select>
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
           <SelectTrigger className="hover:bg-muted w-full cursor-pointer lg:w-44">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -131,11 +153,19 @@ export default function UsersManagement() {
             }
           />
         }
+        footer={
+          <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <span className="font-medium">
+              Página {currentPage} de {totalPages} · {filteredUsers.length} registros
+            </span>
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
+          </div>
+        }
       >
         <UsersTable
           onSelectUser={setSelectedUserId}
           selectedUserId={selectedUserId}
-          users={filteredUsers}
+          users={paginatedUsers}
         />
       </DataTableCard>
 

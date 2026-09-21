@@ -16,6 +16,22 @@ import { useAtendimento } from '@/features/attendance'
 import { useTenant } from '@/features/institutions'
 import { formatPhone } from '@/features/attendance/utils/attendanceUtils'
 
+function formatAddress(address) {
+  if (!address) return ''
+  if (typeof address === 'string') return address
+
+  return [
+    address.street,
+    address.number,
+    address.complement,
+    address.neighborhood,
+    address.city,
+    address.state,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+}
+
 export function ConvictedInfoCard() {
   const {
     apenado,
@@ -47,7 +63,7 @@ export function ConvictedInfoCard() {
   )
 
   const [localPhone, setLocalPhone] = useState(apenado ? formatPhone(apenado.phone || '') : '')
-  const [localAddress, setLocalAddress] = useState(apenado ? apenado.address || '' : '')
+  const [localAddress, setLocalAddress] = useState(apenado ? formatAddress(apenado.address) : '')
 
   if (!apenado) {
     return (
@@ -59,7 +75,7 @@ export function ConvictedInfoCard() {
     )
   }
 
-  const processosAtivos = apenado.processos || []
+  const processosAtivos = apenado.processes || []
 
   const handlePhoneChange = (e) => {
     const formatted = formatPhone(e.target.value)
@@ -78,7 +94,7 @@ export function ConvictedInfoCard() {
   }
 
   const handleAddressBlur = () => {
-    const currentAddress = apenado.address || ''
+    const currentAddress = formatAddress(apenado.address)
     if (localAddress !== currentAddress) {
       updateField('address', localAddress)
     }
@@ -122,7 +138,7 @@ export function ConvictedInfoCard() {
               <SelectContent>
                 {processosAtivos.map((proc) => (
                   <SelectItem key={proc.id} value={String(proc.id)}>
-                    {proc.processNumber || `Processo ${proc.id}`}
+                    {proc.number || `Processo ${proc.id}`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -132,8 +148,7 @@ export function ConvictedInfoCard() {
           {processo && (
             <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
               <p>
-                <span className="text-muted-foreground">Processo:</span>{' '}
-                {processo.processNumber || '-'}
+                <span className="text-muted-foreground">Processo:</span> {processo.number || '-'}
               </p>
               <p>
                 <span className="text-muted-foreground">Situação:</span>{' '}

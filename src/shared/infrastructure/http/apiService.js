@@ -138,6 +138,23 @@ export class ApiService {
     return this.request(path, { ...options, method: 'GET' })
   }
 
+  async getBlob(path, { signal } = {}) {
+    const accessToken = await this.getValidAccessToken()
+    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+      method: 'GET',
+      signal,
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+
+    if (!response.ok) {
+      const body = await parseResponseBody(response)
+      const message = getErrorMessage(body)
+      throw new ApiRequestError(message, { status: response.status, body })
+    }
+
+    return response.blob()
+  }
+
   post(path, body, options) {
     return this.request(path, { ...options, method: 'POST', body })
   }

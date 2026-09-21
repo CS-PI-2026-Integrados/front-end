@@ -23,6 +23,7 @@ export function useReceiptFlow() {
           apenado: attendance.apenado,
           processo: attendance.processo,
           photoFile: attendance.fotoAtendimento.data,
+          tenantId: session?.tenant?.id,
           mudancasDetectadas: getMudancasAtivas(attendance.mudancas),
         })
         attendance.setReciboGerado(receipt)
@@ -33,7 +34,7 @@ export function useReceiptFlow() {
         attendance.setSubmitting(false)
       }
     },
-    [attendance, generateReceipt]
+    [attendance, generateReceipt, session?.tenant?.id]
   )
 
   return { ...attendance, deviceId, submit }

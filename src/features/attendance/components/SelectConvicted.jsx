@@ -10,27 +10,42 @@ import {
   CommandList,
 } from '@/shared/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/shared/components/ui/button.jsx'
 import { ChevronsUpDown } from 'lucide-react'
 import { useAtendimento } from '@/features/attendance'
 import { ConvictedInfoCard } from '@/features/attendance/components/ConvictedInfoCard.jsx'
+import { useConvictedDetail } from '@/features/convicteds'
 
 export function SelectConvicted() {
   const { apenado, selectApenado } = useAtendimento()
 
-  const { apenados } = useAtendimentoData()
+  const { apenados, isLoading: isLoadingConvicteds, error: convictedError } = useAtendimentoData()
 
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [selectedId, setSelectedId] = useState(null)
+  const {
+    convicted: selectedConvicted,
+    isLoading: isLoadingDetail,
+    error: detailError,
+  } = useConvictedDetail(selectedId)
 
   const apenadosFiltrados = useFilteredConvicted(apenados, search)
 
   const handleSelectApenado = (idSelecionado) => {
     setOpen(false)
-    const apenadoSelecionado = apenados?.find((a) => String(a.id) === idSelecionado)
-    selectApenado(apenadoSelecionado || null)
+    setSelectedId(idSelecionado)
+    selectApenado(null)
   }
+
+  const isSelectedDetail = selectedConvicted && String(selectedConvicted.id) === selectedId
+
+  useEffect(() => {
+    if (isSelectedDetail) {
+      selectApenado(selectedConvicted)
+    }
+  }, [isSelectedDetail, selectApenado, selectedConvicted])
 
   return (
     <div className="w-full space-y-4 md:space-y-6">
@@ -63,7 +78,11 @@ export function SelectConvicted() {
             <Command shouldFilter={false}>
               <CommandInput placeholder="Buscar por nome ou CPF" onValueChange={setSearch} />
               <CommandList className="max-h-50">
-                <CommandEmpty>Nenhum apenado encontrado.</CommandEmpty>
+                <CommandEmpty>
+                  {isLoadingConvicteds
+                    ? 'Carregando apenados...'
+                    : convictedError || 'Nenhum apenado encontrado.'}
+                </CommandEmpty>
                 <CommandGroup>
                   {apenadosFiltrados.map((a) => (
                     <CommandItem
@@ -89,6 +108,10 @@ export function SelectConvicted() {
         </Popover>
       </div>
 
+      {isLoadingDetail && (
+        <p className="text-muted-foreground text-sm">Carregando dados do apenado...</p>
+      )}
+      {detailError && <p className="text-destructive text-sm">{detailError}</p>}
       {apenado && <ConvictedInfoCard key={apenado.id} />}
     </div>
   )

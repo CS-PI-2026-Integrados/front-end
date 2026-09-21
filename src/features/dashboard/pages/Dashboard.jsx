@@ -7,7 +7,7 @@ import { useDistrictData } from '@/features/dashboard/hooks/useDistrictData.js'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 
 const Dashboard = () => {
-  const { apenados, presencas } = useDistrictData()
+  const { apenados, presencas, isLoading, error } = useDistrictData()
 
   const {
     comprovantesRecentes,
@@ -20,6 +20,11 @@ const Dashboard = () => {
   return (
     <div className="space-y-5">
       <PageHeader title="Dashboard" description="Visão geral" />
+
+      {isLoading && apenados.length === 0 && (
+        <p className="text-muted-foreground text-sm">Carregando dados...</p>
+      )}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard

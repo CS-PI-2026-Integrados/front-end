@@ -1,168 +1,141 @@
-import { useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useSession } from '@/features/authentication'
-import { useApenados } from '@/features/convicteds/hooks/mockedUseConvicteds'
+import { ArrowLeft, Loader2, Pencil, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
-export default function ApenadoProfile() {
+import { useConvictedDetail } from '@/features/convicteds/hooks/useConvictedDetail'
+import { useConvictedPhoto } from '@/features/convicteds/hooks/useConvictedPhoto'
+import { ConvictedDeactivateDialog } from '@/features/convicteds/components/ConvictedDeactivateDialog'
+import { ConvictedFormDialog } from '@/features/convicteds/components/ConvictedFormDialog'
+import { formatAddress, getConvictedStatusLabel } from '@/features/convicteds/utils/convictedUtils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
+import { Button } from '@/shared/components/ui/button'
+
+export default function ConvictedProfile() {
   const { id } = useParams()
-  const { session } = useSession()
   const navigate = useNavigate()
+  const { convicted, error, isLoading, refetch } = useConvictedDetail(id)
+  const { url: photoUrl } = useConvictedPhoto(id)
+  const [formOpen, setFormOpen] = useState(false)
+  const [deactivateOpen, setDeactivateOpen] = useState(false)
 
-  const comarcaId = session?.tenant?.id
-  const { apenados } = useApenados(comarcaId)
-  const apenado = useMemo(
-    () => apenados.find((item) => String(item.id) === String(id) && item.tenantId === comarcaId),
-    [apenados, comarcaId, id]
-  )
-
-  if (!apenado)
+  if (isLoading) {
     return (
-      <div className="bg-background text-card-foreground min-h-screen p-4">
-        <p className="text-muted-foreground font-medium">
-          Apenado não encontrado ou acesso restrito a esta comarca.
-        </p>
-        <button
-          onClick={() => navigate(-1)}
-          className="mt-4 font-bold text-green-800 underline hover:text-green-900"
-        >
-          Voltar para a listagem
-        </button>
+      <div className="text-muted-foreground flex min-h-64 items-center justify-center gap-2">
+        <Loader2 className="size-4 animate-spin" />
+        Carregando apenado...
       </div>
     )
+  }
+
+  if (error || !convicted) {
+    return (
+      <div className="space-y-4 p-4">
+        <p className="text-muted-foreground">{error || 'Apenado não encontrado.'}</p>
+        <Button type="button" variant="outline" onClick={() => navigate('/apenados')}>
+          <ArrowLeft /> Voltar para listagem
+        </Button>
+      </div>
+    )
+  }
+
+  const initials = (convicted.name || 'A').charAt(0).toUpperCase()
+  const handleFormSuccess = () => {
+    setFormOpen(false)
+    refetch()
+  }
+
+  const handleDeactivateSuccess = () => {
+    setDeactivateOpen(false)
+    navigate('/apenados')
+  }
 
   return (
-    <div className="bg-background text-card-foreground min-h-screen p-1 sm:p-4">
-      <div className="mb-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-muted-foreground mb-4 flex items-center text-sm transition-colors hover:text-green-800"
-        >
-          ← Voltar para listagem
-        </button>
-        <h1 className="text-foreground text-2xl leading-tight font-bold tracking-tight sm:text-3xl">
-          Perfil do Apenado
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm">Dados essenciais e situação processual</p>
+    <div className="space-y-6">
+      <Button type="button" variant="ghost" onClick={() => navigate('/apenados')}>
+        <ArrowLeft /> Voltar para listagem
+      </Button>
+
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button type="button" variant="outline" onClick={() => setFormOpen(true)}>
+          <Pencil /> Editar
+        </Button>
+        <Button type="button" variant="destructive" onClick={() => setDeactivateOpen(true)}>
+          <Trash2 /> Inativar
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-6">
-          <div className="border-border bg-card rounded-xl border p-4 text-center shadow-sm sm:p-6">
-            <div className="bg-card text-muted-foreground mx-auto mb-4 h-32 w-32 overflow-hidden rounded-2xl border-2 border-green-800 sm:h-40 sm:w-40">
-              {apenado.referencePhotoUrl ? (
-                <img
-                  src={apenado.referencePhotoUrl}
-                  alt="Foto"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="text-muted-foreground flex h-full items-center justify-center">
-                  Sem Foto
+      <div className="grid gap-6 lg:grid-cols-[minmax(220px,280px)_1fr]">
+        <section className="bg-card border-border rounded-xl border p-6 text-center">
+          <Avatar className="mx-auto size-32">
+            <AvatarImage src={photoUrl || undefined} alt={convicted.name} />
+            <AvatarFallback className="text-3xl">{initials}</AvatarFallback>
+          </Avatar>
+          <h1 className="text-foreground mt-4 text-xl font-semibold">{convicted.name}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">CPF: {convicted.cpf}</p>
+          <span className="bg-secondary text-secondary-foreground mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold">
+            {getConvictedStatusLabel(convicted.status)}
+          </span>
+        </section>
+
+        <section className="bg-card border-border rounded-xl border p-6">
+          <h2 className="border-border mb-5 border-b pb-3 text-lg font-semibold">
+            Dados do apenado
+          </h2>
+          <dl className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <dt className="text-muted-foreground text-xs font-semibold uppercase">
+                Data de nascimento
+              </dt>
+              <dd className="mt-1 text-sm">{convicted.birthDate || 'Não informada'}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground text-xs font-semibold uppercase">Telefone</dt>
+              <dd className="mt-1 text-sm">{convicted.phone || 'Não informado'}</dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-muted-foreground text-xs font-semibold uppercase">Endereço</dt>
+              <dd className="mt-1 text-sm">
+                {formatAddress(convicted.address) || 'Não informado'}
+              </dd>
+            </div>
+          </dl>
+
+          <h2 className="border-border mt-8 mb-4 border-b pb-3 text-lg font-semibold">
+            Processos vinculados
+          </h2>
+          {convicted.processes.length > 0 ? (
+            <div className="space-y-2">
+              {convicted.processes.map((process) => (
+                <div
+                  key={process.id}
+                  className="bg-muted/50 flex flex-wrap items-center justify-between gap-2 rounded-lg p-3 text-sm"
+                >
+                  <span>{process.number}</span>
+                  <span className="text-muted-foreground">
+                    {process.principal ? 'Principal · ' : ''}
+                    {getConvictedStatusLabel(process.status)}
+                  </span>
                 </div>
-              )}
+              ))}
             </div>
-            <h2 className="text-foreground text-xl leading-tight font-bold wrap-break-word">
-              {apenado.fullName || apenado.nomeCompleto}
-            </h2>
-            <p className="text-muted-foreground mt-1 text-sm font-medium wrap-break-word">
-              CPF: {apenado.cpf}
-            </p>
-            <div className="mt-4">
-              <span
-                className={`inline-block rounded-full border px-4 py-1 text-xs font-bold ${
-                  apenado.status === 'Inativo'
-                    ? 'border-border dark:border-border dark:text-muted-foreground bg-slate-200 text-slate-700 ring-slate-300 dark:bg-slate-950 dark:ring-slate-700'
-                    : 'border-border dark:border-border bg-slate-200 text-slate-900 ring-slate-300 dark:bg-slate-950 dark:text-slate-200 dark:ring-slate-700'
-                }`}
-              >
-                {apenado.status}
-              </span>
-            </div>
-          </div>
-
-          <div className="border-border bg-card rounded-xl border p-4 shadow-sm sm:p-6">
-            <h3 className="text-muted-foreground mb-4 text-xs font-bold tracking-widest uppercase">
-              Módulos Adicionais
-            </h3>
-            <button
-              disabled
-              className="border-border bg-card text-muted-foreground w-full cursor-not-allowed rounded-lg border py-3 text-sm font-semibold"
-            >
-              Captura de Comparecimento
-            </button>
-            <p className="text-muted-foreground mt-2 text-center text-[10px] italic">
-              Implementar...
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-6 lg:col-span-2">
-          <div className="border-border bg-card rounded-xl border p-4 shadow-sm sm:p-8">
-            <h3 className="border-border text-foreground mb-6 border-b pb-4 text-lg font-bold">
-              Painel Civil
-            </h3>
-
-            <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
-              <div>
-                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
-                  Telefone de Contato
-                </label>
-                <p className="text-foreground text-sm font-medium">{apenado.phone || 'N/A'}</p>
-              </div>
-              <div>
-                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
-                  Data de Nascimento
-                </label>
-                <p className="text-foreground text-sm font-medium">
-                  {apenado.dateOfBirth || 'Não informada'}
-                </p>
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
-                  Endereço Completo
-                </label>
-                <p className="text-foreground text-sm leading-relaxed font-medium wrap-break-word">
-                  {apenado.address || apenado.endereco || 'Não informado'}
-                </p>
-              </div>
-
-              <div className="border-border border-t pt-4 md:col-span-2">
-                <h4 className="text-foreground mb-4 text-sm font-bold tracking-tight uppercase">
-                  Dados Processuais
-                </h4>
-              </div>
-
-              <div>
-                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
-                  Número do Processo
-                </label>
-                <p className="text-foreground text-sm font-medium wrap-break-word">
-                  {apenado.processos?.[0]?.processNumber || apenado.processNumber || 'N/A'}
-                </p>
-              </div>
-              <div>
-                <label className="text-muted-foreground mb-1 block text-[10px] font-bold tracking-wider uppercase">
-                  Vara de Execução
-                </label>
-                <p className="text-foreground text-sm font-medium">
-                  {apenado.processos?.[0]?.court || apenado.court || 'N/A'}
-                </p>
-              </div>
-            </div>
-
-            <div className="border-border mt-8 border-t pt-6">
-              <label className="text-muted-foreground mb-2 block text-[10px] font-bold tracking-wider uppercase">
-                Observações do Prontuário
-              </label>
-              <div className="border-border text-muted-foreground bg-card rounded-lg border p-4 text-sm leading-relaxed wrap-break-word italic">
-                {apenado.observations ||
-                  apenado.observacoes ||
-                  'Nenhuma observação registrada até o momento.'}
-              </div>
-            </div>
-          </div>
-        </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">Nenhum processo vinculado.</p>
+          )}
+        </section>
       </div>
+
+      <ConvictedFormDialog
+        open={formOpen}
+        convicted={convicted}
+        onOpenChange={setFormOpen}
+        onSuccess={handleFormSuccess}
+      />
+      <ConvictedDeactivateDialog
+        convicted={convicted}
+        open={deactivateOpen}
+        onOpenChange={setDeactivateOpen}
+        onSuccess={handleDeactivateSuccess}
+      />
     </div>
   )
 }
