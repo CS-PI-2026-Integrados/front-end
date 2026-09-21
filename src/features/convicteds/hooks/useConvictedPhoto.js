@@ -17,8 +17,13 @@ export function useConvictedPhoto(id) {
       setState({ url: null, isLoading: true, error: null })
       try {
         const blob = await convictedService.getPhoto(id, { signal: controller.signal })
-        objectUrl = URL.createObjectURL(blob)
-        if (isCurrent) setState({ url: objectUrl, isLoading: false, error: null })
+        const nextObjectUrl = URL.createObjectURL(blob)
+        if (!isCurrent) {
+          URL.revokeObjectURL(nextObjectUrl)
+          return
+        }
+        objectUrl = nextObjectUrl
+        setState({ url: objectUrl, isLoading: false, error: null })
       } catch (error) {
         if (error?.name === 'AbortError' || !isCurrent) return
         setState({ url: null, isLoading: false, error: error?.message || 'Foto indisponível.' })
