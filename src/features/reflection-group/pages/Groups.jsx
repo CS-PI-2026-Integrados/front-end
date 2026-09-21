@@ -56,6 +56,13 @@ const Groups = () => {
     isLoading: isLoadingParticipants,
     error: participantsError,
   } = useAllConvicted({ cacheKey: String(session?.tenant?.id || '') })
+  const tenantId = session?.tenant?.id ? String(session.tenant.id) : ''
+  const scopedParticipants = useMemo(() => {
+    if (!tenantId) return availableParticipants
+    return availableParticipants.filter(
+      (participant) => String(participant.tenantId || '') === tenantId
+    )
+  }, [availableParticipants, tenantId])
 
   const formatDate = (date) => {
     try {
@@ -132,7 +139,7 @@ const Groups = () => {
       <NewGroupForm
         isOpen={novoGrupoAberto}
         onOpenChange={setNovoGrupoAberto}
-        availableParticipants={availableParticipants}
+        availableParticipants={scopedParticipants}
         onSubmit={handleCreateGroup}
       />
 
@@ -141,7 +148,7 @@ const Groups = () => {
         group={grupoSelecionado}
         isOpen={visualizarGrupoAberto}
         onOpenChange={setVisualizarGrupoAberto}
-        availableParticipants={availableParticipants}
+        availableParticipants={scopedParticipants}
         onUpdate={handleUpdateGroup}
       />
 

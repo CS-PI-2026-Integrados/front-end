@@ -24,6 +24,15 @@ const toConvictedListItem = (item) => ({
   employmentStatus: item.employment_status,
   mainProcessNumber: item.main_process_number,
   sameProcessConvictedCount: item.same_process_convicted_count || 0,
+  status: item.status || item.situacao || '',
+  tenantId:
+    item.tenant_id ||
+    item.tenantId ||
+    item.judicial_district_id ||
+    item.judicialDistrictId ||
+    item.judicial_district?.id ||
+    item.judicialDistrict?.id ||
+    null,
 })
 
 const toConvictedDetail = (item) => ({
@@ -70,8 +79,14 @@ class ConvictedService {
 
     const response = await apiService.get(`/convicted?${params.toString()}`, { signal })
 
+    const items = Array.isArray(response?.content)
+      ? response.content
+          .map(toConvictedListItem)
+          .filter((item) => ['ACTIVE', 'ATIVO'].includes(String(item.status || '').toUpperCase()))
+      : []
+
     return {
-      items: Array.isArray(response?.content) ? response.content.map(toConvictedListItem) : [],
+      items,
       totalItems: Number.isFinite(response?.total_elements) ? response.total_elements : 0,
       totalPages: Math.max(1, Number.isInteger(response?.total_pages) ? response.total_pages : 1),
     }
