@@ -120,6 +120,7 @@ class ConvictedService {
     if (data.cpf !== undefined) payload.cpf = data.cpf.replace(/\D/g, '')
     if (data.birthDate !== undefined) payload.birth_date = data.birthDate
     if (data.phone !== undefined) payload.phone = data.phone.trim()
+    if (data.status !== undefined) payload.status = data.status
     if (data.address) {
       payload.address = {
         zip_code: (data.address.zipCode || '').replace(/\D/g, ''),
@@ -141,6 +142,11 @@ class ConvictedService {
 
     const response = await apiService.put(`/convicted/${id}`, payload)
     return toConvictedDetail(response)
+  }
+
+  async deactivate(id) {
+    if (!id) throw new Error('ID do apenado é obrigatório.')
+    return this.update(id, { status: 'INACTIVE' })
   }
 
   async remove(id) {

@@ -13,7 +13,7 @@ export function ConvictedDeactivateDialog({ apenado, convicted, open, onOpenChan
 
     setIsDeleting(true)
     try {
-      await convictedService.remove(target.id)
+      await convictedService.deactivate(target.id)
       toast.success('Apenado inativado com sucesso!')
       onSuccess?.(target)
       onOpenChange?.(false)
