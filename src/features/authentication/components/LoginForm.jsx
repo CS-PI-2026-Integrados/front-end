@@ -28,6 +28,7 @@ export function LoginForm() {
 
         <PasswordField
           variant="auth"
+          placeholder="Digite sua senha"
           registration={register('password')}
           disabled={isSubmitting}
           error={errors.password?.message || errors.root?.message}
