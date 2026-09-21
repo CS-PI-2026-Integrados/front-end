@@ -113,7 +113,7 @@ export default function ConvictedProfile() {
                   <span>{process.number}</span>
                   <span className="text-muted-foreground">
                     {process.principal ? 'Principal · ' : ''}
-                    {process.status}
+                    {getConvictedStatusLabel(process.status)}
                   </span>
                 </div>
               ))}

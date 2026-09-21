@@ -31,7 +31,10 @@ export const convictedFormSchema = z.object({
     .string()
     .trim()
     .min(1, 'O telefone é obrigatório.')
-    .refine((val) => val.replace(/\D/g, '').length >= 10, 'O telefone é obrigatório.'),
+    .refine(
+      (val) => [10, 11].includes(val.replace(/\D/g, '').length),
+      'Informe um telefone válido com DDD.'
+    ),
   address: addressSchema,
   processes: z.array(processSchema).optional(),
 })

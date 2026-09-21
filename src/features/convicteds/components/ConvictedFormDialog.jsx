@@ -230,11 +230,7 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
                   </Label>
                   <IMaskInput
                     id="convicted-phone"
-                    mask={
-                      form.phone?.replace(/\D/g, '').length > 10
-                        ? '(00) 00000-0000'
-                        : '(00) 0000-0000'
-                    }
+                    mask={['(00) 0000-0000', '(00) 00000-0000']}
                     value={form.phone}
                     unmask={false}
                     onAccept={(val) => handleMask('phone', val)}
