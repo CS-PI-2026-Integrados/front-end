@@ -24,11 +24,22 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
 
   return (
     <div className="overflow-x-auto">
-      <Table className="min-w-205 text-sm">
+      <Table className="min-w-225 table-fixed text-sm">
+        <colgroup>
+          <col className="w-64" />
+          <col className="w-40" />
+          <col className="w-72" />
+          <col className="w-48" />
+          <col className="w-32" />
+          <col className="w-48" />
+        </colgroup>
         <TableHeader>
           <TableRow className="bg-secondary border-y">
             {columns.map((column) => (
-              <TableHead key={column} className="px-4 py-3 text-left text-xs font-semibold">
+              <TableHead
+                key={column}
+                className="text-foreground px-4 py-3 text-left text-xs font-semibold"
+              >
                 {column}
               </TableHead>
             ))}
@@ -49,22 +60,22 @@ export function UsersTable({ users, selectedUserId, onSelectUser }) {
                 )}
                 onClick={() => onSelectUser(user.id)}
               >
-                <TableCell className="px-4 py-3">
+                <TableCell className="px-4 py-3.5">
                   <div className="text-foreground font-semibold">{user.name}</div>
                 </TableCell>
-                <TableCell className="text-muted-foreground px-4 py-3 font-medium">
+                <TableCell className="text-muted-foreground px-4 py-3.5 font-medium">
                   {maskCpf(user.cpf)}
                 </TableCell>
-                <TableCell className="text-muted-foreground px-4 py-3 font-medium">
+                <TableCell className="text-muted-foreground max-w-72 truncate px-4 py-3.5 font-medium">
                   {maskEmail(user.email)}
                 </TableCell>
-                <TableCell className="px-4 py-3">
+                <TableCell className="px-4 py-3.5">
                   <UserRoleBadge role={user.role} />
                 </TableCell>
-                <TableCell className="px-4 py-3">
+                <TableCell className="px-4 py-3.5">
                   <UserStatusBadge isActive={user.isActive} />
                 </TableCell>
-                <TableCell className="text-muted-foreground px-4 py-3">
+                <TableCell className="text-muted-foreground px-4 py-3.5">
                   {formatDateTime(user.lastAccessAt)}
                 </TableCell>
               </TableRow>

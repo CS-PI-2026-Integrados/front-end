@@ -1,3 +1,6 @@
-export { listarApenados, listarProcessos } from './services/mockedConvictedService'
 export { default as ConvictedsPage } from './pages/Convicteds'
 export { default as ConvictedProfilePage } from './pages/ConvictedProfile'
+export { useConvictedList } from './hooks/useConvictedList'
+export { useConvictedDetail } from './hooks/useConvictedDetail'
+export { useAllConvicted } from './hooks/useAllConvicted'
+export { useConvictedPhoto } from './hooks/useConvictedPhoto'

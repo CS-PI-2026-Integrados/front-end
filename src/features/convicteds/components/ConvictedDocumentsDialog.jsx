@@ -67,9 +67,9 @@ export function ApenadoDocumentsDialog({
                   </TableHeader>
                   <TableBody>
                     {comprovantes.map((comprovante) => {
-                      const proc = (apenado.processos || []).find(
+                      const proc = (apenado.processes || []).find(
                         (p) => String(p.id) === String(comprovante.processoId)
-                      ) || { processNumber: comprovante.processoId || '' }
+                      ) || { number: comprovante.processoId || '' }
 
                       return (
                         <TableRow key={comprovante.id} className="border-b">

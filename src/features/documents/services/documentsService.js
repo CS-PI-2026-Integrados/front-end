@@ -1,19 +1,11 @@
 import { readJson, writeJson } from '@/shared/infrastructure/storage/jsonStorage'
 import { listarComprovantes, obterSnapshotComprovantes } from '@/features/attendance'
-import { listarApenados, listarProcessos } from '@/features/convicteds'
 import { GROUP_DOCUMENTS_STORAGE_KEY, documentosGrupoIniciais } from '../mock/groupDocumentsMock'
 
 const VIEW_PREFERENCE_STORAGE_KEY = 'sicape:documentos:view:v1'
 const DEFAULT_VIEW = 'grid'
 
-function findProcess(processId, tenantId) {
-  return (
-    listarProcessos(tenantId).find((process) => String(process.id) === String(processId)) || null
-  )
-}
-
 function toDocument(comprovante) {
-  const process = findProcess(comprovante.processoId, comprovante.tenantId)
   return {
     id: comprovante.id,
     tenantId: comprovante.tenantId,
@@ -21,8 +13,10 @@ function toDocument(comprovante) {
     processId: comprovante.processoId,
     convictedName: comprovante.nomeApenado,
     convictedCpf: comprovante.cpfApenado,
-    processNumber: process?.processNumber || '—',
+    processNumber:
+      comprovante.processNumber || comprovante.processo?.number || comprovante.processoId || '—',
     photoUrl: comprovante.photoUrl,
+    pdfUrl: comprovante.pdfUrl,
     issuedAt: comprovante.emitidoEm,
     operatorName: comprovante.nomeOperador,
     verificationCode: comprovante.codigoVerificacao,
@@ -58,9 +52,21 @@ export function getReceiptPayload(documentId, tenantId, receiptConfig) {
   const recibo = obterSnapshotComprovantes().find((item) => String(item.id) === String(documentId))
   if (!recibo) return null
 
-  const apenado =
-    listarApenados().find((item) => String(item.id) === String(recibo.apenadoId)) || null
-  const processo = findProcess(recibo.processoId, tenantId)
+  const apenado = recibo.apenadoId
+    ? {
+        id: recibo.apenadoId,
+        fullName: recibo.nomeApenado || 'Apenado',
+        cpf: recibo.cpf || recibo.cpfApenado || '',
+        photoUrl: null,
+      }
+    : null
+
+  const processo = recibo.processoId
+    ? {
+        id: recibo.processoId,
+        number: recibo.processNumber || recibo.processo?.number || recibo.processoId,
+      }
+    : null
 
   const reciboComWhiteLabel = receiptConfig
     ? { ...recibo, configuracaoInstituicao: receiptConfig }
