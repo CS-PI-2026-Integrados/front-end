@@ -11,7 +11,7 @@ export function LoginForm() {
     form: {
       register,
       handleSubmit,
-      formState: { errors, isValid, isSubmitting },
+      formState: { errors, isSubmitting },
     },
     signIn,
   } = useLogin()
@@ -44,11 +44,7 @@ export function LoginForm() {
           }
         />
 
-        <SubmitButton
-          className="mt-3 h-13 rounded-[8px] text-lg"
-          disabled={!isValid}
-          isLoading={isSubmitting}
-        >
+        <SubmitButton className="mt-3 h-13 rounded-[8px] text-lg" isLoading={isSubmitting}>
           Entrar
         </SubmitButton>
       </FieldGroup>
