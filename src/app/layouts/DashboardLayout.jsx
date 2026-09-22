@@ -1,5 +1,6 @@
 import {
   FileText,
+  FolderArchive,
   LayoutDashboard,
   Users,
   User,
@@ -111,17 +112,15 @@ export default function DashboardLayout() {
                   </Link>
                 </Button>
               )}
-              {/* <Button asChild variant={isActive('/documentos') ? 'default' : 'ghost'} className="justify-start">
-                <Link to="/documentos" className="flex items-center gap-2 w-full">
+              <Button
+                asChild
+                variant={isActive('/documentos') ? 'default' : 'ghost'}
+                className="justify-start"
+              >
+                <Link to="/documentos" className="flex w-full items-center gap-2">
                   <FolderArchive /> Documentos
                 </Link>
               </Button>
-              <Button asChildvariant={isActive('/relatorios') ? 'default' : 'ghost'} className="justify-start">
-                <Link to="/relatorios" className="flex items-center gap-2 w-full">
-                  <ChartBar /> Relatorios
-                </Link>
-              </Button>
-              */}
               <Button
                 asChild
                 variant={isActive('/configuracoes') ? 'default' : 'ghost'}

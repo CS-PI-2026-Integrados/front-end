@@ -1,5 +1,5 @@
 import { readJson, writeJson } from '@/shared/infrastructure/storage/jsonStorage'
-import { listarComprovantes } from '@/features/attendance'
+import { listarComprovantes, obterSnapshotComprovantes } from '@/features/attendance'
 import { GROUP_DOCUMENTS_STORAGE_KEY, documentosGrupoIniciais } from '../mock/groupDocumentsMock'
 
 const VIEW_PREFERENCE_STORAGE_KEY = 'sicape:documentos:view:v1'
@@ -10,6 +10,7 @@ function toDocument(comprovante) {
     id: comprovante.id,
     tenantId: comprovante.tenantId,
     convictedId: comprovante.apenadoId,
+    processId: comprovante.processoId,
     convictedName: comprovante.nomeApenado,
     convictedCpf: comprovante.cpfApenado,
     processNumber:
@@ -45,6 +46,38 @@ export function listGroupDocuments(tenantId) {
   return documentos
     .filter((documento) => String(documento.tenantId) === String(tenantId))
     .map(toGroupDocument)
+}
+
+export function getReceiptPayload(documentId, tenantId, receiptConfig) {
+  const recibo = obterSnapshotComprovantes().find((item) => String(item.id) === String(documentId))
+  if (!recibo) return null
+
+  const apenado = recibo.apenadoId
+    ? {
+        id: recibo.apenadoId,
+        fullName: recibo.nomeApenado || 'Apenado',
+        cpf: recibo.cpf || recibo.cpfApenado || '',
+        photoUrl: null,
+      }
+    : null
+
+  const processo = recibo.processoId
+    ? {
+        id: recibo.processoId,
+        number: recibo.processNumber || recibo.processo?.number || recibo.processoId,
+      }
+    : null
+
+  const reciboComWhiteLabel = receiptConfig
+    ? { ...recibo, configuracaoInstituicao: receiptConfig }
+    : recibo
+
+  return {
+    apenado,
+    processo,
+    recibo: reciboComWhiteLabel,
+    mudancasDetectadas: recibo.alteracoesRastreadas || {},
+  }
 }
 
 export function readViewPreference() {
