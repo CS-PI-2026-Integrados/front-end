@@ -72,14 +72,11 @@ export function useDocumentActions(tenantId) {
     const payload = buildPayload()
     if (!payload) return
 
-    setProcessing(true)
     setPdfError(null)
     try {
       await view(payload)
     } catch {
       setPdfError('Não foi possível abrir o PDF. Tente novamente.')
-    } finally {
-      setProcessing(false)
     }
   }, [buildPayload, view])
 
