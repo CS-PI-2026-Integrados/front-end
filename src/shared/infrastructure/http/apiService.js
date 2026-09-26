@@ -1,4 +1,3 @@
-import toast from 'react-hot-toast'
 
 const DEFAULT_API_BASE_URL = '/api'
 const TOKEN_STORAGE_KEY = '@sicape:api-tokens'
@@ -243,7 +242,6 @@ export class ApiService {
 
     if (!response.ok) {
       const message = getErrorMessage(responseBody)
-      toast.error(message)
       throw new ApiRequestError(message, {
         status: response.status,
         body: responseBody,

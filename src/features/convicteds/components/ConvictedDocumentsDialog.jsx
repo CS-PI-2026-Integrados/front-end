@@ -20,31 +20,33 @@ function formatarDataHora(data) {
   }
 }
 
-export function ApenadoDocumentsDialog({
+export function ConvictedDocumentsDialog({
+  convicted,
   apenado,
   comprovantes: allComprovantes = [],
   onDownload,
   onOpenChange,
   onView,
 }) {
+  const target = convicted || apenado
   const [aba, setAba] = useState('comprovantes')
   const comprovantes = useMemo(
     () =>
-      apenado
-        ? allComprovantes.filter((item) => String(item.apenadoId) === String(apenado.id))
+      target
+        ? allComprovantes.filter((item) => String(item.apenadoId) === String(target.id))
         : [],
-    [allComprovantes, apenado]
+    [allComprovantes, target]
   )
-  if (!apenado) return null
+  if (!target) return null
 
   return (
-    <Dialog open={Boolean(apenado)} onOpenChange={onOpenChange}>
+    <Dialog open={Boolean(target)} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{apenado.fullName}</DialogTitle>
-          <p className="text-muted-foreground text-sm">CPF: {apenado.cpf}</p>
+          <DialogTitle>{target.fullName || target.name}</DialogTitle>
+          <p className="text-muted-foreground text-sm">CPF: {target.cpf}</p>
         </DialogHeader>
-        <Tabs value={aba} onOpenChange={setAba} valueChange={setAba}>
+        <Tabs value={aba} onValueChange={setAba}>
           <TabsList>
             <TabsTrigger value="comprovantes">Comprovantes ({comprovantes.length})</TabsTrigger>
             <TabsTrigger value="certificados">Certificados (0)</TabsTrigger>
@@ -134,3 +136,5 @@ export function ApenadoDocumentsDialog({
     </Dialog>
   )
 }
+
+export const ApenadoDocumentsDialog = ConvictedDocumentsDialog
