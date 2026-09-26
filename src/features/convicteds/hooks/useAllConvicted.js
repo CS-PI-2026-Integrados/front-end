@@ -37,20 +37,23 @@ export function useAllConvicted({ cacheKey = 'default' } = {}) {
           limit: PAGE_SIZE,
           signal: controller.signal,
         })
-        const pages = [firstPage.items]
-
-        for (let page = 2; page <= firstPage.totalPages; page += 1) {
-          const nextPage = await convictedService.list({
-            page,
-            limit: PAGE_SIZE,
-            signal: controller.signal,
-          })
-          pages.push(nextPage.items)
+        let remainingItems = []
+        if (firstPage.totalPages > 1) {
+          const remainingPages = await Promise.all(
+            Array.from({ length: firstPage.totalPages - 1 }, (_, i) =>
+              convictedService.list({
+                page: i + 2,
+                limit: PAGE_SIZE,
+                signal: controller.signal,
+              })
+            )
+          )
+          remainingItems = remainingPages.flatMap((page) => page.items)
         }
 
         if (isCurrent) {
           const nextState = {
-            items: pages.flat(),
+            items: [...firstPage.items, ...remainingItems],
             totalItems: firstPage.totalItems,
             isLoading: false,
             error: null,
