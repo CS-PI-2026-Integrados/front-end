@@ -3,19 +3,18 @@ import { toast } from 'sonner'
 import { convictedService } from '@/features/convicteds/services/convictedService'
 import { ConfirmationDialog } from '@/shared/components/ConfirmationDialog'
 
-export function ConvictedDeactivateDialog({ apenado, convicted, open, onOpenChange, onSuccess }) {
-  const target = convicted || apenado
-  const isOpen = open !== undefined ? open : Boolean(target)
+export function ConvictedDeactivateDialog({ convicted, open, onOpenChange, onSuccess }) {
+  const isOpen = open !== undefined ? open : Boolean(convicted)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleConfirm = async () => {
-    if (!target?.id) return
+    if (!convicted?.id) return
 
     setIsDeleting(true)
     try {
-      await convictedService.deactivate(target.id)
+      await convictedService.deactivate(convicted.id)
       toast.success('Apenado inativado com sucesso!')
-      onSuccess?.(target)
+      onSuccess?.(convicted)
       onOpenChange?.(false)
     } catch (err) {
       toast.error(err?.message || 'Erro ao inativar o apenado.')
@@ -24,7 +23,7 @@ export function ConvictedDeactivateDialog({ apenado, convicted, open, onOpenChan
     }
   }
 
-  const name = target?.name || target?.fullName || target?.nomeCompleto || 'o apenado'
+  const name = convicted?.name || convicted?.fullName || 'o apenado'
 
   return (
     <ConfirmationDialog

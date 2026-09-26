@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { convictedService } from '@/features/convicteds/services/convictedService'
 import { validateConvictedForm } from '@/features/convicteds/schemas/convictedSchema'
 import { compressImage } from '@/shared/lib/image'
+import { invalidateConvictedPhotoCache } from '@/features/convicteds/hooks/useConvictedPhoto'
 
 export const INITIAL_CONVICTED_FORM = {
   name: '',
@@ -238,12 +239,14 @@ export function useConvictedForm(convicted = null, { onSuccess, photoUrl } = {})
           result = await convictedService.update(convicted.id, form)
           if (form.photo) {
             result = await convictedService.uploadPhoto(convicted.id, form.photo)
+            invalidateConvictedPhotoCache(convicted.id)
           }
           toast.success('Apenado atualizado com sucesso!')
         } else {
           result = await convictedService.create(form)
           if (form.photo) {
             result = await convictedService.uploadPhoto(result.id, form.photo)
+            invalidateConvictedPhotoCache(result.id)
           }
           toast.success('Apenado cadastrado com sucesso!')
         }
@@ -289,19 +292,20 @@ export function useConvictedForm(convicted = null, { onSuccess, photoUrl } = {})
     isEditing,
     isSubmitting,
     isSearchingCep,
-    buscandoCep: isSearchingCep,
     actions: {
       handleChange,
       handleSelect,
       handleMask,
       handleAddressChange,
       setFieldValue,
+      handlePhoto: handleFoto,
       handleFoto,
+      removePhoto: removerFoto,
       removerFoto,
+      searchCep: buscarCep,
       buscarCep,
       validate,
       submit,
-      tentarSalvar: submit,
       resetForm,
     },
   }

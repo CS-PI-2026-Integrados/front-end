@@ -1,4 +1,3 @@
-import { IMaskInput } from 'react-imask'
 import { Loader2, Search, Upload, X } from 'lucide-react'
 
 import { useConvictedForm } from '@/features/convicteds/hooks/useConvictedForm'
@@ -15,6 +14,7 @@ import {
   DialogTitle,
 } from '@/shared/components/ui/dialog'
 import { Input } from '@/shared/components/ui/input'
+import { MaskedInput } from '@/shared/components/ui/masked-input'
 import { Label } from '@/shared/components/ui/label'
 import { Separator } from '@/shared/components/ui/separator'
 
@@ -41,13 +41,6 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
     buscarCep,
     submit,
   } = actions
-
-  const getInputClass = (field) =>
-    `w-full rounded-md border px-2.5 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none bg-transparent placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 ${
-      errors[field]
-        ? 'border-destructive ring-destructive/20 ring-3'
-        : 'border-input dark:bg-input/30'
-    }`
 
   const handleSubmit = async (e) => {
     e?.preventDefault?.()
@@ -191,14 +184,14 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
                   <Label htmlFor="convicted-cpf">
                     CPF <span className="text-destructive">*</span>
                   </Label>
-                  <IMaskInput
+                  <MaskedInput
                     id="convicted-cpf"
                     mask="000.000.000-00"
                     value={form.cpf}
                     unmask={false}
                     onAccept={(val) => handleMask('cpf', val)}
                     placeholder="000.000.000-00"
-                    className={getInputClass('cpf')}
+                    error={Boolean(errors.cpf)}
                   />
                   {errors.cpf && <p className="text-destructive mt-1 text-xs">{errors.cpf}</p>}
                 </div>
@@ -228,14 +221,14 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
                   <Label htmlFor="convicted-phone">
                     Telefone de Contato <span className="text-destructive">*</span>
                   </Label>
-                  <IMaskInput
+                  <MaskedInput
                     id="convicted-phone"
                     mask={['(00) 0000-0000', '(00) 00000-0000']}
                     value={form.phone}
                     unmask={false}
                     onAccept={(val) => handleMask('phone', val)}
                     placeholder="(00) 00000-0000"
-                    className={getInputClass('phone')}
+                    error={Boolean(errors.phone)}
                   />
                   {errors.phone && <p className="text-destructive mt-1 text-xs">{errors.phone}</p>}
                 </div>
@@ -253,14 +246,14 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
                 <div className="sm:col-span-1">
                   <Label htmlFor="convicted-cep">CEP</Label>
                   <div className="flex gap-1.5">
-                    <IMaskInput
+                    <MaskedInput
                       id="convicted-cep"
                       mask="00000-000"
                       value={form.address?.zipCode || ''}
                       unmask={false}
                       onAccept={(val) => handleAddressChange('zipCode', val)}
                       placeholder="00000-000"
-                      className={getInputClass('address.zipCode')}
+                      error={Boolean(errors['address.zipCode'])}
                     />
                     <Button
                       type="button"
