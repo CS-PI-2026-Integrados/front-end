@@ -213,3 +213,17 @@ class ConvictedService {
 }
 
 export const convictedService = new ConvictedService()
+
+export async function searchConvicteds({ search, limit = 10, signal } = {}) {
+  const term = search?.trim()
+  if (!term) return []
+
+  const { items } = await convictedService.list({
+    search: term,
+    page: 1,
+    limit,
+    signal,
+  })
+
+  return items
+}
