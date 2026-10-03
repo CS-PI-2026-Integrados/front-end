@@ -1,9 +1,33 @@
+import { apiService } from '@/shared/infrastructure/http/apiService'
 import { readJson, writeJson } from '@/shared/infrastructure/storage/jsonStorage'
 import {
   COMPROVANTES_STORAGE_KEY,
   comprovantesIniciais,
 } from '@/features/attendance/mock/receiptsMock'
 import { compressImage } from '@/shared/lib/image'
+
+const normalizeAddressForApi = (address) => ({
+  zip_code: (address?.zipCode || address?.zip_code || '').replace(/\D/g, ''),
+  street: (address?.street || '').trim(),
+  number: (address?.number || '').trim(),
+  complement: address?.complement?.trim() || null,
+  neighborhood: (address?.neighborhood || '').trim(),
+  city: (address?.city || '').trim(),
+  state: (address?.state || '').trim().toUpperCase(),
+})
+
+const normalizeAddressFromApi = (address) => {
+  if (!address) return null
+  return {
+    zipCode: address.zip_code || address.zipCode || '',
+    street: address.street || '',
+    number: address.number || '',
+    complement: address.complement || '',
+    neighborhood: address.neighborhood || '',
+    city: address.city || '',
+    state: address.state || '',
+  }
+}
 
 const listeners = new Set()
 let comprovantesCache
@@ -119,4 +143,65 @@ export function obterSnapshotComprovantes() {
 export function observarComprovantes(listener) {
   listeners.add(listener)
   return () => listeners.delete(listener)
+}
+
+async function toPhotoBlob(photo) {
+  if (photo instanceof Blob) return photo
+  if (typeof photo === 'string' && photo.startsWith('data:')) {
+    const response = await fetch(photo)
+    return response.blob()
+  }
+  throw new Error('Capture ou selecione uma foto para gerar o comprovante')
+}
+
+export async function createAttendance({
+  convictedId,
+  processId,
+  address,
+  phone,
+  employmentStatus,
+  photo,
+  signal,
+}) {
+  if (!convictedId) throw new Error('O apenado é obrigatório.')
+  if (!processId) throw new Error('O processo é obrigatório.')
+  if (!photo) throw new Error('A foto do atendimento é obrigatória.')
+
+  const photoBlob = await toPhotoBlob(photo)
+
+  const payload = {
+    convicted_id: convictedId,
+    process_id: processId,
+    address: normalizeAddressForApi(address),
+    phone: (phone || '').replace(/\D/g, ''),
+    employment_status: employmentStatus || 'UNEMPLOYED',
+  }
+
+  const formData = new FormData()
+  formData.append('data', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
+  formData.append('photo', photoBlob, 'attendance-photo.jpg')
+
+  const response = await apiService.post('/attendance', formData, { signal })
+
+  return {
+    id: response.id,
+    convictedId: response.convicted_id,
+    processId: response.process_id,
+    address: normalizeAddressFromApi(response.address),
+    phone: response.phone,
+    employmentStatus: response.employment_status,
+    userId: response.user_id,
+    createdAt: response.created_at,
+    updatedAt: response.updated_at,
+  }
+}
+
+export function getAttendancePhotoUrl(attendanceId) {
+  if (!attendanceId) return null
+  return `/api/attendance/${attendanceId}/photo`
+}
+
+export async function getAttendanceReceiptBlob(attendanceId, { signal } = {}) {
+  if (!attendanceId) throw new Error('ID do atendimento é obrigatório.')
+  return apiService.getBlob(`/attendance/${attendanceId}/receipt`, { signal })
 }

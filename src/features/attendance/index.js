@@ -3,6 +3,9 @@ export { default as ReceiptsPage } from './pages/Receipts'
 export { useAtendimento } from './context/attendanceContext'
 export { useReceiptPdfActions } from './hooks/useReceiptPdfActions'
 export {
+  createAttendance,
+  getAttendancePhotoUrl,
+  getAttendanceReceiptBlob,
   listarComprovantes,
   observarComprovantes,
   obterSnapshotComprovantes,
