@@ -9,10 +9,12 @@ import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { useReceiptPdfActions } from '@/features/attendance/hooks/useReceiptPdfActions'
 import { useConvictedDetail, useConvictedPhoto } from '@/features/convicteds'
 import { useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 
 const Service = () => {
   const {
     apenado,
+    selectApenado,
     processo,
     fotoAtendimento,
     isSuccess,
@@ -31,6 +33,11 @@ const Service = () => {
   const location = useLocation()
   const apenadoId = location.state?.apenadoId
   const { convicted: apenadoPreSelecionado } = useConvictedDetail(apenadoId)
+  useEffect(() => {
+    if (apenadoPreSelecionado && String(apenadoPreSelecionado.id) === String(apenadoId)) {
+      selectApenado(apenadoPreSelecionado)
+    }
+  }, [apenadoPreSelecionado, apenadoId, selectApenado])
   const { presencas } = useAtendimentoData()
   const { download, view } = useReceiptPdfActions()
   const { url: referencePhotoUrl } = useConvictedPhoto(apenado?.id)
