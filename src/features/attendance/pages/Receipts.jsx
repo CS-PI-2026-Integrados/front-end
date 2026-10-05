@@ -7,7 +7,8 @@ import { useAtendimentoData } from '@/features/attendance/hooks/useAttendanceDat
 import { ReceiptSuccessCard } from '@/features/attendance/components/ReceiptSuccessCard.jsx'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { useReceiptPdfActions } from '@/features/attendance/hooks/useReceiptPdfActions'
-import { useConvictedPhoto } from '@/features/convicteds'
+import { useConvictedDetail, useConvictedPhoto } from '@/features/convicteds'
+import { useLocation } from 'react-router-dom'
 
 const Service = () => {
   const {
@@ -27,6 +28,9 @@ const Service = () => {
     submit,
   } = useReceiptFlow()
 
+  const location = useLocation()
+  const apenadoId = location.state?.apenadoId
+  const { convicted: apenadoPreSelecionado } = useConvictedDetail(apenadoId)
   const { presencas } = useAtendimentoData()
   const { download, view } = useReceiptPdfActions()
   const { url: referencePhotoUrl } = useConvictedPhoto(apenado?.id)
