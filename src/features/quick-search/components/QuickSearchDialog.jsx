@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, FolderArchive } from 'lucide-react'
+import { ArrowLeft, FileText, FolderArchive } from 'lucide-react'
 import {
   Command,
   CommandDialog,
@@ -38,6 +38,11 @@ export function QuickSearchDialog({ open, onOpenChange }) {
   const handleOpenChange = (next) => {
     if (!next) reset()
     onOpenChange(next)
+  }
+
+  const goToReceipt = () => {
+    handleOpenChange(false)
+    navigate('/atendimento')
   }
 
   const goToDocuments = () => {
@@ -80,6 +85,9 @@ export function QuickSearchDialog({ open, onOpenChange }) {
             </div>
             <CommandList>
               <CommandGroup heading="Ações">
+                <CommandItem value="comprovante" onSelect={goToReceipt} className="gap-2 py-2">
+                  <FileText className="size-4" /> Emitir comprovante de presença
+                </CommandItem>
                 <CommandItem value="documentos" onSelect={goToDocuments} className="gap-2 py-2">
                   <FolderArchive className="size-4" /> Ver documentos
                 </CommandItem>
