@@ -9,20 +9,9 @@ import {
   CommandGroup,
   CommandItem,
 } from '@/shared/components/ui/command'
-import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar'
 import { Spinner } from '@/shared/components/ui/spinner'
 import { useQuickSearch } from '@/features/quick-search/hooks/useQuickSearch'
 import { PersonResult } from '@/features/quick-search/components/PersonResult'
-
-const getInitials = (name) => {
-  const parts = name?.trim().split(/\s+/).filter(Boolean) ?? []
-  if (parts.length === 0) return '?'
-  return parts
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase()
-}
 
 export function QuickSearchDialog({ open, onOpenChange }) {
   const navigate = useNavigate()
@@ -70,19 +59,7 @@ export function QuickSearchDialog({ open, onOpenChange }) {
               >
                 <ArrowLeft className="size-4" />
               </button>
-              <Avatar size="sm">
-                <AvatarImage
-                  src={selectedPerson.photoUrl || undefined}
-                  alt={selectedPerson.fullName}
-                />
-                <AvatarFallback>{getInitials(selectedPerson.fullName)}</AvatarFallback>
-              </Avatar>
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-medium">{selectedPerson.fullName}</span>
-                <span className="text-muted-foreground truncate text-xs">
-                  CPF {selectedPerson.cpf}
-                </span>
-              </div>
+              <PersonResult person={selectedPerson} showProcess={false} />
             </div>
             <CommandList>
               <CommandGroup heading="Ações">
