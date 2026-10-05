@@ -9,8 +9,8 @@ import {
 
 const MONTH_COUNT = 12
 
-export function useDocuments(tenantId, source = 'attendance') {
-  const [search, setSearch] = useState('')
+export function useDocuments(tenantId, source = 'attendance', initialSearch = '') {
+  const [search, setSearch] = useState(initialSearch)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [manualMonth, setManualMonth] = useState(null)
   const [viewMode, setViewMode] = useState(readViewPreference)

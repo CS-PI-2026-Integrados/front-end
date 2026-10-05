@@ -36,8 +36,9 @@ export function QuickSearchDialog({ open, onOpenChange }) {
   }
 
   const goToDocuments = () => {
+    const filtro = selectedPerson.fullName
     handleOpenChange(false)
-    navigate('/documentos')
+    navigate('/documentos', { state: { quickSearchFilter: filtro } })
   }
 
   return (
