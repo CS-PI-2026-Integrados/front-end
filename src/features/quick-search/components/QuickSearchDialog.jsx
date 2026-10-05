@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar'
 import { Spinner } from '@/shared/components/ui/spinner'
 import { useQuickSearch } from '@/features/quick-search/hooks/useQuickSearch'
+import { PersonResult } from '@/features/quick-search/components/PersonResult'
 
 const getInitials = (name) => {
   const parts = name?.trim().split(/\s+/).filter(Boolean) ?? []
@@ -133,17 +134,7 @@ export function QuickSearchDialog({ open, onOpenChange }) {
                       onSelect={() => setSelectedPerson(person)}
                       className="gap-3 py-2"
                     >
-                      <Avatar size="sm">
-                        <AvatarImage src={person.photoUrl || undefined} alt={person.fullName} />
-                        <AvatarFallback>{getInitials(person.fullName)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex min-w-0 flex-col">
-                        <span className="truncate text-sm font-medium">{person.fullName}</span>
-                        <span className="text-muted-foreground truncate text-xs">
-                          CPF {person.cpf}
-                          {person.processNumber ? ` · Processo ${person.processNumber}` : ''}
-                        </span>
-                      </div>
+                      <PersonResult person={person} />
                     </CommandItem>
                   ))}
                 </CommandGroup>
