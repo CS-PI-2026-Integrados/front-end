@@ -31,8 +31,9 @@ export function QuickSearchDialog({ open, onOpenChange }) {
   }
 
   const goToReceipt = () => {
+    const apenadoId = selectedPerson.id
     handleOpenChange(false)
-    navigate('/atendimento')
+    navigate('/atendimento', { state: { apenadoId } })
   }
 
   const goToDocuments = () => {
