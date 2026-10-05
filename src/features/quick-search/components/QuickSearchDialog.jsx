@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, FolderArchive } from 'lucide-react'
 import {
   Command,
   CommandDialog,
@@ -54,29 +54,38 @@ export function QuickSearchDialog({ open, onOpenChange }) {
     >
       <Command shouldFilter={false}>
         {selectedPerson ? (
-          <div className="flex items-center gap-3 p-3">
-            <button
-              type="button"
-              onClick={() => setSelectedPerson(null)}
-              aria-label="Voltar"
-              className="hover:bg-muted text-muted-foreground rounded-md p-1"
-            >
-              <ArrowLeft className="size-4" />
-            </button>
-            <Avatar size="sm">
-              <AvatarImage
-                src={selectedPerson.photoUrl || undefined}
-                alt={selectedPerson.fullName}
-              />
-              <AvatarFallback>{getInitials(selectedPerson.fullName)}</AvatarFallback>
-            </Avatar>
-            <div className="flex min-w-0 flex-col">
-              <span className="truncate text-sm font-medium">{selectedPerson.fullName}</span>
-              <span className="text-muted-foreground truncate text-xs">
-                CPF {selectedPerson.cpf}
-              </span>
+          <>
+            <div className="flex items-center gap-3 border-b p-3">
+              <button
+                type="button"
+                onClick={() => setSelectedPerson(null)}
+                aria-label="Voltar"
+                className="hover:bg-muted text-muted-foreground rounded-md p-1"
+              >
+                <ArrowLeft className="size-4" />
+              </button>
+              <Avatar size="sm">
+                <AvatarImage
+                  src={selectedPerson.photoUrl || undefined}
+                  alt={selectedPerson.fullName}
+                />
+                <AvatarFallback>{getInitials(selectedPerson.fullName)}</AvatarFallback>
+              </Avatar>
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-sm font-medium">{selectedPerson.fullName}</span>
+                <span className="text-muted-foreground truncate text-xs">
+                  CPF {selectedPerson.cpf}
+                </span>
+              </div>
             </div>
-          </div>
+            <CommandList>
+              <CommandGroup heading="Ações">
+                <CommandItem value="documentos" onSelect={goToDocuments} className="gap-2 py-2">
+                  <FolderArchive className="size-4" /> Ver documentos
+                </CommandItem>
+              </CommandGroup>
+            </CommandList>
+          </>
         ) : (
           <>
             <CommandInput
