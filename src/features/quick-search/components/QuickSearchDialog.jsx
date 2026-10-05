@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import {
   Command,
@@ -23,6 +24,7 @@ const getInitials = (name) => {
 }
 
 export function QuickSearchDialog({ open, onOpenChange }) {
+  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [selectedPerson, setSelectedPerson] = useState(null)
   const { results, isLoading, error } = useQuickSearch(query)
@@ -36,6 +38,11 @@ export function QuickSearchDialog({ open, onOpenChange }) {
   const handleOpenChange = (next) => {
     if (!next) reset()
     onOpenChange(next)
+  }
+
+  const goToDocuments = () => {
+    handleOpenChange(false)
+    navigate('/documentos')
   }
 
   return (
