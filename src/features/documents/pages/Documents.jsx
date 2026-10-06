@@ -6,10 +6,13 @@ import { DocumentArchive } from '../components/DocumentArchive'
 import { PhotoModal } from '../components/PhotoModal'
 import { PdfPreviewModal } from '../components/PdfPreviewModal'
 import { useDocumentActions } from '../hooks/useDocumentActions'
+import { useLocation } from 'react-router-dom'
 
 const Documents = () => {
   const { session } = useSession()
   const tenantId = session?.tenant?.id
+  const location = useLocation()
+  const quickSearchFilter = location.state?.quickSearchFilter ?? ''
 
   const [activeTab, setActiveTab] = useState('attendance')
 
@@ -45,8 +48,10 @@ const Documents = () => {
 
         <TabsContent value="attendance">
           <DocumentArchive
+            key={quickSearchFilter || 'attendance'}
             tenantId={tenantId}
             source="attendance"
+            initialSearch={quickSearchFilter}
             onViewPhoto={openPhoto}
             onDownloadPdf={openPdf}
           />

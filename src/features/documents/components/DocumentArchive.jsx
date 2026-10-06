@@ -23,7 +23,14 @@ const MONTHS_LONG = [
   'Dezembro',
 ]
 
-export function DocumentArchive({ tenantId, source, onOpenGroup, onViewPhoto, onDownloadPdf }) {
+export function DocumentArchive({
+  tenantId,
+  source,
+  initialSearch = '',
+  onOpenGroup,
+  onViewPhoto,
+  onDownloadPdf,
+}) {
   const {
     search,
     setSearch,
@@ -38,7 +45,7 @@ export function DocumentArchive({ tenantId, source, onOpenGroup, onViewPhoto, on
     changeViewMode,
     monthDocuments,
     filteredDocuments,
-  } = useDocuments(tenantId, source)
+  } = useDocuments(tenantId, source, initialSearch)
 
   const isGroup = source === 'group'
   const periodLabel = `${MONTHS_LONG[selectedMonth]} ${selectedYear}`

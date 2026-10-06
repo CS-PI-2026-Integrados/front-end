@@ -26,6 +26,7 @@ import { useSession } from '@/features/authentication'
 import { useTenant } from '@/features/institutions'
 import { useTheme } from '@/shared/hooks/useTheme'
 import { canAccessUsersPage } from '@/features/users'
+import { QuickSearchBar } from '@/features/quick-search'
 
 export default function DashboardLayout() {
   const [isMenuVisible, setisMenuVisible] = useState(false)
@@ -146,6 +147,7 @@ export default function DashboardLayout() {
               >
                 <Menu />
               </Button>
+              <QuickSearchBar />
               <div className="ml-auto flex items-center gap-2">
                 <Button
                   variant="ghost"
