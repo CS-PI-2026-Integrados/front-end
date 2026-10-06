@@ -9,9 +9,9 @@ import {
   CommandGroup,
   CommandItem,
 } from '@/shared/components/ui/command'
-import { Spinner } from '@/shared/components/ui/spinner'
 import { useQuickSearch } from '@/features/quick-search/hooks/useQuickSearch'
 import { PersonResult } from '@/features/quick-search/components/PersonResult'
+import { QuickSearchStates } from '@/features/quick-search/components/QuickSearchStates'
 
 export function QuickSearchDialog({ open, onOpenChange }) {
   const navigate = useNavigate()
@@ -82,27 +82,12 @@ export function QuickSearchDialog({ open, onOpenChange }) {
               onValueChange={setQuery}
             />
             <CommandList>
-              {!hasQuery && !isLoading && !error && (
-                <p className="text-muted-foreground py-6 text-center text-sm">
-                  Digite um nome ou CPF para buscar.
-                </p>
-              )}
-
-              {isLoading && (
-                <div className="text-muted-foreground flex items-center justify-center gap-2 py-6 text-sm">
-                  <Spinner /> Buscando...
-                </div>
-              )}
-
-              {!isLoading && error && (
-                <p className="text-destructive py-6 text-center text-sm">{error}</p>
-              )}
-
-              {!isLoading && !error && hasQuery && results.length === 0 && (
-                <p className="text-muted-foreground py-6 text-center text-sm">
-                  Nenhuma pessoa encontrada.
-                </p>
-              )}
+              <QuickSearchStates
+                hasQuery={hasQuery}
+                isLoading={isLoading}
+                error={error}
+                isEmpty={hasQuery && results.length === 0}
+              />
 
               {!isLoading && !error && results.length > 0 && (
                 <CommandGroup heading="Pessoas">
