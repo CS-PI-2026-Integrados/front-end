@@ -12,10 +12,13 @@ export function QuickSearchBar() {
         type="button"
         variant="outline"
         onClick={() => setOpen(true)}
-        className="text-muted-foreground h-9 w-full max-w-md justify-start gap-2 font-normal"
+        aria-label="Buscar"
+        className="text-muted-foreground size-9 shrink-0 justify-center p-0 sm:h-9 sm:w-full sm:max-w-md sm:justify-start sm:gap-2 sm:px-3"
       >
         <SearchIcon className="size-4 shrink-0 opacity-60" />
-        <span className="truncate">Buscar por CPF, Nome ou nº do processo</span>
+        <span className="hidden truncate font-normal sm:inline">
+          Buscar por CPF, Nome ou nº do processo
+        </span>
         <kbd className="bg-muted ml-auto hidden items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium sm:inline-flex">
           Ctrl K
         </kbd>
