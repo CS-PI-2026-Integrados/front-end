@@ -19,6 +19,11 @@ const listSchema = z.object({
   presenters: z.array(z.string()),
   status: z.enum(['PLANNED', 'ACTIVE', 'CLOSED']),
   participant_count: z.number(),
+  total_meetings_count: z.number().nullable().optional(),
+  frequency: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY']).nullable().optional(),
+  start_date: z.string().nullable().optional(),
+  predicted_end_date: z.string().nullable().optional(),
+  real_end_date: z.string().nullable().optional(),
 })
 const detailSchema = listSchema.omit({ participant_count: true }).extend({
   description: z.string(),
@@ -40,11 +45,16 @@ const toListItem = (item) => ({
   presenters: item.presenters,
   status: item.status,
   participantCount: item.participant_count,
+  totalMeetingsCount: item.total_meetings_count ?? item.total_meetings_counts,
+  frequency: item.frequency,
+  startDate: item.start_date,
+  predictedEndDate: item.predicted_end_date ?? null,
+  realEndDate: item.real_end_date ?? null,
 })
 const toDetail = (item) => ({
   ...toListItem({ ...item, participant_count: item.convicteds.length }),
   description: item.description,
-  totalMeetingsCount: item.total_meetings_counts,
+  totalMeetingsCount: item.total_meetings_counts ?? item.total_meetings_count,
   minimumMeetingsCount: item.minimum_meetings_count,
   frequency: item.frequency,
   meetingBaseTime: item.meeting_base_time,

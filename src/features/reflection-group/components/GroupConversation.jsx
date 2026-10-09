@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useSession } from '@/features/authentication'
 import { Spinner } from '@/shared/components/ui/spinner'
+import { BackButton } from '@/shared/components/buttons/BackButton'
 import { MetricCard } from '@/shared/components/data-display/MetricCard'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Button } from '@/shared/components/ui/button'
@@ -138,19 +139,24 @@ const GroupConversation = ({ data }) => {
   } = data
   if (!isLoading && !group)
     return (
-      <div role="alert">
+      <div className="space-y-4" role="alert">
+        <BackButton to="/grupos-reflexivos" />
         <p>{error || 'Grupo não encontrado.'}</p>
         <Button onClick={reload}>Tentar novamente</Button>
       </div>
     )
   return isLoading ? (
-    <div className="flex h-full">
-      <div className="m-auto">
-        <Spinner />
+    <div className="space-y-6">
+      <BackButton to="/grupos-reflexivos" />
+      <div className="min-h-64" aria-label="Carregando grupo" aria-busy="true">
+        <div className="flex h-64 items-center justify-center">
+          <Spinner />
+        </div>
       </div>
     </div>
   ) : (
     <div className="flex flex-col">
+      <BackButton to="/grupos-reflexivos" className="mb-2" />
       {error && !isModalOpen && !isNewEncontroModalOpen && !isEditEncontroOpen && (
         <p role="alert" className="text-destructive">
           {error}
