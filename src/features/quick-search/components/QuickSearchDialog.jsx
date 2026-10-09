@@ -42,6 +42,21 @@ export function QuickSearchDialog({ open, onOpenChange }) {
     navigate('/documentos', { state: { quickSearchFilter: filtro } })
   }
 
+  const handleKeyDown = (event) => {
+    if (event.key !== 'Tab') return
+
+    event.preventDefault()
+
+    const target = event.currentTarget
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: event.shiftKey ? 'ArrowUp' : 'ArrowDown',
+        bubbles: true,
+        cancelable: true,
+      })
+    )
+  }
+
   return (
     <CommandDialog
       open={open}
@@ -50,7 +65,7 @@ export function QuickSearchDialog({ open, onOpenChange }) {
       description="Busque por CPF, nome ou nº do processo"
       dismissible
     >
-      <Command shouldFilter={false}>
+      <Command shouldFilter={false} loop onKeyDown={selectedPerson ? undefined : handleKeyDown}>
         {selectedPerson ? (
           <>
             <div className="flex items-center gap-3 border-b p-3">

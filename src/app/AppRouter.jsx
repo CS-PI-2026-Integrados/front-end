@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { AtendimentoProvider, ReceiptsPage } from '@/features/attendance'
 import { SettingsPage } from '@/features/settings'
 import { DefinePasswordPage, LoginPage, RecoverPasswordPage } from '@/features/authentication'
@@ -29,7 +29,7 @@ const AppRouter = () => {
       <Route element={<AuthGuard />}>
         <Route element={<MustChangePasswordGuard />}>
           <Route element={<DashboardLayout />}>
-            <Route index element={<DashboardPage />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="grupos-reflexivos" element={<GroupsPage />} />
             <Route path="grupos-reflexivos/:id" element={<GroupManagementPage />} />
