@@ -5,6 +5,7 @@ export function UserActionConfirmDialog({
   confirmLabel,
   description,
   isDestructive = false,
+  error,
   onConfirm,
   onOpenChange,
   open,
@@ -19,6 +20,7 @@ export function UserActionConfirmDialog({
       destructive={isDestructive}
       confirmLabel={confirmLabel || actionLabel}
       onConfirm={onConfirm}
+      error={error}
     />
   )
 }

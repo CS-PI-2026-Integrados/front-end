@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSession } from '@/features/authentication'
 import {
@@ -10,196 +10,192 @@ import {
 } from '@/features/users/services/usersService'
 import { normalizeSearch } from '@/features/users/utils/userFormattersUtils'
 
-export const USERS_STATUS_FILTERS = {
-  ALL: 'all',
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
-}
-
-const SUCCESS_MESSAGE = 'Alteração feita com sucesso'
-const CREATE_SUCCESS_MESSAGE = 'Operador cadastrado com sucesso.'
-const ERROR_MESSAGE = 'Houve um erro ao completar essa ação'
+export const USERS_STATUS_FILTERS = { ALL: 'all', ACTIVE: 'active', INACTIVE: 'inactive' }
+const EMPTY_USERS = []
+const initial = { users: EMPTY_USERS, error: null, isLoading: true }
 
 export function useUsersManagement() {
   const { session } = useSession()
-  const [users, setUsers] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const userId = session?.user?.id
+  const userTenantId = session?.user?.tenantId
+  const tenantId = session?.tenant?.id
+  const roleKey = session?.user?.role?.key
+  // Focus-driven session restoration must not reload an unchanged list.
+  const managementSession = useMemo(
+    () => ({
+      user: { id: userId, tenantId: userTenantId, role: { key: roleKey } },
+      tenant: { id: tenantId },
+    }),
+    [userId, userTenantId, tenantId, roleKey]
+  )
+  const scope = JSON.stringify([userId, userTenantId, tenantId, roleKey])
+  const [revision, setRevision] = useState(0)
+  const key = `${scope}:${revision}`
+  const [state, setState] = useState(initial)
+  const [mutation, setMutation] = useState({ scope: null, busy: false, error: null })
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState(USERS_STATUS_FILTERS.ALL)
-  const [selectedUserId, setSelectedUserId] = useState(null)
-
-  const loadUsers = useCallback(async () => {
-    if (!session) return
-
-    setIsLoading(true)
-
-    try {
-      const tenantUsers = await listManageableTenantUsers(session)
-
-      setUsers(tenantUsers)
-    } catch {
-      toast.error(ERROR_MESSAGE)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [session])
+  const activeScope = useRef(null)
+  const pending = useRef(null)
+  const reload = useCallback(() => setRevision((value) => value + 1), [])
+  const clearMutationError = useCallback(
+    () => setMutation((current) => ({ ...current, error: null })),
+    []
+  )
 
   useEffect(() => {
-    loadUsers()
-  }, [loadUsers])
+    activeScope.current = scope
+    return () => {
+      activeScope.current = null
+      pending.current?.abort()
+      pending.current = null
+    }
+  }, [scope])
 
+  useEffect(() => {
+    const controller = new AbortController()
+    let current = true
+    const load = async () => {
+      try {
+        const users = await listManageableTenantUsers(managementSession, {
+          signal: controller.signal,
+        })
+        if (current) setState({ users, key, error: null, isLoading: false })
+      } catch (cause) {
+        if (current && cause.name !== 'AbortError') {
+          setState({ ...initial, key, error: cause.message, isLoading: false })
+        }
+      }
+    }
+    void load()
+    return () => {
+      current = false
+      controller.abort()
+    }
+  }, [managementSession, key])
+
+  const result = state.key === key ? state : initial
+  const users = result.users
   const filteredUsers = useMemo(() => {
     const normalizedSearch = normalizeSearch(search)
     const searchDigits = search.replace(/\D/g, '')
-
     return users
       .filter((user) => {
         const matchesStatus =
           statusFilter === USERS_STATUS_FILTERS.ALL ||
           (statusFilter === USERS_STATUS_FILTERS.ACTIVE && user.isActive) ||
           (statusFilter === USERS_STATUS_FILTERS.INACTIVE && !user.isActive)
-        const matchesRole = roleFilter === 'all' || user.roleId === roleFilter
-
-        if (!matchesStatus || !matchesRole) return false
-
+        if (!matchesStatus || (roleFilter !== 'all' && user.roleId !== roleFilter)) return false
         if (!normalizedSearch && !searchDigits) return true
-
-        const normalizedName = normalizeSearch(user.name)
-        const cpfDigits = user.cpf.replace(/\D/g, '')
-        const matchesName = normalizedSearch ? normalizedName.includes(normalizedSearch) : false
-        const matchesCpf = searchDigits ? cpfDigits.includes(searchDigits) : false
-
-        return matchesName || matchesCpf
+        return (
+          (normalizedSearch && normalizeSearch(user.name).includes(normalizedSearch)) ||
+          (searchDigits && user.cpf.replace(/\D/g, '').includes(searchDigits))
+        )
       })
-      .sort((firstUser, secondUser) => {
-        return firstUser.name.localeCompare(secondUser.name, 'pt-BR', { sensitivity: 'base' })
-      })
-  }, [roleFilter, search, statusFilter, users])
-
-  const roleOptions = useMemo(() => {
-    const rolesById = new Map()
-
-    users.forEach((user) => {
-      if (user.role) {
-        rolesById.set(user.role.id, user.role)
-      }
-    })
-
-    return Array.from(rolesById.values()).sort((firstRole, secondRole) => {
-      return secondRole.level - firstRole.level
-    })
-  }, [users])
-
+      .sort((first, second) =>
+        first.name.localeCompare(second.name, 'pt-BR', { sensitivity: 'base' })
+      )
+  }, [users, search, roleFilter, statusFilter])
+  const roleOptions = useMemo(
+    () =>
+      [...new Map(users.map((user) => [user.role.id, user.role])).values()].sort(
+        (first, second) => second.level - first.level
+      ),
+    [users]
+  )
   const metrics = useMemo(() => {
-    const activeUsers = users.filter((user) => user.isActive)
-    const inactiveUsers = users.filter((user) => !user.isActive)
-
-    return {
-      total: users.length,
-      active: activeUsers.length,
-      inactive: inactiveUsers.length,
-    }
+    const active = users.filter((user) => user.isActive).length
+    return { total: users.length, active, inactive: users.length - active }
   }, [users])
 
-  const selectedUser = useMemo(() => {
-    return users.find((user) => user.id === selectedUserId) || null
-  }, [selectedUserId, users])
-
-  const runUserAction = useCallback(
-    async (action) => {
+  const mutate = useCallback(
+    async (operation, input, message) => {
+      if (pending.current) throw new Error('Aguarde a conclusão da ação em andamento.')
+      const controller = new AbortController()
+      pending.current = controller
+      setMutation({ scope, busy: true, error: null })
+      const isCurrent = () => activeScope.current === scope && !controller.signal.aborted
       try {
-        await action()
-        await loadUsers()
-        toast.success(SUCCESS_MESSAGE)
-      } catch {
-        toast.error(ERROR_MESSAGE)
-        throw new Error(ERROR_MESSAGE)
-      }
-    },
-    [loadUsers]
-  )
-
-  const createOperator = useCallback(
-    async (operatorData) => {
-      const createdUser = await createTenantOperator({
-        session,
-        operatorData,
-      })
-
-      setUsers((currentUsers) => [...currentUsers, createdUser])
-      toast.success(CREATE_SUCCESS_MESSAGE)
-
-      return createdUser
-    },
-    [session]
-  )
-
-  const deactivateUser = useCallback(
-    (user) => {
-      return runUserAction(() =>
-        deactivateTenantUser({
-          session,
-          targetUserId: user.id,
+        const data = await operation(input, { signal: controller.signal })
+        if (!isCurrent()) throw new DOMException('Operação cancelada.', 'AbortError')
+        const user = data.user || data
+        // Update from the accepted response, without coupling success to a second request.
+        setState((current) => {
+          if (current.key !== key) return current
+          const exists = current.users.some((item) => item.id === user.id)
+          return {
+            ...current,
+            users: exists
+              ? current.users.map((item) => (item.id === user.id ? user : item))
+              : [...current.users, user],
+          }
         })
-      )
-    },
-    [runUserAction, session]
-  )
-
-  const reactivateUser = useCallback(
-    (user) => {
-      return runUserAction(() =>
-        reactivateTenantUser({
-          session,
-          targetUserId: user.id,
-        })
-      )
-    },
-    [runUserAction, session]
-  )
-
-  const resetUserPassword = useCallback(
-    async (user) => {
-      try {
-        const result = await resetTenantUserPassword({
-          session,
-          targetUserId: user.id,
-        })
-
-        setUsers((currentUsers) => {
-          return currentUsers.map((currentUser) => {
-            return currentUser.id === result.user.id ? result.user : currentUser
+        toast.success(message)
+        return data
+      } catch (cause) {
+        if (isCurrent() && cause.name !== 'AbortError') {
+          setMutation({
+            scope,
+            busy: false,
+            error: cause.message || 'Não foi possível concluir a ação.',
           })
-        })
-        toast.success('Senha temporária gerada com sucesso.')
-
-        return result.temporaryPassword
-      } catch {
-        toast.error(ERROR_MESSAGE)
-        throw new Error(ERROR_MESSAGE)
+        }
+        throw cause
+      } finally {
+        if (pending.current === controller) pending.current = null
+        if (isCurrent()) setMutation((current) => ({ ...current, busy: false }))
       }
     },
-    [session]
+    [scope, key]
   )
+  const createOperator = (operatorData) =>
+    mutate(
+      createTenantOperator,
+      { session: managementSession, operatorData },
+      'Usuário cadastrado com sucesso.'
+    )
+  const deactivateUser = (user) =>
+    mutate(
+      deactivateTenantUser,
+      { session: managementSession, targetUserId: user.id },
+      'Usuário desativado com sucesso.'
+    )
+  const reactivateUser = (user) =>
+    mutate(
+      reactivateTenantUser,
+      { session: managementSession, targetUserId: user.id },
+      'Usuário reativado com sucesso.'
+    )
+  const resetUserPassword = async (user) => {
+    const data = await mutate(
+      resetTenantUserPassword,
+      { session: managementSession, targetUserId: user.id },
+      'Senha redefinida com sucesso.'
+    )
+    return data.temporaryPassword
+  }
 
   return {
     currentUser: session?.user,
+    scope,
     filteredUsers,
-    isLoading,
+    isLoading: result.isLoading,
+    error: result.error,
+    isSaving: mutation.scope === scope && mutation.busy,
+    mutationError: mutation.scope === scope ? mutation.error : null,
+    clearMutationError,
+    reload,
     metrics,
     roleFilter,
     roleOptions,
     search,
-    selectedUser,
-    selectedUserId,
     statusFilter,
     createOperator,
     deactivateUser,
     reactivateUser,
     resetUserPassword,
     setSearch,
-    setSelectedUserId,
     setRoleFilter,
     setStatusFilter,
   }
