@@ -57,15 +57,22 @@ export const restoreSession = async () => {
   try {
     await apiService.getValidAccessToken()
     return createApiSession()
-  } catch {
+  } catch (error) {
+    if (['network', 'timeout', 'backend'].includes(error.kind)) {
+      // Retain claims for the UI during transient outages; the API still authorizes every call.
+      const existingSession = createApiSession()
+      if (existingSession) return existingSession
+      throw error
+    }
+    // An older refresh may finish after a successful login in the same tab.
+    if (apiService.isAccessTokenValid()) return createApiSession()
     logout()
     return null
   }
 }
 
 export const subscribeToAuthStateChanges = (listener) => {
-  void listener
-  return () => {}
+  return apiService.subscribeToAuthChanges(listener)
 }
 
 export const requestPasswordReset = async (cpf) => {
