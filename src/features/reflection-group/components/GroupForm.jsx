@@ -37,11 +37,11 @@ export function GroupForm({ form, editing, persistedStatus, isSaving }) {
         <TextareaField
           id="group-description"
           label="Descrição"
-          required={!editing}
+          required
           variant="modal"
           registration={register('description')}
           placeholder="Descreva os objetivos e a proposta do grupo"
-          disabled={editing || isSaving}
+          disabled={isSaving}
           error={errors.description?.message}
         />
         <TextareaField

@@ -1,9 +1,7 @@
 import { z } from 'zod'
-import initialGroups from '../mock/groupsMock.json'
 import { readJson, writeJson } from '@/shared/infrastructure/storage/jsonStorage'
 import { groupsService } from './groupsService'
 
-const legacyStorageKey = 'sicape:grupos-reflexivos:v1'
 const conversationSchema = z.object({
   id: z.union([z.string(), z.number()]),
   name: z.string(),
@@ -32,60 +30,51 @@ const conversationSchema = z.object({
 
 const storageKey = (scope, id) => `sicape:group-conversation:v1:${scope}:${id}`
 
-function fromLegacy(group) {
-  return conversationSchema.parse({
-    id: group.id,
-    name: group.nome,
-    description: group.descricao ?? group.description ?? '',
-    minimumMeetings: group.minimoEncontros ?? group.minimoPresencas ?? 0,
-    source: 'mock',
-    participants: (group.participantes ?? []).map((person) => ({
-      id: person.id,
-      fullName: person.nome,
-      cpf: person.cpf,
-    })),
-    meetings: (group.encontros ?? []).map((meeting) => ({
-      id: meeting.id,
-      date: meeting.data.slice(0, 10),
-      subject: meeting.tema,
-      status: meeting.situacao ?? meeting.status ?? 'PENDENTE',
-      present: meeting.presentes ?? [],
-      absent:
-        meeting.ausentes ??
-        ((meeting.situacao ?? meeting.status) === 'REALIZADO'
-          ? (group.participantes ?? [])
-              .filter(
-                (person) =>
-                  !(meeting.presentes ?? []).includes(person.id) &&
-                  !meeting.justificacoes?.[person.id]
-              )
-              .map((person) => person.id)
-          : []),
-      justifications: Object.fromEntries(
-        Object.entries(meeting.justificacoes ?? {}).map(([id, value]) => [
-          id,
-          {
-            text: typeof value === 'string' ? value : (value.texto ?? ''),
-            type: typeof value === 'string' ? '' : (value.tipo ?? ''),
-          },
-        ])
-      ),
-    })),
-  })
+function generateInitialMeetings(group) {
+  const count = group.totalMeetingsCount || 8
+  const startDateStr = group.startDate?.slice(0, 10)
+  const baseDate = startDateStr ? new Date(`${startDateStr}T00:00:00`) : new Date()
+  const frequency = group.frequency || 'WEEKLY'
+  const meetings = []
+
+  for (let i = 0; i < count; i++) {
+    const d = new Date(baseDate)
+    if (frequency === 'WEEKLY') {
+      d.setDate(baseDate.getDate() + i * 7)
+    } else if (frequency === 'BIWEEKLY') {
+      d.setDate(baseDate.getDate() + i * 14)
+    } else if (frequency === 'MONTHLY') {
+      d.setMonth(baseDate.getMonth() + i)
+    } else {
+      d.setDate(baseDate.getDate() + i * 7)
+    }
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const dateFormatted = `${year}-${month}-${day}`
+
+    meetings.push({
+      id: crypto.randomUUID(),
+      date: dateFormatted,
+      subject: `Encontro ${i + 1} - ${group.subject || 'Grupo reflexivo'}`,
+      status: 'PENDENTE',
+      present: [],
+      absent: [],
+      justifications: {},
+    })
+  }
+  return meetings
 }
 
-// Meetings are stored locally until the API supports this part of the workflow.
-// API metadata and participant links remain owned by groupsService.
 export const groupConversationService = {
   async getById(id, scope, options) {
-    const legacy = readJson(legacyStorageKey, initialGroups)
-    const mock = Array.isArray(legacy) && legacy.find((item) => String(item.id) === String(id))
-    if (mock) {
-      const saved = readJson(storageKey(scope, id), null)
-      return saved ? conversationSchema.parse(saved) : fromLegacy(mock)
-    }
     const group = await groupsService.getById(id, options)
-    const saved = readJson(storageKey(scope, id), {})
+    const saved = readJson(storageKey(scope, id), null)
+    let meetings = saved?.meetings
+    if (!Array.isArray(meetings) || meetings.length === 0) {
+      meetings = generateInitialMeetings(group)
+      writeJson(storageKey(scope, id), { meetings })
+    }
     return conversationSchema.parse({
       id: group.id,
       name: group.name,
@@ -93,32 +82,20 @@ export const groupConversationService = {
       minimumMeetings: group.minimumMeetingsCount,
       source: 'api',
       participants: group.convicteds,
-      meetings: saved.meetings ?? [],
+      meetings,
     })
   },
   save(group, scope) {
     const canonical = conversationSchema.parse(group)
     try {
-      writeJson(
-        storageKey(scope, group.id),
-        canonical.source === 'api' ? { meetings: canonical.meetings } : canonical
-      )
+      writeJson(storageKey(scope, group.id), { meetings: canonical.meetings })
     } catch (cause) {
       throw new Error('Não foi possível salvar os dados deste grupo no navegador.', { cause })
     }
     return canonical
   },
   async removeParticipant(group, participantId, scope, options) {
-    if (group.source === 'api') {
-      await groupsService.removeConvicted(group.id, participantId, options)
-      return groupConversationService.getById(group.id, scope, options)
-    }
-    return groupConversationService.save(
-      {
-        ...group,
-        participants: group.participants.filter((person) => person.id !== participantId),
-      },
-      scope
-    )
+    await groupsService.removeConvicted(group.id, participantId, options)
+    return groupConversationService.getById(group.id, scope, options)
   },
 }

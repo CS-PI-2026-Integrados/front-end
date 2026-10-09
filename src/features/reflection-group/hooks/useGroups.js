@@ -44,15 +44,6 @@ export function useGroups({ name = '', subject = '', status = '', page = 1, size
               size,
               signal: controller.signal,
             })
-        // The list endpoint omits planning fields needed by the table and edit form.
-        if (!id) {
-          data.items = await Promise.all(
-            data.items.map(async (item) => ({
-              ...(await groupsService.getById(item.id, { signal: controller.signal })),
-              ...item,
-            }))
-          )
-        }
         if (current) setState({ ...initial, ...data, key, isLoading: false })
       } catch (error) {
         if (current && error.name !== 'AbortError')

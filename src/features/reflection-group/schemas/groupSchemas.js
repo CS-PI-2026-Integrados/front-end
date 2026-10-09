@@ -41,6 +41,7 @@ export const groupCreateSchema = z
 export const groupUpdateSchema = z
   .object({
     name: required.optional(),
+    description: required.optional(),
     subject: required.optional(),
     presenters: z.array(required).min(1).optional(),
     status: z.enum(['PLANNED', 'ACTIVE', 'CLOSED']).optional(),
@@ -81,6 +82,7 @@ export function getGroupFormSchema(group) {
   return z
     .object({
       name: required,
+      description: required,
       subject: required,
       presenters: presentersInput,
       status: z.enum(['PLANNED', 'ACTIVE', 'CLOSED'], { error: 'Selecione o status.' }),

@@ -26,10 +26,18 @@ import {
 } from '@/shared/components/ui/table'
 import { useGroups } from '../hooks/useGroups'
 import { groupFrequencies, groupStatuses } from '../schemas/groupSchemas'
+import { groupsService } from '../services/groupsService'
 import GroupEditModal from '../components/GroupEditModal'
 import NewGroupForm from '../components/NewGroupForm'
 
 const formatDate = (value) => (value ? value.slice(0, 10).split('-').reverse().join('/') : '—')
+const formatMeetings = (total, frequency) => {
+  const label = groupFrequencies[frequency]
+  if (total == null && !label) return '—'
+  if (total == null) return label
+  if (!label) return String(total)
+  return `${total} (${label})`
+}
 
 export default function Groups() {
   const [name, setName] = useState('')
@@ -167,7 +175,7 @@ export default function Groups() {
                   <TableCell className="px-4 py-3">{groupStatuses[group.status]}</TableCell>
                   <TableCell className="px-4 py-3">{group.participantCount}</TableCell>
                   <TableCell className="px-4 py-3">
-                    {group.totalMeetingsCount} ({groupFrequencies[group.frequency]})
+                    {formatMeetings(group.totalMeetingsCount, group.frequency)}
                   </TableCell>
                   <TableCell className="px-4 py-3">{formatDate(group.startDate)}</TableCell>
                   <TableCell className="px-4 py-3">
@@ -184,7 +192,14 @@ export default function Groups() {
                           title="Editar"
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => setEditingGroup(group)}
+                          onClick={async () => {
+                            try {
+                              const full = await groupsService.getById(group.id)
+                              setEditingGroup(full)
+                            } catch {
+                              setEditingGroup(group)
+                            }
+                          }}
                         >
                           <Pencil />
                           <span className="sr-only">Editar</span>

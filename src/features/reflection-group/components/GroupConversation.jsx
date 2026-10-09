@@ -12,9 +12,13 @@ import {
 } from 'lucide-react'
 import { useSession } from '@/features/authentication'
 import { Spinner } from '@/shared/components/ui/spinner'
+import { BackButton } from '@/shared/components/buttons/BackButton'
 import { MetricCard } from '@/shared/components/data-display/MetricCard'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
+import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { Button } from '@/shared/components/ui/button'
+import { Pagination } from '@/shared/components/ui/pagination'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs.jsx'
 import {
   Table,
@@ -84,6 +88,7 @@ const StatusBadge = ({ situacao }) => (
 
 const GroupConversation = ({ data }) => {
   const { session } = useSession()
+  const [meetingsPage, setMeetingsPage] = useState(1)
   const [documentoDisponivel, setDocumentoDisponivel] = useState(false)
   const {
     isLoading,
@@ -136,21 +141,35 @@ const GroupConversation = ({ data }) => {
     isSaving,
     reload,
   } = data
+  const meetings = group?.meetings ?? []
+  const meetingsPageSize = 5
+  const meetingsTotalPages = Math.max(1, Math.ceil(meetings.length / meetingsPageSize))
+  const currentMeetingsPage = Math.min(meetingsPage, meetingsTotalPages)
+  const visibleMeetings = meetings.slice(
+    (currentMeetingsPage - 1) * meetingsPageSize,
+    currentMeetingsPage * meetingsPageSize
+  )
+
   if (!isLoading && !group)
     return (
-      <div role="alert">
+      <div className="space-y-4" role="alert">
+        <BackButton to="/grupos-reflexivos" />
         <p>{error || 'Grupo não encontrado.'}</p>
         <Button onClick={reload}>Tentar novamente</Button>
       </div>
     )
   return isLoading ? (
-    <div className="flex h-full">
-      <div className="m-auto">
-        <Spinner />
+    <div className="space-y-6">
+      <BackButton to="/grupos-reflexivos" />
+      <div className="min-h-64" aria-label="Carregando grupo" aria-busy="true">
+        <div className="flex h-64 items-center justify-center">
+          <Spinner />
+        </div>
       </div>
     </div>
   ) : (
     <div className="flex flex-col">
+      <BackButton to="/grupos-reflexivos" className="mb-2" />
       {error && !isModalOpen && !isNewEncontroModalOpen && !isEditEncontroOpen && (
         <p role="alert" className="text-destructive">
           {error}
@@ -204,30 +223,63 @@ const GroupConversation = ({ data }) => {
               </Button>
             </div>
 
-            <div className="bg-card rounded-md p-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Tema</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Presenças</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {(group?.meetings ?? []).length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-muted-foreground h-32 text-center">
-                        Nenhum encontro registrado
-                      </TableCell>
+            <DataTableCard
+              title="Histórico de encontros"
+              count={meetings.length}
+              icon={<FileText className="text-muted-foreground size-5" aria-hidden="true" />}
+              isEmpty={!meetings.length}
+              emptyState={
+                <EmptyTableState
+                  icon={FileText}
+                  title="Nenhum encontro registrado"
+                  description="Os encontros registrados aparecerão aqui."
+                />
+              }
+              footer={
+                <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                  <span className="font-medium">
+                    Página {currentMeetingsPage} de {meetingsTotalPages} {'·'} {meetings.length}{' '}
+                    registros
+                  </span>
+                  <Pagination
+                    currentPage={currentMeetingsPage}
+                    totalPages={meetingsTotalPages}
+                    onPageChange={setMeetingsPage}
+                  />
+                </div>
+              }
+            >
+              <div className="overflow-x-auto">
+                <Table contentColumns="max-content fit-content(40ch) max-content max-content max-content">
+                  <TableHeader>
+                    <TableRow className="bg-secondary border-y">
+                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
+                        Data
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
+                        Tema
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
+                        Status
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
+                        Presenças
+                      </TableHead>
+                      <TableHead className="px-4 py-3 text-right text-xs font-semibold">
+                        Ações
+                      </TableHead>
                     </TableRow>
-                  ) : (
-                    (group.meetings || []).map((encontro) => (
+                  </TableHeader>
+
+                  <TableBody>
+                    {visibleMeetings.map((encontro) => (
                       <TableRow key={encontro.id}>
-                        <TableCell>{formatDate(encontro.date) || null}</TableCell>
-                        <TableCell className="max-w-[40ch] truncate">{encontro.subject}</TableCell>
+                        <TableCell className="px-4 py-3.5 whitespace-nowrap">
+                          {formatDate(encontro.date) || '—'}
+                        </TableCell>
+                        <TableCell className="max-w-[40ch] px-4 py-3.5 wrap-break-word whitespace-normal">
+                          {encontro.subject}
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <StatusBadge situacao={encontro.status || 'PENDENTE'} />
@@ -236,10 +288,10 @@ const GroupConversation = ({ data }) => {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="px-4 py-3.5 whitespace-nowrap">
                           {`${encontro.present?.length ?? encontro.attendanceCount ?? 0}/${group?.participants?.length ?? 0}`}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="px-4 py-3.5 text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
@@ -281,11 +333,11 @@ const GroupConversation = ({ data }) => {
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </DataTableCard>
           </TabsContent>
 
           <TabsContent value="participantes">
