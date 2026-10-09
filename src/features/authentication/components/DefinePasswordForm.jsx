@@ -16,11 +16,11 @@ export function DefinePasswordForm({
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isSubmitting },
   } = form
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit(definePassword)}>
+    <form noValidate className="space-y-6" onSubmit={handleSubmit(definePassword)}>
       <h1 className="text-foreground text-2xl font-bold">{title}</h1>
 
       <FieldGroup className="gap-1 p-0">
@@ -48,11 +48,7 @@ export function DefinePasswordForm({
           placeholder="Digite sua senha"
         />
 
-        <SubmitButton
-          className="mt-3 h-13 rounded-[8px] text-lg"
-          disabled={!isValid}
-          isLoading={isSubmitting}
-        >
+        <SubmitButton className="mt-3 h-13 rounded-[8px] text-lg" isLoading={isSubmitting}>
           {submitLabel}
         </SubmitButton>
 

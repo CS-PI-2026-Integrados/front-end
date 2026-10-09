@@ -11,7 +11,8 @@ export function useRecoverPassword() {
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const form = useForm({
     resolver: zodResolver(recoverPasswordSchema),
-    mode: 'onTouched',
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
   })
 
   const requestResetLink = async (data) => {
