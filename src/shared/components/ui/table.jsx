@@ -4,12 +4,17 @@ import * as React from 'react'
 
 import { cn } from '@/shared/lib/utils'
 
-function Table({ className, ...props }) {
+function Table({ className, contentColumns, style, ...props }) {
   return (
     <div data-slot="table-container" className="relative w-full overflow-x-auto">
       <table
         data-slot="table"
-        className={cn('w-full caption-bottom text-sm', className)}
+        className={cn(
+          'w-full caption-bottom text-sm',
+          contentColumns && 'table-content-layout',
+          className
+        )}
+        style={contentColumns ? { ...style, gridTemplateColumns: contentColumns } : style}
         {...props}
       />
     </div>

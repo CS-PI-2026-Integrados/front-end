@@ -2,43 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Camera, Upload, X } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { cn } from '@/shared/lib/utils'
+import { toPhotoBlob } from '@/shared/lib/image'
 
 const DEFAULT_ACCEPT = 'image/png,image/jpeg'
-
-function cropToPng(source, aspectRatio) {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    const sourceUrl = typeof source === 'string' ? source : URL.createObjectURL(source)
-    image.onload = () => {
-      const sourceAspect = image.width / image.height
-      const width = sourceAspect > aspectRatio ? image.height * aspectRatio : image.width
-      const height = sourceAspect > aspectRatio ? image.height : image.width / aspectRatio
-      const canvas = document.createElement('canvas')
-      canvas.width = Math.floor(width)
-      canvas.height = Math.floor(height)
-      canvas
-        .getContext('2d')
-        .drawImage(
-          image,
-          (image.width - width) / 2,
-          (image.height - height) / 2,
-          width,
-          height,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        )
-      canvas.toBlob((blob) => {
-        if (!blob) return reject(new Error('Não foi possível processar a imagem.'))
-        resolve(new File([blob], `capture-${Date.now()}.png`, { type: 'image/png' }))
-      }, 'image/png')
-      if (typeof source !== 'string') URL.revokeObjectURL(sourceUrl)
-    }
-    image.onerror = () => reject(new Error('Não foi possível carregar a imagem.'))
-    image.src = sourceUrl
-  })
-}
 
 export function CameraCapture({
   file = null,
@@ -47,7 +13,6 @@ export function CameraCapture({
   deviceId,
   disabled = false,
   accept = DEFAULT_ACCEPT,
-  aspectRatio = 3 / 4,
   onError,
   className,
 }) {
@@ -81,16 +46,15 @@ export function CameraCapture({
   }, [deviceId, onError, stopCamera])
 
   const emitImage = useCallback(
-    async (source) => {
+    (source) => {
       try {
-        const image = await cropToPng(source, aspectRatio)
-        onCapture(image)
+        onCapture(toPhotoBlob(source))
         stopCamera()
-      } catch (error) {
-        onError?.(error.message)
+      } catch {
+        onError?.('Use uma foto JPEG ou PNG de até 5 MiB.')
       }
     },
-    [aspectRatio, onCapture, onError, stopCamera]
+    [onCapture, onError, stopCamera]
   )
 
   const takePhoto = () => {
@@ -113,7 +77,7 @@ export function CameraCapture({
           <img
             src={preview}
             alt="Prévia da captura"
-            className="aspect-3/4 w-full max-w-70 rounded-xl border object-cover shadow-sm"
+            className="aspect-square w-full max-w-70 rounded-xl border object-contain shadow-sm"
           />
           <Button type="button" variant="outline" disabled={disabled} onClick={onClear}>
             Descartar foto
@@ -121,12 +85,12 @@ export function CameraCapture({
         </>
       ) : isStreaming ? (
         <>
-          <div className="relative aspect-3/4 w-full max-w-70 overflow-hidden rounded-xl bg-black">
+          <div className="relative aspect-square w-full max-w-70 overflow-hidden rounded-xl bg-black">
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              className="size-full scale-x-[-1] object-cover"
+              className="size-full scale-x-[-1] object-contain"
             />
             <Button
               type="button"

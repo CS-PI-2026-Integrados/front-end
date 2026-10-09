@@ -16,6 +16,7 @@ export function CpfField({
   fieldClassName,
   inputWrapperClassName,
   labelClassName,
+  ...props
 }) {
   const { onChange, ...restRegistration } = registration || {}
   const shouldUseAuthStyles = variant === 'auth'
@@ -24,6 +25,8 @@ export function CpfField({
     <InputField
       id={id}
       label={label}
+      variant={variant === 'auth' ? 'default' : variant}
+      {...props}
       type="text"
       inputMode="numeric"
       placeholder="000.000.000-00"
