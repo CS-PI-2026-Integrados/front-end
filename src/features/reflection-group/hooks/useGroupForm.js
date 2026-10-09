@@ -62,6 +62,7 @@ export function useGroupForm({ group, open, onSubmit, onOpenChange }) {
         ? {
             metadata: {
               name: data.name,
+              description: data.description,
               subject: data.subject,
               presenters: data.presenters,
               status: data.status,

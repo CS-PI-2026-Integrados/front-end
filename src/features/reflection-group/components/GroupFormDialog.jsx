@@ -18,7 +18,7 @@ export function GroupFormDialog({ group, open, onOpenChange, onSubmit, isSaving 
       title={editing ? 'Editar grupo reflexivo' : 'Novo Grupo Reflexivo'}
       description={
         editing
-          ? 'Atualize os dados do grupo. A descrição é somente leitura.'
+          ? 'Atualize os dados do grupo.'
           : 'Preencha os dados do grupo e o planejamento dos encontros'
       }
       onSubmit={form.handleSubmit(submit)}
