@@ -13,14 +13,23 @@ export function useReceiptAddressField({ address, onChange, onError }) {
       .filter(Boolean)
       .join(' · ')
   )
-  const [error, setError] = useState(null)
-  const changeValue = (nextValue) => {
+  const [zipCode, setZipCode] = useState(() => address?.zipCode || '')
+  const [errors, setErrors] = useState({})
+  const changeAddress = (nextValue, nextZipCode) => {
     setValue(nextValue)
-    const result = receiptAddressSchema.safeParse(nextValue)
-    const nextError = result.success ? null : result.error.issues[0].message
-    setError(nextError)
-    onError(nextError)
-    if (result.success) onChange({ ...address, ...result.data })
+    setZipCode(nextZipCode)
+    const result = receiptAddressSchema.safeParse({ address: nextValue, zipCode: nextZipCode })
+    const issues = result.success ? [] : result.error.issues
+    setErrors(Object.fromEntries(issues.map((issue) => [issue.path[0], issue.message])))
+    onError(issues.map((issue) => issue.message).join(' ') || null)
+    if (result.success) onChange(result.data)
   }
-  return { value, error, changeValue }
+  return {
+    value,
+    zipCode,
+    error: errors.address,
+    zipCodeError: errors.zipCode,
+    changeValue: (nextValue) => changeAddress(nextValue, zipCode),
+    changeZipCode: (nextZipCode) => changeAddress(value, nextZipCode),
+  }
 }
