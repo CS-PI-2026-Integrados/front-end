@@ -1,64 +1,70 @@
-import { Users, FileText, CheckCircle, TriangleAlert } from 'lucide-react'
+import { Users, ClipboardList, CheckCircle, TriangleAlert } from 'lucide-react'
 import { MetricCard } from '@/shared/components/data-display/MetricCard'
-import { ProofData } from '@/features/dashboard/components/dashboard/ProofData.jsx'
-import { RecentActivities } from '@/features/dashboard/components/dashboard/RecentActivities.jsx'
-import { useDashboardMetrics } from '@/features/dashboard/hooks/useDashboardMetrics.js'
-import { useDistrictData } from '@/features/dashboard/hooks/useDistrictData.js'
+import { ProofData } from '../components/dashboard/ProofData'
+import { RecentActivities } from '../components/dashboard/RecentActivities'
+import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 
 const Dashboard = () => {
-  const { apenados, presencas, isLoading, error } = useDistrictData()
-
-  const {
-    comprovantesRecentes,
-    ultimosMesesGrafico,
-    contagemMeses,
-    apenadosRegulares,
-    atividadesRecentes,
-  } = useDashboardMetrics(presencas, apenados)
+  const { convicted, attendance } = useDashboardMetrics()
+  const people = convicted.data
+  const records = attendance.data
+  const peoplePlaceholder = convicted.isLoading ? 'Carregando...' : 'Indisponível'
+  const attendancePlaceholder = attendance.isLoading ? 'Carregando...' : 'Indisponível'
 
   return (
     <div className="space-y-5">
       <PageHeader title="Dashboard" description="Visão geral" />
 
-      {isLoading && apenados.length === 0 && (
-        <p className="text-muted-foreground text-sm">Carregando dados...</p>
-      )}
-      {error && <p className="text-destructive text-sm">{error}</p>}
-
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total de apenados"
-          description="Cadastrados no sistema"
-          data={apenados.length}
+          description={
+            people
+              ? `Ativos: ${people.active} · Inativos: ${people.inactive}`
+              : 'Cadastrados na comarca'
+          }
+          data={people?.total ?? peoplePlaceholder}
+          error={convicted.error}
           icon={<Users className="text-muted-foreground h-4 w-4" />}
         />
         <MetricCard
-          title="Comprovantes emitidos"
+          title="Atendimentos registrados"
           description="Nos últimos 7 dias"
-          data={comprovantesRecentes}
-          icon={<FileText className="text-muted-foreground h-4 w-4" />}
+          data={records?.last7Days ?? attendancePlaceholder}
+          error={attendance.error}
+          icon={<ClipboardList className="text-muted-foreground h-4 w-4" />}
         />
         <MetricCard
-          title="Em Conformidade"
-          description="Situacão regular"
-          data={apenadosRegulares}
+          title="Com apresentação recente"
+          description="Ativos com atendimento nos últimos 30 dias"
+          data={people?.withRecentAttendance ?? peoplePlaceholder}
+          error={convicted.error}
           icon={<CheckCircle className="text-muted-foreground h-4 w-4" />}
         />
         <MetricCard
-          title="Irregulares"
-          description="Situação irregular"
-          data={apenados.length - apenadosRegulares}
+          title="Sem apresentação recente"
+          description="Ativos sem atendimento nos últimos 30 dias"
+          data={people?.withoutRecentAttendance ?? peoplePlaceholder}
+          error={convicted.error}
           icon={<TriangleAlert className="text-muted-foreground h-4 w-4" />}
         />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-4">
         <div className="lg:col-span-2">
-          <ProofData ultimosMesesGrafico={ultimosMesesGrafico} contagemMeses={contagemMeses} />
+          <ProofData
+            monthlyCounts={records?.monthlyCounts}
+            isLoading={attendance.isLoading}
+            error={attendance.error}
+          />
         </div>
         <div className="lg:col-span-2">
-          <RecentActivities atividadesRecentes={atividadesRecentes} />
+          <RecentActivities
+            atividadesRecentes={records?.recentActivities}
+            isLoading={attendance.isLoading}
+            error={attendance.error}
+          />
         </div>
       </div>
     </div>
