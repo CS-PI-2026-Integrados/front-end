@@ -16,8 +16,9 @@ export default function GuestGuard() {
     }
 
     const redirect = new URLSearchParams(location.search).get('redirect')?.trim()
+    const destination = redirect && redirect !== '/' ? redirect : '/dashboard'
 
-    return <Navigate to={redirect ? redirect : '/dashboard'} replace />
+    return <Navigate to={destination} replace />
   }
 
   return <Outlet />
