@@ -1,6 +1,4 @@
-import { useState, useMemo } from 'react'
-import { Pencil, AlertCircle } from 'lucide-react'
-
+import { Pencil } from 'lucide-react'
 import { Label } from '@/shared/components/ui/label'
 import { Input } from '@/shared/components/ui/input'
 import { Checkbox } from '@/shared/components/ui/checkbox'
@@ -11,268 +9,136 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select'
+import { useAtendimento } from '../context/attendanceContext'
+import { ReceiptAddressField } from './ReceiptAddressField'
 
-import { useAtendimento } from '@/features/attendance'
-import { useTenant } from '@/features/institutions'
-import { formatPhone } from '@/features/attendance/utils/attendanceUtils'
-
-function formatAddress(address) {
-  if (!address) return ''
-  if (typeof address === 'string') return address
-
-  return [
-    address.street,
-    address.number,
-    address.complement,
-    address.neighborhood,
-    address.city,
-    address.state,
-  ]
-    .filter(Boolean)
-    .join(' · ')
-}
-
-export function ConvictedInfoCard() {
+export function ConvictedInfoCard({ disabled = false, errors = {} }) {
   const {
-    apenado,
-    processo,
+    convicted,
+    process,
+    selectProcess,
     canEdit,
-    mudancas,
-    hasChanges,
+    setCanEdit,
     updateField,
-    selectProcesso,
-    toggleEdit,
+    setAddressError,
+    hasSubmitted,
   } = useAtendimento()
-
-  const { state: tenantState } = useTenant()
-
-  const fieldConfig = useMemo(() => {
-    const map = {}
-    ;(tenantState.receiptFields || []).forEach((f) => {
-      map[f.key] = { visible: f.visible, editable: f.editable }
-    })
-    return map
-  }, [tenantState.receiptFields])
-
-  const isFieldVisible = (key) => fieldConfig[key]?.visible !== false
-  const isFieldEditable = (key) => fieldConfig[key]?.editable !== false
-
-  const hasAnyEditable = useMemo(
-    () => (tenantState.receiptFields || []).some((f) => f.visible && f.editable),
-    [tenantState.receiptFields]
-  )
-
-  const [localPhone, setLocalPhone] = useState(apenado ? formatPhone(apenado.phone || '') : '')
-  const [localAddress, setLocalAddress] = useState(apenado ? formatAddress(apenado.address) : '')
-
-  if (!apenado) {
-    return (
-      <div className="bg-muted/30 flex min-h-35 flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
-        <p className="text-muted-foreground text-sm">
-          Selecione o apenado para iniciar um atendimento
+  if (!convicted) return null
+  const processes = convicted.processes.filter((item) => item.status === 'ACTIVE')
+  const statusLabel = { ACTIVE: 'Ativo', INACTIVE: 'Inativo' }[convicted.status]
+  const phone = (convicted.phone || '').replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3')
+  return (
+    <div className="space-y-4">
+      <div className="space-y-1.5">
+        <Label htmlFor="attendance-process">Processo Ativo</Label>
+        <Select
+          disabled={disabled}
+          value={process?.id || ''}
+          onValueChange={(id) => selectProcess(processes.find((item) => item.id === id))}
+        >
+          <SelectTrigger
+            id="attendance-process"
+            className="w-full"
+            aria-invalid={errors.processId ? true : undefined}
+            aria-describedby={errors.processId ? 'attendance-process-error' : undefined}
+          >
+            <SelectValue placeholder="Selecione um processo ativo" />
+          </SelectTrigger>
+          <SelectContent>
+            {processes.map((item) => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.number}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.processId && (
+          <p id="attendance-process-error" role="alert" className="text-destructive text-xs">
+            {errors.processId}
+          </p>
+        )}
+      </div>
+      {!processes.length && <p className="text-destructive">Nenhum processo ativo vinculado.</p>}
+      <div className="bg-muted rounded-md px-3 py-2.5">
+        <p>
+          <span className="text-muted-foreground">Processo:</span>{' '}
+          {process?.number || 'Não informado'}
+        </p>
+        <p>
+          <span className="text-muted-foreground">Situação:</span> {statusLabel || 'Não informada'}
         </p>
       </div>
-    )
-  }
-
-  const processosAtivos = apenado.processes || []
-
-  const handlePhoneChange = (e) => {
-    const formatted = formatPhone(e.target.value)
-    setLocalPhone(formatted)
-  }
-
-  const handlePhoneBlur = () => {
-    const currentPhone = apenado.phone || ''
-    if (localPhone !== formatPhone(currentPhone)) {
-      updateField('phone', localPhone)
-    }
-  }
-
-  const handleAddressChange = (e) => {
-    setLocalAddress(e.target.value)
-  }
-
-  const handleAddressBlur = () => {
-    const currentAddress = formatAddress(apenado.address)
-    if (localAddress !== currentAddress) {
-      updateField('address', localAddress)
-    }
-  }
-
-  const getMudancasLabels = () => {
-    const labels = {
-      phone: 'Telefone',
-      address: 'Endereço',
-      workingStatus: 'Situação Trabalhista',
-    }
-    return Object.entries(mudancas)
-      .filter(([, m]) => m.mudou)
-      .map(([field]) => labels[field])
-      .join(', ')
-  }
-
-  const showPhone = isFieldVisible('phone')
-  const showAddress = isFieldVisible('address')
-  const showWorkingStatus = isFieldVisible('workingStatus')
-  const hasAnyVisible = showPhone || showAddress || showWorkingStatus
-
-  return (
-    <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
-      {processosAtivos.length > 0 ? (
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <Label>Processo Ativo</Label>
-            <Select
-              value={processo ? String(processo.id) : ''}
-              onValueChange={(id) => {
-                const proc = processosAtivos.find((p) => String(p.id) === id)
-                if (proc) {
-                  selectProcesso(proc)
-                }
-              }}
-            >
-              <SelectTrigger className="h-10 w-full">
-                <SelectValue placeholder="Selecione um processo" />
-              </SelectTrigger>
-              <SelectContent>
-                {processosAtivos.map((proc) => (
-                  <SelectItem key={proc.id} value={String(proc.id)}>
-                    {proc.number || `Processo ${proc.id}`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {processo && (
-            <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-sm wrap-break-word">
-              <p>
-                <span className="text-muted-foreground">Processo:</span> {processo.number || '-'}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Situação:</span>{' '}
-                {processo.penaltyType || 'Regular'}
-              </p>
-              {processo.institution && (
-                <p>
-                  <span className="text-muted-foreground">Instituição:</span> {processo.institution}
-                </p>
-              )}
-              {processo.court && (
-                <p>
-                  <span className="text-muted-foreground">Vara:</span> {processo.court}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="bg-muted/50 space-y-2 rounded-lg p-4 text-center text-sm">
-          <p className="text-muted-foreground">Nenhum processo ativo vinculado a este apenado.</p>
-        </div>
-      )}
-
-      {hasAnyEditable && (
-        <div className="flex items-start gap-2 pt-2 md:items-center">
-          <Checkbox
-            id="enableEditing"
-            checked={canEdit}
-            onCheckedChange={toggleEdit}
-            className="mt-1 shrink-0 md:mt-0"
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="edit-attendance"
+          checked={canEdit}
+          disabled={disabled}
+          onCheckedChange={(checked) => setCanEdit(Boolean(checked))}
+        />
+        <Label htmlFor="edit-attendance" className="font-normal">
+          <Pencil className="size-3.5 shrink-0" aria-hidden="true" />
+          Habilitar edição dos dados para este comprovante
+        </Label>
+      </div>
+      <div className="bg-muted/30 space-y-3 rounded-md border p-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="attendance-phone">Telefone</Label>
+          <Input
+            id="attendance-phone"
+            type="tel"
+            value={phone}
+            maxLength={15}
+            aria-invalid={errors.phone ? true : undefined}
+            aria-describedby={errors.phone ? 'attendance-phone-error' : undefined}
+            disabled={disabled || !canEdit}
+            onChange={(event) => updateField('phone', event.target.value.replace(/\D/g, ''))}
           />
-          <Label
-            htmlFor="enableEditing"
-            className="flex cursor-pointer items-center gap-2 text-sm leading-relaxed font-medium md:leading-none"
-          >
-            <Pencil className="h-4 w-4 shrink-0" />
-            Habilitar edição dos dados para este comprovante
-          </Label>
-        </div>
-      )}
-
-      {hasAnyVisible && (
-        <div className="bg-muted/50 space-y-4 rounded-lg border p-4">
-          {hasChanges && (
-            <div className="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <div>
-                <p className="font-medium">Dados modificados</p>
-                <p className="mt-1 text-xs">{getMudancasLabels()}</p>
-              </div>
-            </div>
-          )}
-
-          {showPhone && (
-            <div className="space-y-1">
-              <Label htmlFor="editPhone">Telefone</Label>
-              <Input
-                id="editPhone"
-                name="phone"
-                type="tel"
-                key={`phone-${apenado?.id}`}
-                disabled={!canEdit || !isFieldEditable('phone')}
-                minLength={14}
-                maxLength={15}
-                pattern="^\(\d{2}\) \d{4,5}-\d{4}$"
-                title="O telefone deve conter DDD e entre 8 a 9 números."
-                placeholder="(00) 00000-0000"
-                value={localPhone}
-                onChange={handlePhoneChange}
-                onBlur={handlePhoneBlur}
-              />
-            </div>
-          )}
-
-          {showAddress && (
-            <div className="space-y-1">
-              <Label htmlFor="editAddress">Endereço</Label>
-              <Input
-                id="editAddress"
-                name="address"
-                key={`address-${apenado?.id}`}
-                disabled={!canEdit || !isFieldEditable('address')}
-                placeholder="Rua, número..."
-                value={localAddress}
-                onChange={handleAddressChange}
-                onBlur={handleAddressBlur}
-              />
-            </div>
-          )}
-
-          {showWorkingStatus && (
-            <div className="space-y-1">
-              <Label>Situação Trabalhista</Label>
-              <Select
-                disabled={!canEdit || !isFieldEditable('workingStatus')}
-                name="workingStatus"
-                value={apenado.workingStatus || 'not_working'}
-                onValueChange={(value) => updateField('workingStatus', value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="not_working">Não Trabalha</SelectItem>
-                  <SelectItem value="working_formal">Trabalha</SelectItem>
-                  <SelectItem value="working_informal">Autônomo</SelectItem>
-                </SelectContent>
-              </Select>
-              {!canEdit && hasAnyEditable && (
-                <p className="text-muted-foreground text-xs leading-relaxed">
-                  Marque a opcao acima para editar os dados antes de gerar o comprovante.
-                </p>
-              )}
-            </div>
-          )}
-
-          {!hasAnyEditable && (
-            <p className="text-muted-foreground text-center text-xs">
-              Todos os campos estão em modo somente leitura conforme configuração do administrador.
+          {errors.phone && (
+            <p id="attendance-phone-error" role="alert" className="text-destructive text-xs">
+              {errors.phone}
             </p>
           )}
         </div>
-      )}
+        <ReceiptAddressField
+          key={convicted.id}
+          address={convicted.address}
+          disabled={disabled || !canEdit}
+          onChange={(address) => updateField('address', address)}
+          onError={setAddressError}
+          error={errors.address}
+          showErrors={hasSubmitted}
+        />
+        <div className="space-y-1.5">
+          <Label htmlFor="attendance-employment">Situação Trabalhista</Label>
+          <Select
+            disabled={disabled || !canEdit}
+            value={convicted.employmentStatus || ''}
+            onValueChange={(value) => updateField('employmentStatus', value)}
+          >
+            <SelectTrigger
+              id="attendance-employment"
+              className="w-full"
+              aria-invalid={errors.employmentStatus ? true : undefined}
+              aria-describedby={errors.employmentStatus ? 'attendance-employment-error' : undefined}
+            >
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="FORMAL_WORK">Trabalho Registrado</SelectItem>
+              <SelectItem value="INFORMAL_WORK">Trabalho Informal</SelectItem>
+              <SelectItem value="UNEMPLOYED">Não Trabalha</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.employmentStatus && (
+            <p id="attendance-employment-error" role="alert" className="text-destructive text-xs">
+              {errors.employmentStatus}
+            </p>
+          )}
+        </div>
+        <p className="text-muted-foreground text-xs">
+          Marque a opção acima para editar os dados antes de gerar o comprovante.
+        </p>
+      </div>
     </div>
   )
 }
