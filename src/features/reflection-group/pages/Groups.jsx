@@ -26,6 +26,7 @@ import {
 } from '@/shared/components/ui/table'
 import { useGroups } from '../hooks/useGroups'
 import { groupFrequencies, groupStatuses } from '../schemas/groupSchemas'
+import { groupsService } from '../services/groupsService'
 import GroupEditModal from '../components/GroupEditModal'
 import NewGroupForm from '../components/NewGroupForm'
 
