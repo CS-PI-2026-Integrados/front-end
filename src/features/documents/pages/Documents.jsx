@@ -18,6 +18,8 @@ const Documents = () => {
 
   const {
     photoDocument,
+    photoLoading,
+    photoError,
     openPhoto,
     closePhoto,
     pdfDocument,
@@ -25,26 +27,25 @@ const Documents = () => {
     closePdf,
     downloadPdf,
     viewPdf,
+    viewDocumentPdf,
+    downloadDocumentPdf,
     isProcessing,
     pdfError,
   } = useDocumentActions(tenantId)
 
-  function openGroup(groupId) {
-    window.open(`/grupos-reflexivos/${groupId}`, '_blank', 'noopener,noreferrer')
-  }
-
   return (
-    <div className="">
-      <PageHeader
-        title="Arquivo de Documentos"
-        description="Repositório centralizado de comprovantes e documentos"
-      />
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="attendance">Atendimentos</TabsTrigger>
-          <TabsTrigger value="groups">Grupos Reflexivos</TabsTrigger>
-        </TabsList>
+    <div className="min-w-0">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
+        <PageHeader
+          title="Arquivo de Documentos"
+          description="Repositório centralizado de comprovantes e documentos"
+          action={
+            <TabsList aria-label="Origem dos documentos">
+              <TabsTrigger value="attendance">Atendimentos</TabsTrigger>
+              <TabsTrigger value="groups">Grupos Reflexivos</TabsTrigger>
+            </TabsList>
+          }
+        />
 
         <TabsContent value="attendance">
           <DocumentArchive
@@ -53,16 +54,31 @@ const Documents = () => {
             source="attendance"
             initialSearch={quickSearchFilter}
             onViewPhoto={openPhoto}
-            onDownloadPdf={openPdf}
+            onViewPdf={viewDocumentPdf}
+            onDownloadPdf={downloadDocumentPdf}
+            onOpenPdf={openPdf}
+            isProcessing={isProcessing}
           />
         </TabsContent>
 
         <TabsContent value="groups">
-          <DocumentArchive tenantId={tenantId} source="group" onOpenGroup={openGroup} />
+          <p className="text-muted-foreground rounded-lg border border-dashed p-6">
+            Documentos de grupos reflexivos indisponíveis até haver suporte da API.
+          </p>
         </TabsContent>
       </Tabs>
+      {pdfError && !pdfDocument && (
+        <p role="alert" className="text-destructive mt-4 text-sm">
+          {pdfError}
+        </p>
+      )}
 
-      <PhotoModal document={photoDocument} onClose={closePhoto} />
+      <PhotoModal
+        document={photoDocument}
+        isLoading={photoLoading}
+        error={photoError}
+        onClose={closePhoto}
+      />
       <PdfPreviewModal
         document={pdfDocument}
         isProcessing={isProcessing}

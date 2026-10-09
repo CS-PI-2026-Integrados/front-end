@@ -6,12 +6,18 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select'
 
-export function YearSelector({ years, value, onChange }) {
+export function YearSelector({ years, value, onChange, disabled = false }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-muted-foreground text-sm">Ano:</span>
-      <Select value={String(value)} onValueChange={(year) => onChange(Number(year))}>
-        <SelectTrigger className="w-28">
+    <div className="w-full shrink-0 lg:w-44">
+      <Select
+        disabled={disabled}
+        value={String(value)}
+        onValueChange={(year) => onChange(Number(year))}
+      >
+        <SelectTrigger
+          aria-label="Ano dos documentos"
+          className="hover:bg-muted w-full cursor-pointer"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
