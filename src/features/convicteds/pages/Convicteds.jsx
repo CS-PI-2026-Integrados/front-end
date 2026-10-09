@@ -1,9 +1,9 @@
-import { Eye, Pencil, Plus, Search, Trash2, Users } from 'lucide-react'
+import { Eye, Pencil, Plus, Search, CircleMinus, CirclePlus, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useConvictedList } from '@/features/convicteds/hooks/useConvictedList'
 import { useConvictedDetail } from '@/features/convicteds/hooks/useConvictedDetail'
-import { ConvictedDeactivateDialog } from '@/features/convicteds/components/ConvictedDeactivateDialog'
+import { ConvictedStatusDialog } from '@/features/convicteds/components/ConvictedStatusDialog'
 import { ConvictedFormDialog } from '@/features/convicteds/components/ConvictedFormDialog'
 import { AuthenticatedConvictedImage } from '@/features/convicteds/components/AuthenticatedConvictedImage'
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
@@ -14,7 +14,15 @@ import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Input } from '@/shared/components/ui/input'
 import { Pagination } from '@/shared/components/ui/pagination'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select'
 import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
+import { cn } from '@/shared/lib/utils'
 import { formatAddress } from '../utils/convictedUtils'
 import {
   Table,
@@ -28,14 +36,17 @@ import {
 export default function Convicteds() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [deactivating, setDeactivating] = useState(null)
+  const [statusTarget, setStatusTarget] = useState(null)
   const { error, isLoading, items, totalItems, totalPages, refetch } = useConvictedList({
     search,
+    status: statusFilter === 'all' ? undefined : statusFilter,
     page,
     limit: 5,
+    onPageOutOfRange: setPage,
   })
   const {
     convicted: editingConvicted,
@@ -65,8 +76,7 @@ export default function Convicteds() {
     refetch()
   }
 
-  const handleDeactivateSuccess = () => {
-    setDeactivating(null)
+  const handleStatusSuccess = () => {
     refetch()
   }
 
@@ -83,14 +93,16 @@ export default function Convicteds() {
       {formOpen && editingId && detailError && (
         <p className="text-destructive text-sm">{detailError}</p>
       )}
-      <ConvictedDeactivateDialog
-        convicted={deactivating}
-        open={Boolean(deactivating)}
-        onOpenChange={(open) => {
-          if (!open) setDeactivating(null)
-        }}
-        onSuccess={handleDeactivateSuccess}
-      />
+      {statusTarget && (
+        <ConvictedStatusDialog
+          convicted={statusTarget}
+          open
+          onOpenChange={(open) => {
+            if (!open) setStatusTarget(null)
+          }}
+          onSuccess={handleStatusSuccess}
+        />
+      )}
 
       <PageHeader
         title="Gestão de Apenados"
@@ -111,6 +123,25 @@ export default function Convicteds() {
             className="pl-9"
           />
         </div>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value)
+            setPage(1)
+          }}
+        >
+          <SelectTrigger
+            aria-label="Status do apenado"
+            className="hover:bg-muted w-full cursor-pointer lg:w-44"
+          >
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os Status</SelectItem>
+            <SelectItem value="ACTIVE">Ativos</SelectItem>
+            <SelectItem value="INACTIVE">Inativos</SelectItem>
+          </SelectContent>
+        </Select>
       </FiltersPanel>
 
       <DataTableCard
@@ -142,33 +173,25 @@ export default function Convicteds() {
         }
       >
         <div className="overflow-x-auto md:block">
-          <Table className="w-full min-w-225 table-fixed text-sm">
-            <colgroup>
-              <col className="w-16" />
-              <col className="w-64" />
-              <col className="w-52" />
-              <col className="w-40" />
-              <col className="w-72" />
-              <col className="w-32" />
-            </colgroup>
+          <Table contentColumns="max-content fit-content(28ch) max-content max-content fit-content(48ch) max-content">
             <TableHeader>
               <TableRow className="bg-secondary border-y">
-                <TableHead className="text-foreground w-16 px-4 py-3 text-left text-xs font-semibold">
+                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold">
                   Foto
                 </TableHead>
-                <TableHead className="text-foreground min-w-36 px-4 py-3 text-left text-xs font-semibold">
+                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold">
                   Nome
                 </TableHead>
-                <TableHead className="text-foreground w-44 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
                   Processo
                 </TableHead>
-                <TableHead className="text-foreground w-36 px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
                   Telefone
                 </TableHead>
-                <TableHead className="text-foreground min-w-44 px-4 py-3 text-left text-xs font-semibold">
+                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold">
                   Endereço
                 </TableHead>
-                <TableHead className="text-foreground w-32 px-4 py-3 text-right text-xs font-semibold whitespace-nowrap">
+                <TableHead className="text-foreground px-4 py-3 text-right text-xs font-semibold whitespace-nowrap">
                   Ações
                 </TableHead>
               </TableRow>
@@ -176,10 +199,18 @@ export default function Convicteds() {
             <TableBody>
               {items.map((item) => {
                 const address = formatAddress(item.address)
+                const inactive = item.status === 'INACTIVE'
 
                 return (
-                  <TableRow key={item.id} className="hover:bg-muted/50 border-b transition-colors">
-                    <TableCell className="w-16 px-4 py-3">
+                  <TableRow
+                    key={item.id}
+                    className={cn(
+                      'hover:bg-muted/50 border-b transition-colors',
+                      inactive &&
+                        'bg-muted/50 [&>td:not(:last-child)]:opacity-60 [&>td:not(:last-child)]:grayscale'
+                    )}
+                  >
+                    <TableCell className="px-4 py-3">
                       <Avatar className="size-9 shrink-0">
                         <AuthenticatedConvictedImage
                           as={AvatarImage}
@@ -192,14 +223,16 @@ export default function Convicteds() {
                         </AvatarFallback>
                       </Avatar>
                     </TableCell>
-                    <TableCell className="min-w-36 px-4 py-3.5">
-                      <p className="text-foreground font-semibold">{item.fullName}</p>
+                    <TableCell className="min-w-40 px-4 py-3.5">
+                      <p className="text-foreground font-semibold wrap-break-word whitespace-normal">
+                        {item.fullName}
+                      </p>
                       <p className="text-muted-foreground mt-0.5 text-xs">{item.cpf}</p>
                     </TableCell>
-                    <TableCell className="text-muted-foreground w-44 px-4 py-3.5">
-                      <div className="flex items-center gap-2">
+                    <TableCell className="text-muted-foreground px-4 py-3.5">
+                      <div className="flex min-w-0 items-center gap-2">
                         <span
-                          className="text-foreground block max-w-36 truncate font-medium"
+                          className="text-foreground block min-w-0 truncate font-medium"
                           title={item.mainProcessNumber}
                         >
                           {item.mainProcessNumber}
@@ -215,16 +248,16 @@ export default function Convicteds() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground w-36 px-4 py-3.5 whitespace-nowrap">
+                    <TableCell className="text-muted-foreground px-4 py-3.5 whitespace-nowrap">
                       {item.phone || '-'}
                     </TableCell>
                     <TableCell
-                      className="text-muted-foreground max-w-56 min-w-44 truncate px-4 py-3.5"
+                      className="text-muted-foreground min-w-64 px-4 py-3.5 wrap-break-word whitespace-normal"
                       title={address || undefined}
                     >
                       {address || '-'}
                     </TableCell>
-                    <TableCell className="w-32 px-4 py-3.5 text-right">
+                    <TableCell className="px-4 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           type="button"
@@ -236,25 +269,27 @@ export default function Convicteds() {
                           <Eye />
                           <span className="sr-only">Visualizar</span>
                         </Button>
+                        {!inactive && (
+                          <Button
+                            type="button"
+                            title="Editar"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => openEdit(item)}
+                          >
+                            <Pencil />
+                            <span className="sr-only">Editar</span>
+                          </Button>
+                        )}
                         <Button
                           type="button"
-                          title="Editar"
+                          title={inactive ? 'Ativar' : 'Inativar'}
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => openEdit(item)}
+                          onClick={() => setStatusTarget(item)}
                         >
-                          <Pencil />
-                          <span className="sr-only">Editar</span>
-                        </Button>
-                        <Button
-                          type="button"
-                          title="Inativar"
-                          variant="destructive"
-                          size="icon-sm"
-                          onClick={() => setDeactivating(item)}
-                        >
-                          <Trash2 />
-                          <span className="sr-only">Excluir</span>
+                          {inactive ? <CirclePlus /> : <CircleMinus className="text-destructive" />}
+                          <span className="sr-only">{inactive ? 'Ativar' : 'Inativar'}</span>
                         </Button>
                       </div>
                     </TableCell>

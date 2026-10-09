@@ -5,6 +5,7 @@ import { logout, restoreSession, subscribeToAuthStateChanges } from '../services
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   const handleLogin = useCallback((authSession) => {
     setSession(authSession)
@@ -34,11 +35,21 @@ export const SessionProvider = ({ children }) => {
         setIsLoading(true)
       }
 
-      const restoredSession = await restoreSession()
+      let restoredSession
+      try {
+        restoredSession = await restoreSession()
+      } catch (cause) {
+        if (shouldUpdateState && currentValidationId === validationId) {
+          setError(cause.message)
+          setIsLoading(false)
+        }
+        return
+      }
 
       if (!shouldUpdateState || currentValidationId !== validationId) return
 
       setSession(restoredSession)
+      setError(null)
       setIsLoading(false)
     }
 
@@ -76,6 +87,7 @@ export const SessionProvider = ({ children }) => {
         handleLogout,
         handleRestoreSession,
         isLoading,
+        error,
       }}
     >
       {children}

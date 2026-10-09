@@ -1,159 +1,149 @@
-import { Calendar, FileText, LayoutGrid, List } from 'lucide-react'
+import { LayoutGrid, List } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
-import { Card, CardContent } from '@/shared/components/ui/card'
+import { CardDescription } from '@/shared/components/ui/card'
+import { Pagination } from '@/shared/components/ui/pagination'
+import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
+import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { useDocuments } from '../hooks/useDocuments'
 import { YearSelector } from './YearSelector'
 import { MonthCarousel } from './MonthCarousel'
 import { DocumentSearch } from './DocumentSearch'
 import { AttendanceDocumentGrid, AttendanceDocumentList } from './AttendanceDocuments'
-import { GroupDocumentGrid, GroupDocumentList } from './GroupDocuments'
-
-const MONTHS_LONG = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-]
 
 export function DocumentArchive({
   tenantId,
   source,
   initialSearch = '',
-  onOpenGroup,
   onViewPhoto,
+  onViewPdf,
   onDownloadPdf,
+  onOpenPdf,
+  isProcessing = false,
 }) {
-  const {
-    search,
-    setSearch,
-    hasSearch,
-    selectedYear,
-    selectYear,
-    availableYears,
-    selectedMonth,
-    selectMonth,
-    countByMonth,
-    viewMode,
-    changeViewMode,
-    monthDocuments,
-    filteredDocuments,
-  } = useDocuments(tenantId, source, initialSearch)
-
-  const isGroup = source === 'group'
-  const periodLabel = `${MONTHS_LONG[selectedMonth]} ${selectedYear}`
-
-  const counterLabel = hasSearch
-    ? `${filteredDocuments.length} de ${monthDocuments.length} documento(s) encontrado(s)`
-    : `${monthDocuments.length} documento(s) encontrado(s)`
-
-  const emptyLabel = hasSearch
-    ? `Nenhum documento encontrado para "${search}" em ${periodLabel}.`
-    : 'Nenhum documento neste período'
-
-  function renderDocuments() {
-    if (isGroup) {
-      return viewMode === 'grid' ? (
-        <GroupDocumentGrid
-          documents={filteredDocuments}
-          onOpenGroup={onOpenGroup}
-          onDownloadPdf={onDownloadPdf}
-        />
-      ) : (
-        <GroupDocumentList
-          documents={filteredDocuments}
-          onOpenGroup={onOpenGroup}
-          onDownloadPdf={onDownloadPdf}
-        />
-      )
-    }
-
-    return viewMode === 'grid' ? (
-      <AttendanceDocumentGrid
-        documents={filteredDocuments}
-        onViewPhoto={onViewPhoto}
-        onDownloadPdf={onDownloadPdf}
-      />
-    ) : (
-      <AttendanceDocumentList
-        documents={filteredDocuments}
-        onViewPhoto={onViewPhoto}
-        onDownloadPdf={onDownloadPdf}
-      />
-    )
-  }
-
+  const data = useDocuments(tenantId, source, initialSearch)
+  const yearIndex = data.years.indexOf(data.year)
+  const previousYear = yearIndex >= 0 ? data.years[yearIndex + 1] : undefined
+  const nextYear = yearIndex > 0 ? data.years[yearIndex - 1] : undefined
+  const DocumentsView = data.viewMode === 'grid' ? AttendanceDocumentGrid : AttendanceDocumentList
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardContent className="p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Calendar className="text-muted-foreground h-5 w-5" />
-              <h2 className="font-semibold">Navegação por Período</h2>
-            </div>
-            <YearSelector years={availableYears} value={selectedYear} onChange={selectYear} />
+    <div className="min-w-0 space-y-5">
+      <FiltersPanel description="Pesquise e filtre os documentos">
+        <div className="min-w-0 flex-1 space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row">
+            <DocumentSearch value={data.search} onChange={data.setSearch} />
+            <YearSelector
+              years={data.years.length ? data.years : [data.year]}
+              value={data.year}
+              onChange={data.setYear}
+              disabled={data.yearsLoading || Boolean(data.yearsError)}
+            />
           </div>
-
+          {data.yearsLoading && <p className="text-muted-foreground text-sm">Carregando anos...</p>}
+          {data.yearsError && (
+            <div role="alert" className="text-destructive text-sm">
+              Não foi possível carregar os anos disponíveis.{' '}
+              <Button variant="outline" onClick={data.reload}>
+                Tentar novamente
+              </Button>
+            </div>
+          )}
+          <CardDescription>Realize a Navegação por Período</CardDescription>
           <MonthCarousel
-            countByMonth={countByMonth}
-            selectedMonth={selectedMonth}
-            onSelectMonth={selectMonth}
+            countByMonth={data.monthCounts}
+            selectedMonth={data.month}
+            onSelectMonth={data.toggleMonth}
+            onPreviousYear={
+              previousYear === undefined ? undefined : () => data.setYear(previousYear)
+            }
+            onNextYear={nextYear === undefined ? undefined : () => data.setYear(nextYear)}
           />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-semibold">{periodLabel}</p>
-              <p className="text-muted-foreground mt-0.5 text-xs">{counterLabel}</p>
+          {data.monthsLoading && (
+            <p className="text-muted-foreground text-sm">Carregando períodos...</p>
+          )}
+          {data.monthsError && (
+            <div role="alert" className="text-destructive text-sm">
+              Não foi possível carregar as quantidades por mês.{' '}
+              <Button variant="outline" onClick={data.reload}>
+                Tentar novamente
+              </Button>
             </div>
-
-            <div className="flex items-center gap-3">
-              <DocumentSearch value={search} onChange={setSearch} />
-
-              <div className="flex items-center gap-1 rounded-lg border p-1">
-                <Button
-                  type="button"
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="icon"
-                  aria-label="Visualização em grade"
-                  onClick={() => changeViewMode('grid')}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="icon"
-                  aria-label="Visualização em lista"
-                  onClick={() => changeViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+          )}
+        </div>
+      </FiltersPanel>
+      <DataTableCard
+        title="Documentos"
+        count={data.totalItems}
+        icon={
+          <div role="group" aria-label="Apresentação dos documentos" className="flex gap-1">
+            <Button
+              type="button"
+              variant={data.viewMode === 'grid' ? 'default' : 'outline'}
+              size="icon-sm"
+              aria-label="Visualização em blocos"
+              title="Blocos"
+              aria-pressed={data.viewMode === 'grid'}
+              onClick={() => data.changeViewMode('grid')}
+            >
+              <LayoutGrid />
+            </Button>
+            <Button
+              type="button"
+              variant={data.viewMode === 'list' ? 'default' : 'outline'}
+              size="icon-sm"
+              aria-label="Visualização em lista"
+              title="Lista"
+              aria-pressed={data.viewMode === 'list'}
+              onClick={() => data.changeViewMode('list')}
+            >
+              <List />
+            </Button>
           </div>
-
-          {filteredDocuments.length === 0 ? (
-            <div className="text-muted-foreground flex flex-col items-center justify-center py-12">
-              <FileText className="text-muted-foreground/40 h-10 w-10" />
-              <p className="mt-3 text-sm font-medium">{emptyLabel}</p>
+        }
+        isLoading={data.isLoading}
+        loadingMessage="Carregando documentos..."
+        isEmpty={Boolean(data.error) || !data.items.length}
+        emptyState={
+          data.error ? (
+            <div
+              role="alert"
+              className="text-destructive flex min-h-48 flex-wrap items-center justify-center gap-2 border-t p-6 text-sm"
+            >
+              {data.error}{' '}
+              <Button variant="outline" onClick={data.reload}>
+                Tentar novamente
+              </Button>
             </div>
           ) : (
-            renderDocuments()
-          )}
-        </CardContent>
-      </Card>
+            <EmptyTableState
+              title="Nenhum documento encontrado."
+              description="Não há documentos com os filtros selecionados."
+            />
+          )
+        }
+        footer={
+          <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <span className="font-medium">
+              Página {data.page} de {data.totalPages} · {data.totalItems} registros
+            </span>
+            <Pagination
+              currentPage={data.page}
+              totalPages={data.totalPages}
+              onPageChange={data.setPage}
+            />
+          </div>
+        }
+      >
+        <div className={data.viewMode === 'grid' ? 'border-t p-4 sm:p-6' : undefined}>
+          <DocumentsView
+            documents={data.items}
+            onViewPhoto={onViewPhoto}
+            onViewPdf={onViewPdf}
+            onDownloadPdf={data.viewMode === 'grid' ? onOpenPdf || onDownloadPdf : onDownloadPdf}
+            isProcessing={isProcessing}
+          />
+        </div>
+      </DataTableCard>
     </div>
   )
 }

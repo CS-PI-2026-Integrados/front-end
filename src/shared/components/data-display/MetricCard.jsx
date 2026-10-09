@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 
-export function MetricCard({ data, icon, title, description, className }) {
+export function MetricCard({ data, icon, title, description, className, error }) {
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -10,6 +10,11 @@ export function MetricCard({ data, icon, title, description, className }) {
       <CardContent>
         <div className="text-2xl font-bold">{data}</div>
         <p className="text-muted-foreground mt-1 text-xs">{description}</p>
+        {error && (
+          <p role="alert" className="text-destructive mt-2 text-xs">
+            {error}
+          </p>
+        )}
       </CardContent>
     </Card>
   )

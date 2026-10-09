@@ -1,14 +1,16 @@
-import { Search, UserCheck, UserCog, UserPlus, UserX, Users } from 'lucide-react'
+import { Search, UserCog, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
-import { MetricCard } from '@/shared/components/data-display/MetricCard'
 import { CreateOperatorDialog } from '@/features/users/components/users/CreateOperatorDialog'
-import { UserDetailsPanel } from '@/features/users/components/users/UserDetailsPanel'
+import { UserActionConfirmDialog } from '@/features/users/components/users/UserActionConfirmDialog'
+import { ResetUserPasswordDialog } from '@/features/users/components/users/ResetUserPasswordDialog'
+import { maskCpf } from '@/features/users/utils/userFormattersUtils'
 import { UsersTable } from '@/features/users/components/users/UsersTable'
 import { Input } from '@/shared/components/ui/input'
+import { Button } from '@/shared/components/ui/button'
 import { Pagination } from '@/shared/components/ui/pagination'
 import {
   Select,
@@ -23,26 +25,44 @@ import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
 export default function UsersManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [page, setPage] = useState(1)
+  const [pendingAction, setPendingAction] = useState(null)
   const {
     createOperator,
     currentUser,
     deactivateUser,
     filteredUsers,
     isLoading,
-    metrics,
+    error,
+    reload,
+    scope,
+    isSaving,
+    mutationError,
+    clearMutationError,
     reactivateUser,
     resetUserPassword,
     roleFilter,
     roleOptions,
     search,
-    selectedUser,
-    selectedUserId,
     setSearch,
     setRoleFilter,
-    setSelectedUserId,
     setStatusFilter,
     statusFilter,
   } = useUsersManagement()
+  const action = pendingAction?.scope === scope ? pendingAction : null
+  const closeAction = (open) => {
+    if (!open && !isSaving) {
+      setPendingAction(null)
+      clearMutationError()
+    }
+  }
+  const confirmStatusAction = async () => {
+    try {
+      if (action.type === 'deactivate') await deactivateUser(action.user)
+      else await reactivateUser(action.user)
+    } catch {
+      return false
+    }
+  }
 
   const pageSize = 5
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize))
@@ -73,36 +93,17 @@ export default function UsersManagement() {
           <HeaderButton
             icon={UserPlus}
             text="Novo Usuário"
+            disabled={isSaving || isLoading || Boolean(error)}
             onClick={() => setIsCreateDialogOpen(true)}
           />
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <MetricCard
-          title="Total de usuários"
-          description="Cadastrados na comarca"
-          data={metrics.total}
-          icon={<Users className="text-muted-foreground size-4" />}
-        />
-        <MetricCard
-          title="Ativos"
-          description="Com acesso habilitado"
-          data={metrics.active}
-          icon={<UserCheck className="text-muted-foreground size-4" />}
-        />
-        <MetricCard
-          title="Inativos"
-          description="Com acesso bloqueado"
-          data={metrics.inactive}
-          icon={<UserX className="text-muted-foreground size-4" />}
-        />
-      </div>
-
       <FiltersPanel description="Pesquise e filtre os usuários cadastrados">
         <div className="relative flex-1">
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
+            aria-label="Buscar usuário por nome ou CPF"
             className="pl-9"
             onChange={(event) => handleSearchChange(event.target.value)}
             placeholder="Buscar por nome ou CPF..."
@@ -111,7 +112,10 @@ export default function UsersManagement() {
         </div>
 
         <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
-          <SelectTrigger className="hover:bg-muted w-full cursor-pointer lg:w-44">
+          <SelectTrigger
+            aria-label="Filtrar por nível de acesso"
+            className="hover:bg-muted w-full cursor-pointer lg:w-44"
+          >
             <SelectValue placeholder="Nível" />
           </SelectTrigger>
           <SelectContent>
@@ -125,7 +129,10 @@ export default function UsersManagement() {
         </Select>
 
         <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-          <SelectTrigger className="hover:bg-muted w-full cursor-pointer lg:w-44">
+          <SelectTrigger
+            aria-label="Filtrar por status"
+            className="hover:bg-muted w-full cursor-pointer lg:w-44"
+          >
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -138,20 +145,32 @@ export default function UsersManagement() {
 
       <DataTableCard
         title="Usuários Cadastrados"
-        count={filteredUsers.length}
+        count={error ? undefined : filteredUsers.length}
         icon={<UserCog className="text-muted-foreground size-5" />}
         isLoading={isLoading}
         loadingMessage="Carregando usuários..."
-        isEmpty={filteredUsers.length === 0}
+        isEmpty={Boolean(error) || filteredUsers.length === 0}
         emptyState={
-          <EmptyTableState
-            title="Nenhum usuário encontrado"
-            description={
-              search
-                ? `Não há resultados para "${search}". Tente outro termo.`
-                : 'A comarca ainda não possui usuários com esses filtros.'
-            }
-          />
+          error ? (
+            <div
+              role="alert"
+              className="flex min-h-48 flex-col items-center justify-center gap-3 border-t p-6 text-center"
+            >
+              <p className="text-destructive text-sm">{error}</p>
+              <Button variant="outline" onClick={reload}>
+                Tentar novamente
+              </Button>
+            </div>
+          ) : (
+            <EmptyTableState
+              title="Nenhum usuário encontrado"
+              description={
+                search
+                  ? `Não há resultados para "${search}". Tente outro termo.`
+                  : 'A comarca ainda não possui usuários com esses filtros.'
+              }
+            />
+          )
         }
         footer={
           <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -163,22 +182,45 @@ export default function UsersManagement() {
         }
       >
         <UsersTable
-          onSelectUser={setSelectedUserId}
-          selectedUserId={selectedUserId}
+          currentUser={currentUser}
+          isSaving={isSaving}
+          onAction={(type, user) => {
+            clearMutationError()
+            setPendingAction({ type, user, scope })
+          }}
           users={paginatedUsers}
         />
       </DataTableCard>
 
-      <UserDetailsPanel
-        currentUser={currentUser}
-        onClose={() => setSelectedUserId(null)}
-        onDeactivate={deactivateUser}
-        onReactivate={reactivateUser}
-        onResetPassword={resetUserPassword}
-        user={selectedUser}
-      />
+      {action?.type === 'reset-password' && (
+        <ResetUserPasswordDialog
+          key={`${scope}:${action.user.id}`}
+          open
+          user={action.user}
+          error={mutationError}
+          onConfirm={() => resetUserPassword(action.user)}
+          onOpenChange={closeAction}
+        />
+      )}
+      {action && action.type !== 'reset-password' && (
+        <UserActionConfirmDialog
+          open
+          title={action.type === 'deactivate' ? 'Desativar usuário' : 'Reativar usuário'}
+          actionLabel={action.type === 'deactivate' ? 'Desativar usuário' : 'Reativar usuário'}
+          description={
+            action.type === 'deactivate'
+              ? `Desativar o acesso de ${action.user.name}, CPF ${maskCpf(action.user.cpf)}? O acesso será bloqueado.`
+              : `Restaurar o acesso de ${action.user.name}?`
+          }
+          isDestructive={action.type === 'deactivate'}
+          error={mutationError}
+          onConfirm={confirmStatusAction}
+          onOpenChange={closeAction}
+        />
+      )}
 
       <CreateOperatorDialog
+        key={scope}
         onCreate={createOperator}
         onOpenChange={setIsCreateDialogOpen}
         open={isCreateDialogOpen}

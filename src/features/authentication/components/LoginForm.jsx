@@ -17,7 +17,7 @@ export function LoginForm() {
   } = useLogin()
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit(signIn)}>
+    <form noValidate className="space-y-6" onSubmit={handleSubmit(signIn)}>
       <FieldGroup className="gap-1 p-0">
         <CpfField
           variant="auth"

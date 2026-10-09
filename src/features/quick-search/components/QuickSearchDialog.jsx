@@ -63,6 +63,7 @@ export function QuickSearchDialog({ open, onOpenChange }) {
       onOpenChange={handleOpenChange}
       title="Busca rápida"
       description="Busque por CPF, nome ou nº do processo"
+      dismissible
     >
       <Command shouldFilter={false} loop onKeyDown={selectedPerson ? undefined : handleKeyDown}>
         {selectedPerson ? (

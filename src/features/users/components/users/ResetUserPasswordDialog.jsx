@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 import {
   Dialog,
@@ -11,44 +11,72 @@ import {
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 
-export function ResetUserPasswordDialog({ onConfirm, onOpenChange, open, user }) {
+export function ResetUserPasswordDialog({ onConfirm, onOpenChange, open, user, error }) {
   const [temporaryPassword, setTemporaryPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
+  const [localError, setLocalError] = useState(null)
+  const pending = useRef(false)
+  const mounted = useRef(false)
+
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   const handleOpenChange = (nextOpen) => {
+    if (pending.current) return
     if (!nextOpen) {
       setTemporaryPassword('')
       setIsCopied(false)
+      setLocalError(null)
     }
 
     onOpenChange(nextOpen)
   }
 
   const handleConfirm = async () => {
+    if (pending.current) return
+    pending.current = true
     setIsSubmitting(true)
+    setLocalError(null)
 
     try {
-      setTemporaryPassword(await onConfirm())
-    } catch {
-      return
+      const password = await onConfirm()
+      if (mounted.current) setTemporaryPassword(password)
+    } catch (cause) {
+      if (mounted.current && cause.name !== 'AbortError')
+        setLocalError(cause.message || 'Não foi possível redefinir a senha.')
     } finally {
-      setIsSubmitting(false)
+      pending.current = false
+      if (mounted.current) setIsSubmitting(false)
     }
   }
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(temporaryPassword)
-    setIsCopied(true)
+    try {
+      await navigator.clipboard.writeText(temporaryPassword)
+      if (mounted.current) setIsCopied(true)
+    } catch {
+      if (mounted.current)
+        setLocalError('Não foi possível copiar. Selecione e copie a senha manualmente.')
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
+      <DialogContent showCloseButton={!isSubmitting}>
+        {(localError || error) && (
+          <p role="alert" className="text-destructive text-sm">
+            {localError || error}
+          </p>
+        )}
         {temporaryPassword ? (
           <>
             <DialogHeader>
-              <DialogTitle>Senha temporária gerada</DialogTitle>
+              <DialogTitle>Nova senha gerada</DialogTitle>
               <DialogDescription>Esta senha não será exibida novamente.</DialogDescription>
             </DialogHeader>
 
@@ -56,7 +84,7 @@ export function ResetUserPasswordDialog({ onConfirm, onOpenChange, open, user })
               <Input
                 readOnly
                 value={temporaryPassword}
-                aria-label="Senha temporária"
+                aria-label="Nova senha"
                 className="font-mono"
               />
               <Button type="button" variant="outline" onClick={handleCopy}>
@@ -76,8 +104,8 @@ export function ResetUserPasswordDialog({ onConfirm, onOpenChange, open, user })
             <DialogHeader>
               <DialogTitle>Redefinir senha</DialogTitle>
               <DialogDescription>
-                Deseja redefinir a senha de {user?.name}? Uma senha temporária será gerada e exibida
-                uma única vez.
+                Deseja redefinir a senha de {user?.name}? Uma nova senha será gerada e exibida uma
+                única vez.
               </DialogDescription>
             </DialogHeader>
 
@@ -91,7 +119,7 @@ export function ResetUserPasswordDialog({ onConfirm, onOpenChange, open, user })
                 Cancelar
               </Button>
               <Button type="button" disabled={isSubmitting} onClick={handleConfirm}>
-                Gerar senha temporária
+                {isSubmitting ? 'Redefinindo...' : 'Gerar nova senha'}
               </Button>
             </DialogFooter>
           </>

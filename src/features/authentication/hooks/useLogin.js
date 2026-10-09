@@ -8,7 +8,8 @@ export function useLogin() {
   const { handleLogin } = useSession()
   const form = useForm({
     resolver: zodResolver(loginSchema),
-    mode: 'onTouched',
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
   })
 
   const signIn = async (data) => {

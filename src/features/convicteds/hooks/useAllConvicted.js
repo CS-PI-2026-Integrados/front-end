@@ -1,84 +1,37 @@
 import { useCallback, useEffect, useState } from 'react'
-import { convictedService } from '@/features/convicteds/services/convictedService'
+import { useSession } from '@/features/authentication'
+import { convictedService } from '../services/convictedService'
 
-const PAGE_SIZE = 100
-const convictedCache = new Map()
-
+const initial = { items: [], totalItems: 0, isLoading: true, error: null }
 export function useAllConvicted({ cacheKey = 'default' } = {}) {
-  const [reloadTrigger, setReloadTrigger] = useState(0)
-  const [state, setState] = useState({
-    ...(convictedCache.get(cacheKey) || { items: [], totalItems: 0 }),
-    isLoading: !convictedCache.has(cacheKey),
-    error: null,
-  })
-
-  const refetch = useCallback(() => {
-    convictedCache.delete(cacheKey)
-    setReloadTrigger((current) => current + 1)
-  }, [cacheKey])
-
+  const { session } = useSession()
+  const [reloadId, setReloadId] = useState(0)
+  const key = JSON.stringify([session?.user?.id, session?.tenant?.id, cacheKey, reloadId])
+  const [state, setState] = useState(initial)
+  const refetch = useCallback(() => setReloadId((value) => value + 1), [setReloadId])
   useEffect(() => {
     const controller = new AbortController()
-    let isCurrent = true
-    const hasCachedData = convictedCache.has(cacheKey)
-
-    async function loadAllConvicted() {
-      setState((current) => ({
-        ...current,
-        items: hasCachedData ? current.items : [],
-        totalItems: hasCachedData ? current.totalItems : 0,
-        isLoading: !hasCachedData,
-        error: null,
-      }))
-
+    let current = true
+    async function load() {
       try {
-        const firstPage = await convictedService.list({
-          page: 1,
-          limit: PAGE_SIZE,
-          signal: controller.signal,
-        })
-        const pages = [firstPage.items]
-
-        for (let page = 2; page <= firstPage.totalPages; page += 1) {
-          const nextPage = await convictedService.list({
-            page,
-            limit: PAGE_SIZE,
-            signal: controller.signal,
-          })
-          pages.push(nextPage.items)
+        const first = await convictedService.list({ size: 100, signal: controller.signal })
+        const items = [...first.items]
+        for (let page = 1; page < first.totalPages; page++) {
+          const next = await convictedService.list({ page, size: 100, signal: controller.signal })
+          items.push(...next.items)
         }
-
-        if (isCurrent) {
-          const nextState = {
-            items: pages.flat(),
-            totalItems: firstPage.totalItems,
-            isLoading: false,
-            error: null,
-          }
-          convictedCache.set(cacheKey, {
-            items: nextState.items,
-            totalItems: nextState.totalItems,
-          })
-          setState(nextState)
-        }
+        if (current)
+          setState({ key, items, totalItems: first.totalItems, isLoading: false, error: null })
       } catch (error) {
-        if (error?.name === 'AbortError' || !isCurrent) return
-
-        setState((current) => ({
-          ...current,
-          isLoading: false,
-          error: 'Não foi possível carregar os apenados.',
-        }))
+        if (current && error.name !== 'AbortError')
+          setState({ ...initial, key, isLoading: false, error: error.message })
       }
     }
-
-    void loadAllConvicted()
-
+    void load()
     return () => {
-      isCurrent = false
+      current = false
       controller.abort()
     }
-  }, [cacheKey, reloadTrigger])
-
-  return { ...state, refetch }
+  }, [key])
+  return { ...(state.key === key ? state : initial), refetch }
 }

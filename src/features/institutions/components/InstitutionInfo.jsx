@@ -8,7 +8,8 @@ import {
 import { Label } from '@/shared/components/ui/label'
 import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'
-import { Upload, X, ImageIcon, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import { ImageUploadField } from '@/shared/components/form-fields/ImageUploadField'
 import { useInstitutionForm } from '@/features/institutions/hooks/useInstitutionForm'
 import { LOGO_ACCEPTED_EXTENSIONS } from '@/features/institutions/model/logoConfig'
 
@@ -37,9 +38,15 @@ const FormField = ({ id, label, value, onChange, error, maxLength, placeholder }
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       maxLength={maxLength}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={error ? `${id}-error` : undefined}
       className={error ? 'border-destructive focus-visible:ring-destructive' : ''}
     />
-    {error && <p className="text-destructive text-sm font-medium">{error}</p>}
+    {error && (
+      <p id={`${id}-error`} role="alert" className="text-destructive text-sm font-medium">
+        {error}
+      </p>
+    )}
   </div>
 )
 
@@ -52,7 +59,6 @@ export const InstitutionInfo = () => {
     logoError,
     fieldErrors,
     isSaving,
-    hasChanges,
     fileInputRef,
     maxFieldLength,
     handleFieldChange,
@@ -71,69 +77,23 @@ export const InstitutionInfo = () => {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label>Logo da Comarca</Label>
-
-          <div className="flex items-start gap-4">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className={`group relative flex h-28 w-28 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border transition-colors ${
-                logoError
-                  ? 'border-destructive/50 bg-destructive/10'
-                  : 'border-border hover:border-primary/50 hover:bg-accent/50'
-              }`}
-            >
-              {logoPreview ? (
-                <img
-                  src={logoPreview}
-                  alt="Preview do logo da comarca"
-                  className="h-full w-full object-contain p-1"
-                />
-              ) : (
-                <div className="text-muted-foreground flex flex-col items-center gap-1">
-                  <ImageIcon className="h-8 w-8" />
-                  <span className="text-[11px]">Enviar logo</span>
-                </div>
-              )}
-
-              <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                <Upload className="h-5 w-5 text-white" />
-              </div>
-            </button>
-
-            <div className="flex flex-col gap-2 pt-1">
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Formatos: <strong>PNG, JPG, WEBP</strong>
-                <br />
-                Tamanho máximo: <strong>1 MB</strong>
-              </p>
-              {logoPreview && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive w-fit"
-                  onClick={handleRemoveLogo}
-                >
-                  <X className="mr-1 h-3 w-3" />
-                  Remover logo
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {logoError && <p className="text-destructive text-sm font-medium">{logoError}</p>}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={LOGO_ACCEPTED_EXTENSIONS}
-            onChange={handleFileSelect}
-            className="hidden"
-            aria-label="Upload de logo da comarca"
-          />
-        </div>
+        <ImageUploadField
+          id="institution-logo"
+          label="Logo da Comarca"
+          description="Formatos aceitos: PNG, JPG ou WEBP (máx. 1 MB)."
+          preview={logoPreview}
+          previewAlt="Preview do logo da comarca"
+          previewClassName="object-contain p-1"
+          error={logoError}
+          disabled={isSaving}
+          accept={LOGO_ACCEPTED_EXTENSIONS}
+          fileInputRef={fileInputRef}
+          onChange={handleFileSelect}
+          selectLabel="Selecionar logo"
+          changeLabel="Alterar logo"
+          onRemove={logoPreview ? handleRemoveLogo : undefined}
+          removeLabel="Remover logo"
+        />
 
         <FormField
           id="nomeComarca"
@@ -168,7 +128,7 @@ export const InstitutionInfo = () => {
         <Button
           id="btn-save-institution"
           onClick={handleSave}
-          disabled={isSaving || !hasChanges}
+          disabled={isSaving}
           className="bg-primary text-white"
         >
           {isSaving ? (

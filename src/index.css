@@ -6,6 +6,28 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@layer components {
+  /* Size tracks from their data and share spare width equally between columns. */
+  .table-content-layout {
+    display: grid;
+    min-width: min-content;
+    justify-content: space-between;
+    column-gap: 0.5rem;
+  }
+
+  .table-content-layout > :is(thead, tbody, tfoot),
+  .table-content-layout > :is(thead, tbody, tfoot) > tr {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+  }
+
+  .table-content-layout :is(th, td) {
+    min-width: 0;
+    align-content: center;
+  }
+}
+
 html,
 body {
   height: 100%;

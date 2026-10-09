@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { processService } from '@/features/convicteds/services/processService'
 
 export function useProcessSearch(query, { enabled = true } = {}) {
-  const [state, setState] = useState({ items: [], isLoading: false, error: null })
+  const [state, setState] = useState({ items: [], isLoading: false, error: null, query: null })
 
   useEffect(() => {
     const normalizedQuery = query?.trim() || ''
@@ -19,10 +19,15 @@ export function useProcessSearch(query, { enabled = true } = {}) {
           limit: 20,
           signal: controller.signal,
         })
-        if (isCurrent) setState({ items: result.items, isLoading: false, error: null })
+        if (isCurrent) setState({ items: result.items, isLoading: false, error: null, query })
       } catch (error) {
         if (error?.name === 'AbortError' || !isCurrent) return
-        setState({ items: [], isLoading: false, error: 'Não foi possível buscar processos.' })
+        setState({
+          items: [],
+          isLoading: false,
+          error: 'Não foi possível buscar processos.',
+          query,
+        })
       }
     }, 250)
 
@@ -37,5 +42,5 @@ export function useProcessSearch(query, { enabled = true } = {}) {
     return { items: [], isLoading: false, error: null }
   }
 
-  return state
+  return state.query === query ? state : { items: [], isLoading: true, error: null }
 }

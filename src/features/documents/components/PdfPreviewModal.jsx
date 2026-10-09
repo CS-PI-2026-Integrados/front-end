@@ -37,7 +37,7 @@ export function PdfPreviewModal({ document, isProcessing, error, onDownload, onV
             <span className="font-medium">{document?.operatorName || '—'}</span>
           </p>
           <p>
-            <span className="text-muted-foreground">Código de verificação:</span>{' '}
+            <span className="text-muted-foreground">Protocolo:</span>{' '}
             <span className="font-mono text-xs">{document?.verificationCode}</span>
           </p>
         </div>
@@ -55,7 +55,7 @@ export function PdfPreviewModal({ document, isProcessing, error, onDownload, onV
             </Button>
             <Button type="button" onClick={onDownload} disabled={isProcessing}>
               <Download className="mr-1.5 h-4 w-4" />
-              {isProcessing ? 'Gerando...' : 'Baixar PDF'}
+              {isProcessing ? 'Carregando...' : 'Baixar PDF'}
             </Button>
           </div>
         </DialogFooter>

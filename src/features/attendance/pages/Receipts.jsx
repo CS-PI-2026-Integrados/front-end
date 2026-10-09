@@ -1,125 +1,106 @@
-import { ConvictedCard } from '@/features/attendance/components/ConvictedCard.jsx'
-import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/shared/components/ui/tabs.jsx'
-import { PhotoCaptureCard } from '@/features/attendance/components/PhotoCaptureCard.jsx'
-import { ProofHistory } from '@/features/attendance/components/ProofHistory.jsx'
-import { useReceiptFlow } from '@/features/attendance/hooks/useReceiptFlow.js'
-import { useAtendimentoData } from '@/features/attendance/hooks/useAttendanceData.js'
-import { ReceiptSuccessCard } from '@/features/attendance/components/ReceiptSuccessCard.jsx'
-import { PageHeader } from '@/shared/components/data-display/PageHeader'
-import { useReceiptPdfActions } from '@/features/attendance/hooks/useReceiptPdfActions'
-import { useConvictedDetail, useConvictedPhoto } from '@/features/convicteds'
-import { useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+import { useConvictedDetail, useConvictedPhoto } from '@/features/convicteds'
+import { PageHeader } from '@/shared/components/data-display/PageHeader'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import { SelectConvicted } from '../components/SelectConvicted'
+import { PhotoCaptureCard } from '../components/PhotoCaptureCard'
+import { ProofHistory } from '../components/ProofHistory'
+import { ReceiptSuccessCard } from '../components/ReceiptSuccessCard'
+import { useReceiptFlow } from '../hooks/useReceiptFlow'
+import { useReceiptPdfActions } from '../hooks/useReceiptPdfActions'
 
-const Service = () => {
-  const {
-    apenado,
-    selectApenado,
-    processo,
-    fotoAtendimento,
-    isSuccess,
-    isReadyToCapture,
-    reciboGerado,
-    resetAtendimento,
-    deviceId,
-    isSubmitting,
-    setFoto,
-    clearPhoto,
-    setPhotoError,
-    errorMessage,
-    submit,
-  } = useReceiptFlow()
-
+export default function Receipts() {
+  const flow = useReceiptFlow()
+  const { selectConvicted } = flow
+  const pdf = useReceiptPdfActions()
   const location = useLocation()
-  const apenadoId = location.state?.apenadoId
-  const { convicted: apenadoPreSelecionado } = useConvictedDetail(apenadoId)
+  const selectedId = location.state?.apenadoId
+  const detail = useConvictedDetail(selectedId)
   useEffect(() => {
-    if (apenadoPreSelecionado && String(apenadoPreSelecionado.id) === String(apenadoId)) {
-      selectApenado(apenadoPreSelecionado)
-    }
-  }, [apenadoPreSelecionado, apenadoId, selectApenado])
-  const { presencas } = useAtendimentoData()
-  const { download, view } = useReceiptPdfActions()
-  const { url: referencePhotoUrl } = useConvictedPhoto(apenado?.id)
-  const apenadoComFoto = apenado ? { ...apenado, photoUrl: referencePhotoUrl } : apenado
-
+    if (detail.convicted && detail.convicted.id === selectedId) selectConvicted(detail.convicted)
+  }, [detail.convicted, selectedId, selectConvicted])
+  const photo = useConvictedPhoto(flow.convicted?.id)
+  const ready = Boolean(flow.convicted && flow.process?.status === 'ACTIVE')
   return (
-    <Tabs defaultValue="novo" className="flex h-full min-h-0 w-full flex-1 flex-col">
+    <Tabs defaultValue="new" className="min-h-full lg:h-full lg:min-h-0">
       <PageHeader
         title="Emissão de Comprovantes"
         description="Gere comprovantes de comparecimento com foto"
         action={
           <TabsList className="bg-muted text-muted-foreground grid h-auto w-full grid-cols-2 items-center justify-center rounded-lg p-1 shadow-sm md:inline-flex md:h-9 md:w-auto">
             <TabsTrigger
-              value="novo"
+              value="new"
               className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary data-[state=active]:text-primary-foreground inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-transparent data-[state=active]:shadow-none md:px-3 md:text-sm md:whitespace-nowrap"
             >
               Novo comprovante
             </TabsTrigger>
             <TabsTrigger
-              value="historico"
+              value="history"
               className="ring-offset-background focus-visible:ring-ring data-[state=active]:bg-primary data-[state=active]:text-primary-foreground inline-flex h-full min-h-8 items-center justify-center rounded-md px-2 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-transparent data-[state=active]:shadow-none md:px-3 md:text-sm md:whitespace-nowrap"
             >
-              Histórico {presencas.length > 0 ? `(${presencas.length})` : ''}
+              Histórico
             </TabsTrigger>
           </TabsList>
         }
       />
-
-      <TabsContent
-        value="novo"
-        className="mt-0 flex min-h-0 w-full min-w-0 flex-col gap-4 overflow-y-auto pb-4 outline-none lg:flex-1 lg:items-stretch lg:gap-6 lg:overflow-visible lg:pb-0"
-      >
+      <TabsContent value="new" className="flex flex-col data-[state=inactive]:hidden lg:min-h-0">
         <form
+          noValidate
+          onSubmit={flow.submit}
           id="form-atendimento"
-          onSubmit={submit}
-          className="grid min-h-0 w-full shrink-0 grid-cols-1 gap-4 lg:h-full lg:flex-1 lg:grid-cols-2 lg:gap-6"
+          className="grid flex-1 items-stretch gap-5 lg:min-h-0 lg:grid-cols-2"
         >
-          <ConvictedCard
-            className={`min-h-0 w-full min-w-0 transition-all duration-300 lg:h-full ${
-              isSuccess ? 'pointer-events-none opacity-40 grayscale-[0.5]' : ''
-            }`}
+          <SelectConvicted
+            disabled={flow.isSubmitting || Boolean(flow.receipt)}
+            errors={flow.fieldErrors}
           />
-          <div
-            className={`flex min-h-0 w-full min-w-0 flex-col transition-all duration-300 lg:h-full ${
-              !isReadyToCapture && !isSuccess
-                ? 'pointer-events-none opacity-40 grayscale-[0.5]'
-                : ''
-            }`}
-          >
-            {isSuccess ? (
-              <ReceiptSuccessCard
-                className="w-full lg:h-full"
-                atendimento={{ apenado: apenadoComFoto, processo, recibo: reciboGerado }}
-                onReset={resetAtendimento}
-                onDownload={download}
-                onView={view}
-              />
-            ) : (
+          {flow.receipt ? (
+            <ReceiptSuccessCard
+              className="h-full"
+              receipt={flow.receipt}
+              convicted={flow.convicted}
+              process={flow.process}
+              onReset={() => {
+                pdf.release()
+                flow.reset()
+              }}
+              onDownload={pdf.download}
+              onView={pdf.view}
+              isProcessing={pdf.isProcessing}
+              error={pdf.error}
+            />
+          ) : (
+            <div className="flex h-full flex-col gap-3">
               <PhotoCaptureCard
-                className="w-full lg:h-full"
-                file={fotoAtendimento.data}
-                referencePhotoUrl={referencePhotoUrl}
-                deviceId={deviceId}
-                isReadyToCapture={isReadyToCapture}
-                isSubmitting={isSubmitting}
-                error={fotoAtendimento.error || errorMessage}
-                onCapture={setFoto}
-                onClear={clearPhoto}
-                onError={setPhotoError}
+                className="h-full flex-1"
+                file={flow.photo}
+                onCapture={(file) => {
+                  flow.setPhoto(file)
+                  flow.setPhotoError(null)
+                }}
+                onClear={() => flow.setPhoto(null)}
+                onError={flow.setPhotoError}
+                referencePhotoUrl={photo.url}
+                deviceId={flow.deviceId}
+                isReadyToCapture={ready}
+                isSubmitting={flow.isSubmitting}
+                error={flow.photoError || flow.fieldErrors?.photo || flow.error}
               />
-            )}
-          </div>
+              {flow.fields.length > 0 && (
+                <ul role="alert" className="text-destructive text-sm">
+                  {flow.fields.map((field, index) => (
+                    <li key={`${field.field}-${index}`}>{field.message}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </form>
       </TabsContent>
-      <TabsContent
-        value="historico"
-        className="mt-0 flex w-full min-w-0 flex-col gap-6 outline-none"
-      >
+      <TabsContent value="history">
         <ProofHistory />
       </TabsContent>
     </Tabs>
   )
 }
-
-export default Service

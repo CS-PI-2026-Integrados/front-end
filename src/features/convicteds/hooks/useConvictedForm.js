@@ -1,308 +1,209 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { convictedService } from '@/features/convicteds/services/convictedService'
-import { validateConvictedForm } from '@/features/convicteds/schemas/convictedSchema'
-import { compressImage } from '@/shared/lib/image'
-
-export const INITIAL_CONVICTED_FORM = {
-  name: '',
-  cpf: '',
-  birthDate: '',
-  phone: '',
-  processes: [],
-  address: {
-    zipCode: '',
-    street: '',
-    number: '',
-    complement: '',
-    neighborhood: '',
-    city: '',
-    state: '',
-  },
-  photo: null,
-}
+import { convictedService } from '../services/convictedService'
+import {
+  convictedCreateSchema,
+  convictedUpdateSchema,
+  zipCodeSchema,
+} from '../schemas/convictedSchema'
+import { compressImage, photoSchema } from '@/shared/lib/image'
+import { formatCpf } from '@/shared/lib/cpf'
 
 export function convictedToFormState(convicted) {
-  if (!convicted) return INITIAL_CONVICTED_FORM
-
   return {
-    name: convicted.name || convicted.fullName || '',
-    cpf: convicted.cpf || '',
-    birthDate: convicted.birthDate ? String(convicted.birthDate).substring(0, 10) : '',
-    phone: convicted.phone || '',
-    processes: Array.isArray(convicted.processes)
-      ? convicted.processes.map((process) => ({
-          id: process.id,
-          number: process.number,
-          status: process.status,
-          principal: Boolean(process.principal),
-        }))
-      : [],
+    name: convicted?.name || convicted?.fullName || '',
+    cpf: formatCpf(convicted?.cpf || ''),
+    birthDate: convicted?.birthDate?.slice(0, 10) || '',
+    phone: convicted?.phone || '',
+    employmentStatus: convicted?.employmentStatus || '',
+    processes: (convicted?.processes || []).map((process) => ({
+      ...process,
+      principal: Boolean(process.principal),
+    })),
     address: {
-      zipCode: convicted.address?.zipCode || '',
-      street: convicted.address?.street || '',
-      number: convicted.address?.number || '',
-      complement: convicted.address?.complement || '',
-      neighborhood: convicted.address?.neighborhood || '',
-      city: convicted.address?.city || '',
-      state: convicted.address?.state || '',
+      zipCode: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+      ...convicted?.address,
     },
     photo: null,
   }
 }
 
-export function useConvictedForm(convicted = null, { onSuccess, photoUrl } = {}) {
+export function useConvictedForm(convicted = null, { onSuccess, photoUrl, open = true } = {}) {
   const isEditing = Boolean(convicted?.id)
+  const form = useForm({
+    defaultValues: convictedToFormState(convicted),
+    resolver: zodResolver(isEditing ? convictedUpdateSchema : convictedCreateSchema),
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+  })
+  const { reset, getValues, setValue, setError, clearErrors, trigger, handleSubmit, control } = form
+  const { isSubmitted } = form.formState
+  const photo = useWatch({ control, name: 'photo' })
   const fileRef = useRef(null)
-
-  const [form, setForm] = useState(() => convictedToFormState(convicted))
-  const [errors, setErrors] = useState({})
-  const [preview, setPreview] = useState(photoUrl || convicted?.photoUrl || null)
-  const [isSearchingCep, setIsSearchingCep] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const alive = useRef(false)
+  const generation = useRef(0)
+  const pending = useRef(false)
+  const cepRequest = useRef(null)
+  const [localPreview, setLocalPreview] = useState(null)
+  const [isSearchingCep, setSearchingCep] = useState(false)
+  const [isProcessingPhoto, setProcessingPhoto] = useState(false)
+  const [error, setErrorMessage] = useState(null)
+  // Keep the opening snapshot stable; later photo loads and same-record refreshes must not reset a draft.
+  const initialRecord = useRef(convicted)
   useEffect(() => {
-    setForm(convictedToFormState(convicted))
-    setPreview(photoUrl || convicted?.photoUrl || null)
-    setErrors({})
-  }, [convicted, photoUrl])
-
-  const clearFieldError = useCallback((field) => {
-    setErrors((prev) => {
-      if (!prev[field]) return prev
-      const updated = { ...prev }
-      delete updated[field]
-      return updated
-    })
-  }, [])
+    initialRecord.current = convicted
+  }, [convicted])
+  useEffect(() => {
+    alive.current = open
+    generation.current += 1
+    reset(convictedToFormState(initialRecord.current))
+    setLocalPreview(null)
+    setSearchingCep(false)
+    setProcessingPhoto(false)
+    setErrorMessage(null)
+    if (fileRef.current) fileRef.current.value = ''
+    return () => {
+      alive.current = false
+      generation.current += 1
+      cepRequest.current?.abort()
+    }
+  }, [open, convicted?.id, reset])
 
   const setFieldValue = useCallback(
     (name, value) => {
-      if (name.startsWith('address.')) {
-        const addressKey = name.replace('address.', '')
-        setForm((prev) => ({
-          ...prev,
-          address: {
-            ...prev.address,
-            [addressKey]: value,
-          },
-        }))
-        clearFieldError(name)
-        return
-      }
-
-      setForm((prev) => ({ ...prev, [name]: value }))
-      clearFieldError(name)
+      setValue(name, value, { shouldDirty: true, shouldTouch: true, shouldValidate: isSubmitted })
     },
-    [clearFieldError]
+    [isSubmitted, setValue]
   )
 
-  const handleAddressChange = useCallback(
-    (key, value) => {
-      setFieldValue(`address.${key}`, value)
-    },
-    [setFieldValue]
-  )
-
-  const handleChange = useCallback(
-    (event) => {
-      const { name, value } = event.target
-      setFieldValue(name, value)
-    },
-    [setFieldValue]
-  )
-
-  const handleSelect = useCallback(
-    (name, value) => {
-      setFieldValue(name, value)
-    },
-    [setFieldValue]
-  )
-
-  const handleMask = useCallback(
-    (name, value) => {
-      setFieldValue(name, value)
-    },
-    [setFieldValue]
-  )
-
-  const handleFoto = useCallback(
-    async (event) => {
-      const file = event.target.files?.[0]
-      if (!file) return
-
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
-      if (!allowedTypes.includes(file.type)) {
-        setErrors((prev) => ({
-          ...prev,
-          photo: 'Formato inválido. Use JPG, PNG ou WEBP.',
-        }))
-        return
-      }
-
-      const maxSize = 5 * 1024 * 1024
-      if (file.size > maxSize) {
-        setErrors((prev) => ({
-          ...prev,
-          photo: 'A foto deve ter no máximo 5 MB.',
-        }))
-        return
-      }
-
-      setForm((prev) => ({ ...prev, photo: file }))
-      clearFieldError('photo')
-
-      try {
-        const compressed = await compressImage(file, 300, 300, 0.8)
-        setPreview(compressed || null)
-      } catch {
-        const reader = new FileReader()
-        reader.onload = (e) => setPreview(e.target?.result || null)
-        reader.readAsDataURL(file)
-      }
-    },
-    [clearFieldError]
-  )
-
-  const removerFoto = useCallback(() => {
-    setForm((prev) => ({ ...prev, photo: null }))
-    setPreview(null)
-    if (fileRef.current) {
-      fileRef.current.value = ''
-    }
-  }, [])
-
-  const buscarCep = useCallback(async () => {
-    const cleanCep = (form.address?.zipCode || '').replace(/\D/g, '')
-    if (cleanCep.length !== 8) {
-      setErrors((prev) => ({
-        ...prev,
-        'address.zipCode': 'O CEP deve conter 8 dígitos.',
-      }))
+  const handleFoto = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    clearErrors('photo')
+    setFieldValue('photo', file)
+    setLocalPreview(null)
+    setProcessingPhoto(false)
+    const validation = photoSchema.safeParse(file)
+    if (!validation.success) {
+      setError('photo', { message: validation.error.issues[0].message })
+      event.target.value = ''
       return
     }
-
-    setIsSearchingCep(true)
+    setProcessingPhoto(true)
+    const started = generation.current
     try {
-      const result = await convictedService.searchCep(cleanCep)
-      if (result) {
-        setForm((prev) => ({
-          ...prev,
-          address: {
-            ...prev.address,
-            street: result.street || prev.address.street,
-            neighborhood: result.neighborhood || prev.address.neighborhood,
-            city: result.city || prev.address.city,
-            state: result.state || prev.address.state,
-          },
-        }))
-        clearFieldError('address.zipCode')
-        clearFieldError('address.street')
-        clearFieldError('address.neighborhood')
-        clearFieldError('address.city')
-        clearFieldError('address.state')
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          'address.zipCode': 'CEP não encontrado.',
-        }))
+      const preview = await compressImage(file, 300, 300, 0.8)
+      if (alive.current && generation.current === started && getValues('photo') === file) {
+        if (!preview) throw new Error('Photo preview unavailable')
+        setLocalPreview(preview)
       }
     } catch {
-      setErrors((prev) => ({
-        ...prev,
-        'address.zipCode': 'Erro ao consultar CEP. Preencha manualmente.',
-      }))
+      if (alive.current && generation.current === started && getValues('photo') === file)
+        setError('photo', { message: 'Não foi possível preparar a foto. Selecione outra imagem.' })
     } finally {
-      setIsSearchingCep(false)
+      if (alive.current && generation.current === started && getValues('photo') === file)
+        setProcessingPhoto(false)
     }
-  }, [clearFieldError, form.address?.zipCode])
-
-  const validate = useCallback(() => {
-    const validationErrors = validateConvictedForm(form, { isEditing, preview })
-    setErrors(validationErrors)
-    return validationErrors
-  }, [form, isEditing, preview])
-
-  const submit = useCallback(
-    async (callback) => {
-      const validationErrors = validate()
-      if (Object.keys(validationErrors).length > 0) {
-        toast.error('Preencha os campos obrigatórios destacados.')
-        return false
-      }
-
-      setIsSubmitting(true)
-      try {
-        let result
-        if (isEditing) {
-          result = await convictedService.update(convicted.id, form)
-          if (form.photo) {
-            result = await convictedService.uploadPhoto(convicted.id, form.photo)
-          }
-          toast.success('Apenado atualizado com sucesso!')
-        } else {
-          result = await convictedService.create(form)
-          if (form.photo) {
-            result = await convictedService.uploadPhoto(result.id, form.photo)
-          }
-          toast.success('Apenado cadastrado com sucesso!')
-        }
-
-        const notify = callback || onSuccess
-        if (typeof notify === 'function') {
-          notify(result)
-        }
-        return result
-      } catch (err) {
-        if (Array.isArray(err?.body?.fields)) {
-          const fieldErrors = err.body.fields.reduce((result, field) => {
-            if (field?.field && field?.message) result[field.field] = field.message
-            return result
-          }, {})
-          setErrors((current) => ({ ...current, ...fieldErrors }))
-        }
-        const message = err?.message || 'Erro ao salvar os dados do apenado.'
-        toast.error(message)
-        return false
-      } finally {
-        setIsSubmitting(false)
-      }
-    },
-    [convicted?.id, form, isEditing, onSuccess, validate]
-  )
-
-  const resetForm = useCallback(() => {
-    setForm(convictedToFormState(convicted))
-    setPreview(photoUrl || convicted?.photoUrl || null)
-    setErrors({})
-    if (fileRef.current) {
-      fileRef.current.value = ''
+  }
+  const removerFoto = () => {
+    setFieldValue('photo', null)
+    if (!isSubmitted) clearErrors('photo')
+    setLocalPreview(null)
+    setProcessingPhoto(false)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+  const buscarCep = async () => {
+    const zipCode = getValues('address.zipCode')
+    const parsed = zipCodeSchema.safeParse(zipCode)
+    if (!parsed.success) {
+      setError('address.zipCode', { message: parsed.error.issues[0].message })
+      return
     }
-  }, [convicted, photoUrl])
+    cepRequest.current?.abort()
+    const controller = new AbortController()
+    cepRequest.current = controller
+    const started = generation.current
+    const before = { ...getValues('address') }
+    const current = () =>
+      alive.current &&
+      !controller.signal.aborted &&
+      generation.current === started &&
+      cepRequest.current === controller &&
+      getValues('address.zipCode') === zipCode
+    setSearchingCep(true)
+    try {
+      const address = await convictedService.searchCep(zipCode, { signal: controller.signal })
+      if (!current()) return
+      if (!address) {
+        setError('address.zipCode', { message: 'CEP não encontrado.' })
+        return
+      }
+      clearErrors('address.zipCode')
+      for (const key of ['street', 'neighborhood', 'city', 'state']) {
+        if (address[key] && getValues(`address.${key}`) === before[key])
+          setFieldValue(`address.${key}`, address[key])
+      }
+    } catch (error) {
+      if (current() && error.name !== 'AbortError')
+        setError('address.zipCode', { message: 'Erro ao consultar CEP. Preencha manualmente.' })
+    } finally {
+      if (alive.current && generation.current === started && cepRequest.current === controller)
+        setSearchingCep(false)
+    }
+  }
 
+  const save = async (data, callback) => {
+    if (pending.current) return false
+    pending.current = true
+    setErrorMessage(null)
+    const started = generation.current
+    try {
+      const result = isEditing
+        ? await convictedService.update(convicted.id, data)
+        : await convictedService.create(data)
+      if (data.photo) await convictedService.uploadPhoto(result.id, data.photo)
+      if (!alive.current || generation.current !== started) return result
+      toast.success(
+        isEditing ? 'Apenado atualizado com sucesso!' : 'Apenado cadastrado com sucesso!'
+      )
+      await (callback || onSuccess)?.(result)
+      return result
+    } catch (error) {
+      if (alive.current && generation.current === started) {
+        for (const field of error.fields || [])
+          setError(field.field, { type: 'server', message: field.message })
+        setErrorMessage(error.message || 'Erro ao salvar os dados do apenado.')
+      }
+      return false
+    } finally {
+      pending.current = false
+    }
+  }
+  // Preserve the existing programmatic submit contract for non-visual consumers/tests.
+  const submit = async (callback) => {
+    let result = false
+    await handleSubmit(async (data) => {
+      result = await save(data, callback)
+    })()
+    return result
+  }
   return {
     form,
-    errors,
-    setErrors,
-    preview,
     fileRef,
     isEditing,
-    isSubmitting,
     isSearchingCep,
-    buscandoCep: isSearchingCep,
-    actions: {
-      handleChange,
-      handleSelect,
-      handleMask,
-      handleAddressChange,
-      setFieldValue,
-      handleFoto,
-      removerFoto,
-      buscarCep,
-      validate,
-      submit,
-      tentarSalvar: submit,
-      resetForm,
-    },
+    isProcessingPhoto,
+    error,
+    preview: photo ? localPreview : photoUrl || convicted?.photoUrl || null,
+    isSubmitting: form.formState.isSubmitting,
+    actions: { setFieldValue, handleFoto, removerFoto, buscarCep, submit, validate: trigger },
   }
 }

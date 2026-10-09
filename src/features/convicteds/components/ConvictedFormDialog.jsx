@@ -1,446 +1,237 @@
-import { IMaskInput } from 'react-imask'
-import { Loader2, Search, Upload, X } from 'lucide-react'
-
-import { useConvictedForm } from '@/features/convicteds/hooks/useConvictedForm'
-import { useConvictedPhoto } from '@/features/convicteds/hooks/useConvictedPhoto'
-import { ProcessSelector } from '@/features/convicteds/components/ProcessSelector'
+import { Controller, get } from 'react-hook-form'
+import { Loader2, Search } from 'lucide-react'
+import { useConvictedForm } from '../hooks/useConvictedForm'
+import { useConvictedPhoto } from '../hooks/useConvictedPhoto'
+import { ProcessSelector } from './ProcessSelector'
+import { FormDialog } from '@/shared/components/FormDialog'
+import { FormSection, FormGrid } from '@/shared/components/FormSection'
+import { InputField } from '@/shared/components/form-fields/InputField'
+import { CpfField } from '@/shared/components/form-fields/CpfField'
+import { SelectField } from '@/shared/components/form-fields/SelectField'
+import { MaskedInputField } from '@/shared/components/form-fields/MaskedInputField'
+import { ImageUploadField } from '@/shared/components/form-fields/ImageUploadField'
 import { Button } from '@/shared/components/ui/button'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/components/ui/dialog'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Separator } from '@/shared/components/ui/separator'
+import { stateOptions } from '@/shared/utils/states'
+
+const employmentOptions = [
+  { value: 'FORMAL_WORK', label: 'Trabalho formal' },
+  { value: 'INFORMAL_WORK', label: 'Trabalho informal' },
+  { value: 'UNEMPLOYED', label: 'Desempregado' },
+]
+const phoneMasks = ['(00) 0000-0000', '(00) 00000-0000']
 
 export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSuccess }) {
-  const isEditing = Boolean(convicted?.id)
-  const { url: authenticatedPhotoUrl } = useConvictedPhoto(convicted?.id)
-
-  const { form, errors, preview, fileRef, isSubmitting, isSearchingCep, actions } =
+  const { url } = useConvictedPhoto(open ? convicted?.id : null)
+  const { form, fileRef, preview, isEditing, isSearchingCep, isProcessingPhoto, actions, error } =
     useConvictedForm(convicted, {
-      photoUrl: authenticatedPhotoUrl,
+      photoUrl: url,
+      open,
       onSuccess: (result) => {
         onSuccess?.(result)
-        onOpenChange?.(false)
+        onOpenChange(false)
       },
     })
-
   const {
-    handleChange,
-    handleSelect,
-    handleMask,
-    handleAddressChange,
-    handleFoto,
-    removerFoto,
-    buscarCep,
-    submit,
-  } = actions
-
-  const getInputClass = (field) =>
-    `w-full rounded-md border px-2.5 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none bg-transparent placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3 ${
-      errors[field]
-        ? 'border-destructive ring-destructive/20 ring-3'
-        : 'border-input dark:bg-input/30'
-    }`
-
-  const handleSubmit = async (e) => {
-    e?.preventDefault?.()
-    await submit()
-  }
-
+    register,
+    control,
+    formState: { errors, isSubmitting },
+  } = form
+  const disabled = isSubmitting || isProcessingPhoto
+  const input = (name, label, props = {}) => (
+    <InputField
+      id={`convicted-${name}`}
+      label={label}
+      required
+      variant="modal"
+      disabled={disabled}
+      error={get(errors, name)?.message}
+      registration={register(name)}
+      {...props}
+    />
+  )
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        className="flex max-h-[90vh] w-full max-w-2xl flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-2xl"
-      >
-        <DialogHeader className="flex-row items-start justify-between gap-4 px-6 py-4 text-left">
-          <div>
-            <DialogTitle className="text-lg font-bold">
-              {isEditing ? 'Editar Apenado' : 'Cadastrar Novo Apenado'}
-            </DialogTitle>
-            <DialogDescription className="mt-1">
-              {isEditing
-                ? 'Atualize as informações do apenado no formulário abaixo'
-                : 'Preencha os dados do apenado no formulário abaixo'}
-            </DialogDescription>
-          </div>
-          <DialogClose asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0"
-              onClick={() => onOpenChange(false)}
-            >
-              <X className="size-4" />
-              <span className="sr-only">Fechar</span>
-            </Button>
-          </DialogClose>
-        </DialogHeader>
-
-        <form
-          onSubmit={handleSubmit}
-          className="flex min-h-0 flex-1 flex-col overflow-hidden [&_label]:mb-1.5 [&_label]:block"
-        >
-          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 text-left">
-            <div className="mb-6">
-              <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-widest uppercase">
-                Foto de Reconhecimento {!isEditing && <span className="text-destructive">*</span>}
-              </p>
-
-              <div className="flex items-start gap-4">
-                <div className="relative shrink-0">
-                  <button
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEditing ? 'Editar Apenado' : 'Cadastrar Novo Apenado'}
+      description={
+        isEditing
+          ? 'Atualize as informações do apenado no formulário abaixo'
+          : 'Preencha os dados do apenado no formulário abaixo'
+      }
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (!disabled) return actions.submit()
+      }}
+      isSubmitting={isSubmitting}
+      isProcessing={isProcessingPhoto}
+      submitLabel={isEditing ? 'Salvar alterações' : 'Cadastrar apenado'}
+      error={error}
+    >
+      <ImageUploadField
+        id="convicted-photo"
+        label="Foto de reconhecimento"
+        labelClassName="text-muted-foreground mb-2 text-xs font-semibold uppercase"
+        required={!isEditing}
+        variant="modal"
+        error={errors.photo?.message}
+        disabled={disabled}
+        description="Envie uma foto frontal nítida para reconhecimento facial. Formatos aceitos: JPG ou PNG (máx. 5 MiB)."
+        preview={preview}
+        accept="image/jpeg,image/png"
+        fileInputRef={fileRef}
+        onChange={actions.handleFoto}
+        selectLabel="Selecionar foto"
+        changeLabel="Alterar foto"
+        onRemove={form.watch('photo') ? actions.removerFoto : undefined}
+        removeLabel="Descartar seleção"
+        processingMessage={isProcessingPhoto ? 'Preparando foto...' : undefined}
+      />
+      <FormSection title="Dados pessoais">
+        {input('name', 'Nome completo', { placeholder: 'Nome completo do apenado' })}
+        <FormGrid>
+          <CpfField
+            id="convicted-cpf"
+            label="CPF"
+            required
+            variant="modal"
+            registration={register('cpf')}
+            disabled={disabled}
+            error={errors.cpf?.message}
+          />
+          {input('birthDate', 'Data de nascimento', { type: 'date' })}
+        </FormGrid>
+        <Controller
+          control={control}
+          name="employmentStatus"
+          render={({ field }) => (
+            <SelectField
+              id="convicted-employment"
+              label="Situação trabalhista"
+              required
+              variant="modal"
+              field={field}
+              options={employmentOptions}
+              placeholder="Selecione a situação trabalhista"
+              disabled={disabled}
+              error={errors.employmentStatus?.message}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="phone"
+          render={({ field }) => (
+            <MaskedInputField
+              id="convicted-phone"
+              label="Telefone de contato"
+              required
+              variant="modal"
+              field={field}
+              mask={phoneMasks}
+              placeholder="(00) 00000-0000"
+              disabled={disabled}
+              error={errors.phone?.message}
+            />
+          )}
+        />
+      </FormSection>
+      <FormSection title="Endereço">
+        <FormGrid>
+          <Controller
+            control={control}
+            name="address.zipCode"
+            render={({ field }) => (
+              <MaskedInputField
+                id="convicted-cep"
+                label="CEP"
+                required
+                variant="modal"
+                field={field}
+                mask="00000-000"
+                placeholder="00000-000"
+                disabled={disabled}
+                error={errors.address?.zipCode?.message}
+                action={
+                  <Button
                     type="button"
-                    onClick={() => fileRef.current?.click()}
-                    className={`hover:bg-muted flex h-24 w-24 shrink-0 flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-colors ${
-                      errors.photo
-                        ? 'border-destructive bg-destructive/10'
-                        : 'border-muted-foreground/30 bg-muted/40'
-                    }`}
+                    variant="outline"
+                    size="icon"
+                    disabled={disabled || isSearchingCep}
+                    onClick={actions.buscarCep}
+                    aria-label="Buscar CEP"
+                    aria-invalid={errors.address?.zipCode ? true : undefined}
+                    aria-describedby={errors.address?.zipCode ? 'convicted-cep-error' : undefined}
                   >
-                    {preview ? (
-                      <img
-                        src={preview}
-                        alt="Foto de reconhecimento"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <>
-                        <Upload className="text-muted-foreground size-5" />
-                        <span className="text-muted-foreground mt-1 text-[10px] font-medium">
-                          Upload
-                        </span>
-                      </>
-                    )}
-                  </button>
-
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={handleFoto}
-                  />
-                </div>
-
-                <div className="flex-1 space-y-2">
-                  <p className="text-muted-foreground text-xs">
-                    Envie uma foto frontal nítida para reconhecimento facial. Formatos aceitos: JPG,
-                    PNG ou WEBP (máx. 5 MB).
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="xs"
-                      onClick={() => fileRef.current?.click()}
-                    >
-                      {preview ? 'Alterar foto' : 'Selecionar foto'}
-                    </Button>
-                    {preview && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="xs"
-                        className="text-destructive hover:text-destructive"
-                        onClick={removerFoto}
-                      >
-                        Remover
-                      </Button>
-                    )}
-                  </div>
-                  {errors.photo && (
-                    <p className="text-destructive text-xs font-medium">{errors.photo}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <Separator className="mb-6" />
-
-            <div className="mb-6 space-y-4">
-              <p className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
-                Dados Pessoais
-              </p>
-
-              <div>
-                <Label htmlFor="convicted-name">
-                  Nome Completo <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="convicted-name"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Nome completo do apenado"
-                  className={errors.name ? 'border-destructive ring-destructive/20 ring-3' : ''}
-                />
-                {errors.name && <p className="text-destructive mt-1 text-xs">{errors.name}</p>}
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="convicted-cpf">
-                    CPF <span className="text-destructive">*</span>
-                  </Label>
-                  <IMaskInput
-                    id="convicted-cpf"
-                    mask="000.000.000-00"
-                    value={form.cpf}
-                    unmask={false}
-                    onAccept={(val) => handleMask('cpf', val)}
-                    placeholder="000.000.000-00"
-                    className={getInputClass('cpf')}
-                  />
-                  {errors.cpf && <p className="text-destructive mt-1 text-xs">{errors.cpf}</p>}
-                </div>
-
-                <div>
-                  <Label htmlFor="convicted-birthDate">
-                    Data de Nascimento <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="convicted-birthDate"
-                    type="date"
-                    name="birthDate"
-                    value={form.birthDate}
-                    onChange={handleChange}
-                    className={
-                      errors.birthDate ? 'border-destructive ring-destructive/20 ring-3' : ''
-                    }
-                  />
-                  {errors.birthDate && (
-                    <p className="text-destructive mt-1 text-xs">{errors.birthDate}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <div>
-                  <Label htmlFor="convicted-phone">
-                    Telefone de Contato <span className="text-destructive">*</span>
-                  </Label>
-                  <IMaskInput
-                    id="convicted-phone"
-                    mask={['(00) 0000-0000', '(00) 00000-0000']}
-                    value={form.phone}
-                    unmask={false}
-                    onAccept={(val) => handleMask('phone', val)}
-                    placeholder="(00) 00000-0000"
-                    className={getInputClass('phone')}
-                  />
-                  {errors.phone && <p className="text-destructive mt-1 text-xs">{errors.phone}</p>}
-                </div>
-              </div>
-            </div>
-
-            <Separator className="mb-6" />
-
-            <div className="space-y-4">
-              <p className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
-                Endereço
-              </p>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="sm:col-span-1">
-                  <Label htmlFor="convicted-cep">CEP</Label>
-                  <div className="flex gap-1.5">
-                    <IMaskInput
-                      id="convicted-cep"
-                      mask="00000-000"
-                      value={form.address?.zipCode || ''}
-                      unmask={false}
-                      onAccept={(val) => handleAddressChange('zipCode', val)}
-                      placeholder="00000-000"
-                      className={getInputClass('address.zipCode')}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      disabled={isSearchingCep}
-                      onClick={buscarCep}
-                      title="Buscar CEP"
-                      className="h-auto shrink-0 self-stretch"
-                    >
-                      {isSearchingCep ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <Search className="size-4" />
-                      )}
-                      <span className="sr-only">Buscar CEP</span>
-                    </Button>
-                  </div>
-                  {errors['address.zipCode'] && (
-                    <p className="text-destructive mt-1 text-xs">{errors['address.zipCode']}</p>
-                  )}
-                </div>
-
-                <div className="sm:col-span-2">
-                  <Label htmlFor="convicted-street">
-                    Logradouro <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="convicted-street"
-                    value={form.address?.street || ''}
-                    onChange={(e) => handleAddressChange('street', e.target.value)}
-                    placeholder="Rua, avenida, etc."
-                    className={
-                      errors['address.street']
-                        ? 'border-destructive ring-destructive/20 ring-3'
-                        : ''
-                    }
-                  />
-                  {errors['address.street'] && (
-                    <p className="text-destructive mt-1 text-xs">{errors['address.street']}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <Label htmlFor="convicted-number">
-                    Número <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="convicted-number"
-                    value={form.address?.number || ''}
-                    onChange={(e) => handleAddressChange('number', e.target.value)}
-                    placeholder="123"
-                    className={
-                      errors['address.number']
-                        ? 'border-destructive ring-destructive/20 ring-3'
-                        : ''
-                    }
-                  />
-                  {errors['address.number'] && (
-                    <p className="text-destructive mt-1 text-xs">{errors['address.number']}</p>
-                  )}
-                </div>
-
-                <div className="sm:col-span-2">
-                  <Label htmlFor="convicted-complement">Complemento</Label>
-                  <Input
-                    id="convicted-complement"
-                    value={form.address?.complement || ''}
-                    onChange={(e) => handleAddressChange('complement', e.target.value)}
-                    placeholder="Apto, Bloco (opcional)"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <Label htmlFor="convicted-neighborhood">
-                    Bairro <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="convicted-neighborhood"
-                    value={form.address?.neighborhood || ''}
-                    onChange={(e) => handleAddressChange('neighborhood', e.target.value)}
-                    placeholder="Bairro"
-                    className={
-                      errors['address.neighborhood']
-                        ? 'border-destructive ring-destructive/20 ring-3'
-                        : ''
-                    }
-                  />
-                  {errors['address.neighborhood'] && (
-                    <p className="text-destructive mt-1 text-xs">
-                      {errors['address.neighborhood']}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="convicted-city">
-                    Cidade <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="convicted-city"
-                    value={form.address?.city || ''}
-                    onChange={(e) => handleAddressChange('city', e.target.value)}
-                    placeholder="Cidade"
-                    className={
-                      errors['address.city'] ? 'border-destructive ring-destructive/20 ring-3' : ''
-                    }
-                  />
-                  {errors['address.city'] && (
-                    <p className="text-destructive mt-1 text-xs">{errors['address.city']}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="convicted-state">
-                    UF <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="convicted-state"
-                    maxLength={2}
-                    value={form.address?.state || ''}
-                    onChange={(e) => handleAddressChange('state', e.target.value.toUpperCase())}
-                    placeholder="MS"
-                    className={
-                      errors['address.state'] ? 'border-destructive ring-destructive/20 ring-3' : ''
-                    }
-                  />
-                  {errors['address.state'] && (
-                    <p className="text-destructive mt-1 text-xs">{errors['address.state']}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <Separator className="my-6" />
-
-            <div className="space-y-4">
-              <p className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
-                Processos
-              </p>
-
-              <ProcessSelector
-                processes={form.processes}
-                onChange={(processes) => handleSelect('processes', processes)}
-                error={errors.processes}
+                    {isSearchingCep ? <Loader2 className="animate-spin" /> : <Search />}
+                  </Button>
+                }
               />
-            </div>
-          </div>
-
-          <DialogFooter className="flex-row items-center justify-end gap-2 border-t px-6 py-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-1.5 size-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : isEditing ? (
-                'Salvar alterações'
-              ) : (
-                'Cadastrar apenado'
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            )}
+          />
+          {input('address.street', 'Logradouro', {
+            placeholder: 'Rua, avenida, etc.',
+          })}
+        </FormGrid>
+        <FormGrid>
+          {input('address.number', 'Número', { placeholder: '123' })}
+          {input('address.complement', 'Complemento', {
+            required: false,
+            placeholder: 'Apto, bloco (opcional)',
+          })}
+        </FormGrid>
+        <FormGrid>
+          {input('address.neighborhood', 'Bairro', {
+            placeholder: 'Bairro',
+          })}
+          {input('address.city', 'Cidade', { placeholder: 'Cidade' })}
+        </FormGrid>
+        <Controller
+          control={control}
+          name="address.state"
+          render={({ field }) => (
+            <SelectField
+              id="convicted-state"
+              label="UF"
+              required
+              variant="modal"
+              field={field}
+              options={stateOptions}
+              placeholder="Selecione a UF"
+              contentProps={{
+                position: 'popper',
+                side: 'bottom',
+                avoidCollisions: false,
+                className: 'max-h-[min(15rem,var(--radix-select-content-available-height))]',
+              }}
+              disabled={disabled}
+              error={errors.address?.state?.message}
+            />
+          )}
+        />
+      </FormSection>
+      <FormSection title="Processos">
+        <Controller
+          control={control}
+          name="processes"
+          render={({ field }) => (
+            <ProcessSelector
+              processes={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              disabled={disabled}
+              error={
+                errors.processes &&
+                (errors.processes.message ||
+                  errors.processes.root?.message ||
+                  'Verifique os processos selecionados.')
+              }
+            />
+          )}
+        />
+      </FormSection>
+    </FormDialog>
   )
 }
-
 export const ApenadoCreateDialog = ConvictedFormDialog
 export const ApenadoEditDialog = ConvictedFormDialog

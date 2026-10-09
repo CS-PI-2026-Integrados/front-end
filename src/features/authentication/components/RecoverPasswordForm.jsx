@@ -11,14 +11,14 @@ export function RecoverPasswordForm() {
     form: {
       register,
       handleSubmit,
-      formState: { errors, isValid, isSubmitting },
+      formState: { errors, isSubmitting },
     },
     feedbackMessage,
     requestResetLink,
   } = useRecoverPassword()
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit(requestResetLink)}>
+    <form noValidate className="space-y-6" onSubmit={handleSubmit(requestResetLink)}>
       <div className="space-y-2">
         <h1 className="text-foreground text-2xl font-bold">Recuperar senha</h1>
       </div>
@@ -33,11 +33,7 @@ export function RecoverPasswordForm() {
 
         {feedbackMessage && <AuthFeedbackMessage>{feedbackMessage}</AuthFeedbackMessage>}
 
-        <SubmitButton
-          className="mt-3 h-13 rounded-[8px] text-lg"
-          disabled={!isValid}
-          isLoading={isSubmitting}
-        >
+        <SubmitButton className="mt-3 h-13 rounded-[8px] text-lg" isLoading={isSubmitting}>
           Enviar link
         </SubmitButton>
 

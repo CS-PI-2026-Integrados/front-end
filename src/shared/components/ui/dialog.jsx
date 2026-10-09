@@ -34,7 +34,13 @@ function DialogOverlay({ className, ...props }) {
   )
 }
 
-function DialogContent({ className, children, showCloseButton = true, ...props }) {
+function DialogContent({
+  className,
+  children,
+  showCloseButton = true,
+  dismissible = false,
+  ...props
+}) {
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -45,6 +51,12 @@ function DialogContent({ className, children, showCloseButton = true, ...props }
           className
         )}
         {...props}
+        onInteractOutside={(event) => {
+          if (!dismissible) event.preventDefault()
+        }}
+        onEscapeKeyDown={(event) => {
+          if (!dismissible) event.preventDefault()
+        }}
       >
         {children}
         {showCloseButton && (

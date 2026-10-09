@@ -30,7 +30,8 @@ export function useDefinePassword() {
   })
   const form = useForm({
     resolver: zodResolver(definePasswordSchema),
-    mode: 'onChange',
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
     defaultValues: {
       newPassword: '',
       confirmPassword: '',

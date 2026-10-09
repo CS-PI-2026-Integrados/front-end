@@ -1,99 +1,159 @@
-import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
-import { observarComprovantes, obterSnapshotComprovantes } from '@/features/attendance'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import { useSession } from '@/features/authentication'
 import {
   listDocuments,
-  listGroupDocuments,
+  listDocumentYears,
+  listDocumentMonths,
   readViewPreference,
   saveViewPreference,
+  subscribeAttendanceChanges,
+  getAttendanceRevision,
 } from '../services/documentsService'
 
-const MONTH_COUNT = 12
-
 export function useDocuments(tenantId, source = 'attendance', initialSearch = '') {
+  const { session } = useSession()
   const [search, setSearch] = useState(initialSearch)
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [manualMonth, setManualMonth] = useState(null)
+  const [page, setPage] = useState(1)
+  const [year, setYear] = useState(() =>
+    Number(
+      new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'America/Sao_Paulo' }).format(
+        new Date()
+      )
+    )
+  )
+  const [month, setMonth] = useState(() =>
+    Number(
+      new Intl.DateTimeFormat('en', { month: 'numeric', timeZone: 'America/Sao_Paulo' }).format(
+        new Date()
+      )
+    )
+  )
+  const [yearsState, setYearsState] = useState({ years: [], isLoading: true, error: null })
+  const [monthsState, setMonthsState] = useState({ counts: [], error: null })
   const [viewMode, setViewMode] = useState(readViewPreference)
-
-  useSyncExternalStore(observarComprovantes, obterSnapshotComprovantes)
-
-  const documents = useMemo(() => {
-    if (!tenantId) return []
-    return source === 'group' ? listGroupDocuments(tenantId) : listDocuments(tenantId)
-  }, [tenantId, source])
-
-  const availableYears = useMemo(() => {
-    const years = new Set(documents.map((document) => new Date(document.issuedAt).getFullYear()))
-    const list = Array.from(years).sort((a, b) => b - a)
-    return list.length > 0 ? list : [new Date().getFullYear()]
-  }, [documents])
-
-  const countByMonth = useMemo(() => {
-    const counts = Array(MONTH_COUNT).fill(0)
-    documents
-      .filter((document) => new Date(document.issuedAt).getFullYear() === selectedYear)
-      .forEach((document) => {
-        counts[new Date(document.issuedAt).getMonth()]++
-      })
-    return counts
-  }, [documents, selectedYear])
-
-  const mostRecentMonthWithRecords = useMemo(() => {
-    for (let month = MONTH_COUNT - 1; month >= 0; month--) {
-      if (countByMonth[month] > 0) return month
-    }
-    return new Date().getMonth()
-  }, [countByMonth])
-
-  const selectedMonth = manualMonth !== null ? manualMonth : mostRecentMonthWithRecords
-
-  const monthDocuments = useMemo(() => {
-    return documents.filter((document) => {
-      const date = new Date(document.issuedAt)
-      return date.getFullYear() === selectedYear && date.getMonth() === selectedMonth
-    })
-  }, [documents, selectedYear, selectedMonth])
-
-  const filteredDocuments = useMemo(() => {
-    const term = search.toLowerCase().trim()
-    if (!term) return monthDocuments
-
-    return monthDocuments.filter((document) => {
-      const name = (document.convictedName || '').toLowerCase()
-      const process = (document.processNumber || '').toLowerCase()
-      return name.includes(term) || process.includes(term)
-    })
-  }, [monthDocuments, search])
-
-  const selectYear = useCallback((year) => {
-    setSelectedYear(year)
-    setManualMonth(null)
-    setSearch('')
-  }, [])
-
-  const selectMonth = useCallback((month) => {
-    setManualMonth(month)
-    setSearch('')
-  }, [])
-
-  const changeViewMode = useCallback((mode) => {
-    setViewMode(mode)
-    saveViewPreference(mode)
-  }, [])
-
-  return {
+  const [reloadId, setReloadId] = useState(0)
+  const [state, setState] = useState({
+    items: [],
+    totalItems: 0,
+    totalPages: 1,
+    isLoading: true,
+    error: null,
+  })
+  const revision = useSyncExternalStore(subscribeAttendanceChanges, getAttendanceRevision)
+  const key = JSON.stringify([
+    tenantId,
+    source,
+    session?.user?.id,
     search,
-    setSearch,
-    hasSearch: search.trim() !== '',
-    selectedYear,
-    selectYear,
-    availableYears,
-    selectedMonth,
-    selectMonth,
-    countByMonth,
+    year,
+    month,
+    page,
+    revision,
+    reloadId,
+  ])
+  const yearsKey = JSON.stringify([tenantId, session?.user?.id, revision, reloadId])
+  const monthsKey = JSON.stringify([tenantId, session?.user?.id, year, revision, reloadId])
+  useEffect(() => {
+    const controller = new AbortController()
+    let current = true
+    listDocumentMonths(year, { signal: controller.signal })
+      .then((counts) => {
+        if (current) setMonthsState({ key: monthsKey, counts, error: null })
+      })
+      .catch((error) => {
+        if (current && error.name !== 'AbortError')
+          setMonthsState({ key: monthsKey, counts: [], error: error.message })
+      })
+    return () => {
+      current = false
+      controller.abort()
+    }
+  }, [year, monthsKey])
+  useEffect(() => {
+    const controller = new AbortController()
+    let current = true
+    listDocumentYears({ signal: controller.signal })
+      .then((years) => {
+        if (current) setYearsState({ key: yearsKey, years, isLoading: false, error: null })
+      })
+      .catch((error) => {
+        if (current && error.name !== 'AbortError')
+          setYearsState({ key: yearsKey, years: [], isLoading: false, error: error.message })
+      })
+    return () => {
+      current = false
+      controller.abort()
+    }
+  }, [yearsKey])
+  useEffect(() => {
+    const controller = new AbortController()
+    let current = true
+    const timer = setTimeout(async () => {
+      setState({ items: [], totalItems: 0, totalPages: 1, isLoading: true, error: null })
+      try {
+        const result = await listDocuments({
+          search,
+          year,
+          month: month ?? undefined,
+          page: page - 1,
+          size: 12,
+          signal: controller.signal,
+        })
+        if (current) setState({ ...result, key, isLoading: false, error: null })
+      } catch (error) {
+        if (current && error.name !== 'AbortError')
+          setState({
+            key,
+            items: [],
+            totalItems: 0,
+            totalPages: 1,
+            isLoading: false,
+            error: error.message,
+          })
+      }
+    }, 250)
+    return () => {
+      current = false
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [search, year, month, page, tenantId, source, session?.user?.id, revision, reloadId, key])
+  const result =
+    state.key === key
+      ? state
+      : { items: [], totalItems: 0, totalPages: 1, isLoading: true, error: null }
+  return {
+    ...result,
+    totalPages: Math.max(1, result.totalPages),
+    page,
+    setPage,
+    year,
+    month,
+    years: yearsState.key === yearsKey ? yearsState.years : [],
+    yearsLoading: yearsState.key !== yearsKey || yearsState.isLoading,
+    yearsError: yearsState.key === yearsKey ? yearsState.error : null,
+    monthCounts: monthsState.key === monthsKey ? monthsState.counts : [],
+    monthsLoading: monthsState.key !== monthsKey,
+    monthsError: monthsState.key === monthsKey ? monthsState.error : null,
+    setYear: (value) => {
+      setYear(value)
+      setMonth(null)
+      setPage(1)
+    },
+    toggleMonth: (value) => {
+      setMonth((selected) => (selected === value ? null : value))
+      setPage(1)
+    },
+    search,
+    setSearch: (value) => {
+      setSearch(value)
+      setPage(1)
+    },
     viewMode,
-    changeViewMode,
-    monthDocuments,
-    filteredDocuments,
+    changeViewMode: useCallback((value) => {
+      setViewMode(value)
+      saveViewPreference(value)
+    }, []),
+    reload: () => setReloadId((value) => value + 1),
   }
 }
