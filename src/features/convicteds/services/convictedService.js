@@ -1,4 +1,12 @@
-import { apiService } from '@/shared/infrastructure/http/apiService'
+import { z } from 'zod'
+import {
+  parseApiResponse,
+  parseApiInput,
+  parsePage,
+  pageParamsSchema,
+} from '@/shared/infrastructure/http/apiContracts'
+import { normalizePhoto, photoSchema } from '@/shared/lib/image'
+import { apiService, ApiRequestError } from '@/shared/infrastructure/http/apiService'
 
 const normalizeAddressFromApi = (address) => {
   if (!address) return null
@@ -12,6 +20,44 @@ const normalizeAddressFromApi = (address) => {
     state: address.state || '',
   }
 }
+
+const responseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  cpf: z.string(),
+  phone: z.string().optional(),
+  address: z
+    .object({
+      zip_code: z.string(),
+      street: z.string(),
+      number: z.string(),
+      complement: z.string().nullable().optional(),
+      neighborhood: z.string(),
+      city: z.string(),
+      state: z.string(),
+    })
+    .nullable()
+    .optional(),
+  employment_status: z.enum(['FORMAL_WORK', 'INFORMAL_WORK', 'UNEMPLOYED']).nullable().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']),
+  processes: z
+    .array(
+      z.object({ id: z.string(), number: z.string(), status: z.string(), principal: z.boolean() })
+    )
+    .optional(),
+  birth_date: z.string().optional(),
+  main_process_number: z.string().optional(),
+  same_process_convicted_count: z.number().optional(),
+})
+
+const detailResponseSchema = responseSchema.extend({
+  status: z.enum(['ACTIVE', 'INACTIVE']),
+  birth_date: z.string(),
+  phone: z.string(),
+  processes: z.array(
+    z.object({ id: z.string(), number: z.string(), status: z.string(), principal: z.boolean() })
+  ),
+})
 
 const toConvictedListItem = (item) => ({
   id: item.id,
@@ -65,50 +111,47 @@ const toConvictedDetail = (item) => ({
     : [],
 })
 
+let photoRevision = 0
+const photoListeners = new Set()
+export const getPhotoRevision = () => photoRevision
+export const subscribePhotoChanges = (listener) => {
+  photoListeners.add(listener)
+  return () => photoListeners.delete(listener)
+}
+
 class ConvictedService {
-  async list({ search, page = 1, limit = 25, signal }) {
-    const pageIndex = Math.max(0, page - 1)
-
-    const params = new URLSearchParams({
-      page: String(pageIndex),
-      size: String(limit),
-    })
-
-    if (search?.trim()) {
-      params.set('search', search.trim())
-    }
-
-    const response = await apiService.get(`/convicted?${params.toString()}`, { signal })
-
-    const items = Array.isArray(response?.content) ? response.content.map(toConvictedListItem) : []
-
-    return {
-      items,
-      totalItems: Number.isFinite(response?.totalElements ?? response?.total_elements)
-        ? (response.totalElements ?? response.total_elements)
-        : 0,
-      totalPages: Math.max(
-        1,
-        Number.isInteger(response?.totalPages ?? response?.total_pages)
-          ? (response.totalPages ?? response.total_pages)
-          : 1
-      ),
-    }
+  /** Lists convicteds. page is zero-based; size is 1..100. Supports AbortSignal. */
+  async list({ search, status, page = 0, size = 20, signal, timeoutMs } = {}) {
+    const params = new URLSearchParams(parseApiInput(pageParamsSchema, { page, size }))
+    if (search?.trim()) params.set('search', search.trim())
+    if (status) params.set('status', parseApiInput(z.enum(['ACTIVE', 'INACTIVE']), status))
+    return parsePage(
+      await apiService.get(`/convicted?${params}`, { signal, timeoutMs }),
+      responseSchema,
+      toConvictedListItem
+    )
   }
 
-  async getById(id, { signal } = {}) {
-    if (!id) throw new Error('ID do apenado é obrigatório.')
+  /** Gets canonical cadastral detail and linked processes; accepts signal. */
+  async getById(id, options) {
+    if (!id)
+      throw new ApiRequestError('ID do apenado é obrigatório.', {
+        kind: 'validation',
+        fields: [{ field: 'id', message: 'Campo obrigatório.' }],
+      })
 
-    const response = await apiService.get(`/convicted/${id}`, { signal })
-    return toConvictedDetail(response)
+    const response = await apiService.get(`/convicted/${id}`, options)
+    return toConvictedDetail(parseApiResponse(detailResponseSchema, response))
   }
 
-  async create(data) {
+  /** Creates a convicted from camelCase data; returns cadastral detail. */
+  async create(data, options) {
     const payload = {
       name: data.name?.trim(),
       cpf: (data.cpf || '').replace(/\D/g, ''),
       birth_date: data.birthDate,
-      phone: data.phone?.trim(),
+      employment_status: data.employmentStatus,
+      phone: data.phone?.replace(/\D/g, ''),
       address: {
         zip_code: (data.address?.zipCode || '').replace(/\D/g, ''),
         street: data.address?.street?.trim(),
@@ -126,20 +169,25 @@ class ConvictedService {
         : [],
     }
 
-    const response = await apiService.post('/convicted', payload)
-    return toConvictedDetail(response)
+    const response = await apiService.post('/convicted', payload, options)
+    return toConvictedDetail(parseApiResponse(detailResponseSchema, response))
   }
 
-  async update(id, data) {
-    if (!id) throw new Error('ID do apenado é obrigatório.')
+  /** Updates provided cadastral fields, including employmentStatus; returns detail. */
+  async update(id, data, options) {
+    if (!id)
+      throw new ApiRequestError('ID do apenado é obrigatório.', {
+        kind: 'validation',
+        fields: [{ field: 'id', message: 'Campo obrigatório.' }],
+      })
 
     const payload = {}
 
     if (data.name !== undefined) payload.name = data.name.trim()
     if (data.cpf !== undefined) payload.cpf = data.cpf.replace(/\D/g, '')
     if (data.birthDate !== undefined) payload.birth_date = data.birthDate
-    if (data.phone !== undefined) payload.phone = data.phone.trim()
-    if (data.status !== undefined) payload.status = data.status
+    if (data.phone !== undefined) payload.phone = data.phone.replace(/\D/g, '')
+    if (data.employmentStatus !== undefined) payload.employment_status = data.employmentStatus
     if (data.address) {
       payload.address = {
         zip_code: (data.address.zipCode || '').replace(/\D/g, ''),
@@ -159,33 +207,64 @@ class ConvictedService {
       }))
     }
 
-    const response = await apiService.put(`/convicted/${id}`, payload)
-    return toConvictedDetail(response)
+    const response = await apiService.put(`/convicted/${id}`, payload, options)
+    return toConvictedDetail(parseApiResponse(detailResponseSchema, response))
   }
 
-  async deactivate(id) {
-    if (!id) throw new Error('ID do apenado é obrigatório.')
-    return this.update(id, { status: 'INACTIVE' })
+  /** Updates cadastral status using URL parameters only; returns canonical detail. */
+  async updateStatus(id, status, options) {
+    if (!id)
+      throw new ApiRequestError('ID do apenado é obrigatório.', {
+        kind: 'validation',
+        fields: [{ field: 'id', message: 'Campo obrigatório.' }],
+      })
+    const nextStatus = parseApiInput(z.enum(['ACTIVE', 'INACTIVE']), status)
+    const response = await apiService.put(
+      `/convicted/${id}/status/${nextStatus}`,
+      undefined,
+      options
+    )
+    return toConvictedDetail(parseApiResponse(detailResponseSchema, response))
   }
 
-  async remove(id) {
-    return this.deactivate(id)
+  async deactivate(id, options) {
+    return this.updateStatus(id, 'INACTIVE', options)
   }
 
-  async uploadPhoto(id, file) {
-    if (!id) throw new Error('ID do apenado é obrigatório.')
-    if (!file) throw new Error('Arquivo de foto é obrigatório.')
-
+  /** Normalizes JPEG/PNG <=5 MiB to JPEG; resolves null and invalidates photo readers. */
+  async uploadPhoto(id, file, options) {
+    if (!id)
+      throw new ApiRequestError('ID do apenado é obrigatório.', {
+        kind: 'validation',
+        fields: [{ field: 'id', message: 'Campo obrigatório.' }],
+      })
+    parseApiInput(photoSchema, file)
+    let normalized
+    try {
+      normalized = await normalizePhoto(file)
+    } catch (cause) {
+      throw new ApiRequestError('Não foi possível preparar a foto. Selecione outra imagem.', {
+        kind: 'validation',
+        fields: [{ field: 'photo', message: 'Selecione uma imagem válida.' }],
+        cause,
+      })
+    }
     const formData = new FormData()
-    formData.append('photo', file)
-
-    const response = await apiService.put(`/convicted/${id}/photo`, formData)
-    return toConvictedDetail(response)
+    formData.append('photo', normalized, 'convicted-photo.jpg')
+    await apiService.put(`/convicted/${id}/photo`, formData, options)
+    photoRevision += 1
+    photoListeners.forEach((listener) => listener())
+    return null
   }
 
-  async getPhoto(id, { signal } = {}) {
-    if (!id) throw new Error('ID do apenado é obrigatório.')
-    return apiService.getBlob(`/convicted/${id}/photo`, { signal })
+  /** Gets the authenticated cadastral photo as Blob; accepts signal. */
+  async getPhoto(id, options) {
+    if (!id)
+      throw new ApiRequestError('ID do apenado é obrigatório.', {
+        kind: 'validation',
+        fields: [{ field: 'id', message: 'Campo obrigatório.' }],
+      })
+    return apiService.getBlob(`/convicted/${id}/photo`, options)
   }
 
   async searchCep(cep, { signal } = {}) {
@@ -220,10 +299,14 @@ export async function searchConvicteds({ search, limit = 10, signal } = {}) {
 
   const { items } = await convictedService.list({
     search: term,
-    page: 1,
-    limit,
+    page: 0,
+    size: limit,
     signal,
   })
 
   return items
 }
+
+/** Canonical detail and photo access for deliberate cross-feature integration. */
+export const getConvictedById = (id, options) => convictedService.getById(id, options)
+export const getConvictedPhoto = (id, options) => convictedService.getPhoto(id, options)

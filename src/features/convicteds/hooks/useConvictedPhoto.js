@@ -1,8 +1,16 @@
-import { useEffect, useState } from 'react'
-import { convictedService } from '@/features/convicteds/services/convictedService'
+import { useSession } from '@/features/authentication'
+import { useEffect, useState, useSyncExternalStore } from 'react'
+import {
+  convictedService,
+  getPhotoRevision,
+  subscribePhotoChanges,
+} from '@/features/convicteds/services/convictedService'
 
 export function useConvictedPhoto(id) {
-  const [state, setState] = useState({ url: null, isLoading: Boolean(id), error: null })
+  const { session } = useSession()
+  const revision = useSyncExternalStore(subscribePhotoChanges, getPhotoRevision)
+  const key = JSON.stringify([id, revision, session?.user?.id, session?.tenant?.id])
+  const [state, setState] = useState({ id: null, url: null, isLoading: Boolean(id), error: null })
 
   useEffect(() => {
     if (!id) {
@@ -14,7 +22,7 @@ export function useConvictedPhoto(id) {
     let isCurrent = true
 
     async function loadPhoto() {
-      setState({ url: null, isLoading: true, error: null })
+      setState({ id, key, url: null, isLoading: true, error: null })
       try {
         const blob = await convictedService.getPhoto(id, { signal: controller.signal })
         const nextObjectUrl = URL.createObjectURL(blob)
@@ -23,10 +31,16 @@ export function useConvictedPhoto(id) {
           return
         }
         objectUrl = nextObjectUrl
-        setState({ url: objectUrl, isLoading: false, error: null })
+        setState({ id, key, url: objectUrl, isLoading: false, error: null })
       } catch (error) {
         if (error?.name === 'AbortError' || !isCurrent) return
-        setState({ url: null, isLoading: false, error: error?.message || 'Foto indisponível.' })
+        setState({
+          id,
+          key,
+          url: null,
+          isLoading: false,
+          error: error?.message || 'Foto indisponível.',
+        })
       }
     }
 
@@ -37,7 +51,7 @@ export function useConvictedPhoto(id) {
       controller.abort()
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [id])
+  }, [id, key])
 
-  return id ? state : { url: null, isLoading: false, error: null }
+  return id && state.key === key ? state : { url: null, isLoading: Boolean(id), error: null }
 }

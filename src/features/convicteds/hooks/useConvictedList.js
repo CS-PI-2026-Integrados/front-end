@@ -1,59 +1,62 @@
 import { useCallback, useEffect, useState } from 'react'
-import { convictedService } from '@/features/convicteds/services/convictedService'
+import { useSession } from '@/features/authentication'
+import { convictedService } from '../services/convictedService'
 
-export function useConvictedList({ search, page = 1, limit = 25 }) {
-  const [reloadTrigger, setReloadTrigger] = useState(0)
-  const [state, setState] = useState({
-    items: [],
-    totalItems: 0,
-    totalPages: 1,
-    isLoading: true,
-    error: null,
-  })
-
-  const refetch = useCallback(() => {
-    setReloadTrigger((prev) => prev + 1)
-  }, [])
-
+const emptyState = { items: [], totalItems: 0, totalPages: 1, isLoading: true, error: null }
+export function useConvictedList({
+  search = '',
+  status,
+  page = 1,
+  limit = 25,
+  enabled = true,
+  onPageOutOfRange,
+} = {}) {
+  const { session } = useSession()
+  const [reloadId, setReloadId] = useState(0)
+  const key = JSON.stringify([
+    session?.user?.id,
+    session?.tenant?.id,
+    search,
+    status,
+    page,
+    limit,
+    reloadId,
+    enabled,
+  ])
+  const [state, setState] = useState(emptyState)
+  const refetch = useCallback(() => setReloadId((value) => value + 1), [setReloadId])
   useEffect(() => {
+    if (!enabled) return undefined
     const controller = new AbortController()
-    let isCurrent = true
-
-    async function loadConvicteds() {
-      setState((current) => ({ ...current, isLoading: true, error: null }))
-
+    let current = true
+    const timer = setTimeout(async () => {
       try {
         const result = await convictedService.list({
           search,
-          page,
-          limit,
+          status,
+          page: page - 1,
+          size: limit,
           signal: controller.signal,
         })
-
-        if (isCurrent) {
-          setState({ ...result, isLoading: false, error: null })
+        if (current) {
+          setState({ ...result, key, isLoading: false, error: null })
+          if (page > Math.max(1, result.totalPages)) {
+            onPageOutOfRange?.(Math.max(1, result.totalPages))
+          }
         }
       } catch (error) {
-        if (error?.name === 'AbortError' || !isCurrent) return
-
-        setState((current) => ({
-          ...current,
-          isLoading: false,
-          error: 'Não foi possível carregar os apenados.',
-        }))
+        if (current && error.name !== 'AbortError')
+          setState({ ...emptyState, key, isLoading: false, error: error.message })
       }
-    }
-
-    void loadConvicteds()
-
+    }, 250)
     return () => {
-      isCurrent = false
+      current = false
+      clearTimeout(timer)
       controller.abort()
     }
-  }, [limit, page, search, reloadTrigger])
-
+  }, [search, status, page, limit, key, enabled, onPageOutOfRange])
   return {
-    ...state,
+    ...(enabled ? (state.key === key ? state : emptyState) : { ...emptyState, isLoading: false }),
     refetch,
   }
 }

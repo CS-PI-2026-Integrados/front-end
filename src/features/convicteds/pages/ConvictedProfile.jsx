@@ -1,10 +1,10 @@
-import { ArrowLeft, Loader2, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Pencil, CircleMinus, CirclePlus } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { useConvictedDetail } from '@/features/convicteds/hooks/useConvictedDetail'
 import { useConvictedPhoto } from '@/features/convicteds/hooks/useConvictedPhoto'
-import { ConvictedDeactivateDialog } from '@/features/convicteds/components/ConvictedDeactivateDialog'
+import { ConvictedStatusDialog } from '@/features/convicteds/components/ConvictedStatusDialog'
 import { ConvictedFormDialog } from '@/features/convicteds/components/ConvictedFormDialog'
 import { formatAddress, getConvictedStatusLabel } from '@/features/convicteds/utils/convictedUtils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
@@ -16,7 +16,7 @@ export default function ConvictedProfile() {
   const { convicted, error, isLoading, refetch } = useConvictedDetail(id)
   const { url: photoUrl } = useConvictedPhoto(id)
   const [formOpen, setFormOpen] = useState(false)
-  const [deactivateOpen, setDeactivateOpen] = useState(false)
+  const [statusOpen, setStatusOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -39,14 +39,15 @@ export default function ConvictedProfile() {
   }
 
   const initials = (convicted.name || 'A').charAt(0).toUpperCase()
+  const inactive = convicted.status === 'INACTIVE'
   const handleFormSuccess = () => {
     setFormOpen(false)
     refetch()
   }
 
-  const handleDeactivateSuccess = () => {
-    setDeactivateOpen(false)
-    navigate('/apenados')
+  const handleStatusSuccess = () => {
+    setStatusOpen(false)
+    refetch()
   }
 
   return (
@@ -56,11 +57,14 @@ export default function ConvictedProfile() {
       </Button>
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Button type="button" variant="outline" onClick={() => setFormOpen(true)}>
-          <Pencil /> Editar
-        </Button>
-        <Button type="button" variant="destructive" onClick={() => setDeactivateOpen(true)}>
-          <Trash2 /> Inativar
+        {!inactive && (
+          <Button type="button" variant="ghost" onClick={() => setFormOpen(true)}>
+            <Pencil /> Editar
+          </Button>
+        )}
+        <Button type="button" variant="ghost" onClick={() => setStatusOpen(true)}>
+          {inactive ? <CirclePlus /> : <CircleMinus className="text-destructive" />}{' '}
+          {inactive ? 'Ativar' : 'Inativar'}
         </Button>
       </div>
 
@@ -130,12 +134,14 @@ export default function ConvictedProfile() {
         onOpenChange={setFormOpen}
         onSuccess={handleFormSuccess}
       />
-      <ConvictedDeactivateDialog
-        convicted={convicted}
-        open={deactivateOpen}
-        onOpenChange={setDeactivateOpen}
-        onSuccess={handleDeactivateSuccess}
-      />
+      {statusOpen && (
+        <ConvictedStatusDialog
+          convicted={convicted}
+          open
+          onOpenChange={setStatusOpen}
+          onSuccess={handleStatusSuccess}
+        />
+      )}
     </div>
   )
 }
