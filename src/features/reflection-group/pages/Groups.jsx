@@ -29,6 +29,7 @@ import { groupFrequencies, groupStatuses } from '../schemas/groupSchemas'
 import { groupsService } from '../services/groupsService'
 import GroupEditModal from '../components/GroupEditModal'
 import NewGroupForm from '../components/NewGroupForm'
+import { GroupParticipantPreview } from '../components/GroupParticipantPreview'
 
 const formatDate = (value) => (value ? value.slice(0, 10).split('-').reverse().join('/') : '—')
 const formatMeetings = (total, frequency) => {
@@ -170,7 +171,13 @@ export default function Groups() {
               {data.items.map((group) => (
                 <TableRow key={group.id}>
                   <TableCell className="min-w-56 px-4 py-3 font-medium wrap-break-word whitespace-normal">
-                    {group.name}
+                    <div className="space-y-2">
+                      <span>{group.name}</span>
+                      <GroupParticipantPreview
+                        participants={group.participantPreview}
+                        total={group.participantCount}
+                      />
+                    </div>
                   </TableCell>
                   <TableCell className="px-4 py-3">{groupStatuses[group.status]}</TableCell>
                   <TableCell className="px-4 py-3">{group.participantCount}</TableCell>

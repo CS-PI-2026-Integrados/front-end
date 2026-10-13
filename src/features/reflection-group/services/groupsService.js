@@ -78,11 +78,39 @@ export const groupsService = {
     const params = new URLSearchParams(parseApiInput(pageParamsSchema, { page, size }))
     for (const [key, value] of Object.entries({ name, subject, status }))
       if (value?.trim()) params.set(key, value.trim())
-    return parsePage(
+    const result = parsePage(
       await apiService.get(`/group?${params}`, { signal, timeoutMs }),
       listSchema,
       toListItem
     )
+    // The list endpoint exposes counts only. Resolve names on the current page,
+    // with bounded concurrency, until the API includes a participant preview.
+    const items = []
+    for (let start = 0; start < result.items.length; start += 4) {
+      items.push(
+        ...(await Promise.all(
+          result.items.slice(start, start + 4).map(async (group) => {
+            if (group.participantCount === 0) return { ...group, participantPreview: [] }
+            try {
+              const current = await groupsService.getById(group.id, { signal, timeoutMs })
+              return {
+                ...group,
+                participantCount: current.participantCount,
+                participantPreview: current.convicteds.slice(0, 3).map(({ id, fullName }) => ({
+                  id,
+                  fullName,
+                })),
+              }
+            } catch (error) {
+              if (error.name === 'AbortError' || error.kind === 'auth') throw error
+              // Keep the table and its official count usable if a preview fails.
+              return { ...group, participantPreview: null }
+            }
+          })
+        ))
+      )
+    }
+    return { ...result, items }
   },
   /** Gets a group's full planning and participants. */
   async getById(id, options) {
