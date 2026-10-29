@@ -1,4 +1,5 @@
 import { Pencil } from 'lucide-react'
+import { ConvictedCpf } from '@/features/convicteds'
 import { Label } from '@/shared/components/ui/label'
 import { Input } from '@/shared/components/ui/input'
 import { Checkbox } from '@/shared/components/ui/checkbox'
@@ -29,6 +30,7 @@ export function ConvictedInfoCard({ disabled = false, errors = {} }) {
   const phone = (convicted.phone || '').replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3')
   return (
     <div className="space-y-4">
+      <ConvictedCpf convictedId={convicted.id} maskedCpf={convicted.cpf} disabled={disabled} />
       <div className="space-y-1.5">
         <Label htmlFor="attendance-process">Processo Ativo</Label>
         <Select

@@ -9,6 +9,8 @@ import { normalizePhoto, photoSchema } from '@/shared/lib/image'
 import { apiService, ApiRequestError } from '@/shared/infrastructure/http/apiService'
 import { convictedUpdateSchema } from '../schemas/convictedSchema'
 
+const cpfResponseSchema = z.object({ cpf: z.string().regex(/^\d{11}$/) })
+
 const normalizeAddressFromApi = (address) => {
   if (!address) return null
   return {
@@ -143,6 +145,17 @@ class ConvictedService {
 
     const response = await apiService.get(`/convicted/${id}`, options)
     return toConvictedDetail(parseApiResponse(detailResponseSchema, response))
+  }
+
+  /** Explicit sensitive-data lookup; never merged into cadastral detail. */
+  async getCpf(id, options) {
+    if (!id) throw new ApiRequestError('ID do apenado é obrigatório.', { kind: 'validation' })
+
+    const response = await apiService.get(`/convicted/${id}/cpf`, {
+      ...options,
+      cache: 'no-store',
+    })
+    return parseApiResponse(cpfResponseSchema, response).cpf
   }
 
   /** Creates a convicted from camelCase data; returns cadastral detail. */
