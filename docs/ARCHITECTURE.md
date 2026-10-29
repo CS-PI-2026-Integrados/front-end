@@ -414,5 +414,5 @@ export const definePasswordSchema = z
 - Código em `shared/` não depende de domínio específico.
 - O `index.js`, quando presente, expõe apenas a API pública mínima da feature.
 - Operações assíncronas tratam concorrência, cancelamento e erros previsíveis.
-- Regras determinísticas e fluxos críticos possuem testes proporcionais ao risco.
+- O frontend não mantém uma suíte de testes automatizados; mudanças são validadas com lint e build.
 - Qualquer exceção arquitetural está justificada e documentada.
