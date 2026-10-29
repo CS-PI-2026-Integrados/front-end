@@ -9,12 +9,11 @@ import {
   zipCodeSchema,
 } from '../schemas/convictedSchema'
 import { compressImage, photoSchema } from '@/shared/lib/image'
-import { formatCpf } from '@/shared/lib/cpf'
 
 export function convictedToFormState(convicted) {
   return {
     name: convicted?.name || convicted?.fullName || '',
-    cpf: formatCpf(convicted?.cpf || ''),
+    cpf: '',
     birthDate: convicted?.birthDate?.slice(0, 10) || '',
     phone: convicted?.phone || '',
     employmentStatus: convicted?.employmentStatus || '',

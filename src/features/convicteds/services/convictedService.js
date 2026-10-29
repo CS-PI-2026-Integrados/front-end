@@ -7,6 +7,7 @@ import {
 } from '@/shared/infrastructure/http/apiContracts'
 import { normalizePhoto, photoSchema } from '@/shared/lib/image'
 import { apiService, ApiRequestError } from '@/shared/infrastructure/http/apiService'
+import { convictedUpdateSchema } from '../schemas/convictedSchema'
 
 const normalizeAddressFromApi = (address) => {
   if (!address) return null
@@ -184,7 +185,8 @@ class ConvictedService {
     const payload = {}
 
     if (data.name !== undefined) payload.name = data.name.trim()
-    if (data.cpf !== undefined) payload.cpf = data.cpf.replace(/\D/g, '')
+    const cpf = parseApiInput(convictedUpdateSchema.shape.cpf, data.cpf)
+    if (cpf !== undefined) payload.cpf = cpf.replace(/\D/g, '')
     if (data.birthDate !== undefined) payload.birth_date = data.birthDate
     if (data.phone !== undefined) payload.phone = data.phone.replace(/\D/g, '')
     if (data.employmentStatus !== undefined) payload.employment_status = data.employmentStatus
