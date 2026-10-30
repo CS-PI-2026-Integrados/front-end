@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Users, ClipboardList, CheckCircle, TriangleAlert } from 'lucide-react'
 import { MetricCard } from '@/shared/components/data-display/MetricCard'
 import { ProofData } from '../components/dashboard/ProofData'
@@ -11,6 +12,8 @@ const Dashboard = () => {
   const records = attendance.data
   const peoplePlaceholder = convicted.isLoading ? 'Carregando...' : 'Indisponível'
   const attendancePlaceholder = attendance.isLoading ? 'Carregando...' : 'Indisponível'
+
+  const [pessoaSelecionada, setPessoaSelecionada] = useState(null)
 
   return (
     <div className="space-y-5">
@@ -64,6 +67,7 @@ const Dashboard = () => {
             atividadesRecentes={records?.recentActivities}
             isLoading={attendance.isLoading}
             error={attendance.error}
+            onSelect={setPessoaSelecionada}
           />
         </div>
       </div>
