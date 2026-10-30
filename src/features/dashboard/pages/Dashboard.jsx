@@ -5,6 +5,8 @@ import { ProofData } from '../components/dashboard/ProofData'
 import { RecentActivities } from '../components/dashboard/RecentActivities'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
+import { usePersonDocuments } from '@/features/documents'
+import { ApenadoDocumentsDialog } from '@/features/convicteds'
 
 const Dashboard = () => {
   const { convicted, attendance } = useDashboardMetrics()
@@ -14,6 +16,11 @@ const Dashboard = () => {
   const attendancePlaceholder = attendance.isLoading ? 'Carregando...' : 'Indisponível'
 
   const [pessoaSelecionada, setPessoaSelecionada] = useState(null)
+  const {
+    comprovantes,
+    isLoading: documentosLoading,
+    error: documentosError,
+  } = usePersonDocuments(pessoaSelecionada)
 
   return (
     <div className="space-y-5">
@@ -71,6 +78,16 @@ const Dashboard = () => {
           />
         </div>
       </div>
+
+      <ApenadoDocumentsDialog
+        person={pessoaSelecionada}
+        comprovantes={comprovantes}
+        isLoading={documentosLoading}
+        error={documentosError}
+        onOpenChange={(open) => {
+          if (!open) setPessoaSelecionada(null)
+        }}
+      />
     </div>
   )
 }
