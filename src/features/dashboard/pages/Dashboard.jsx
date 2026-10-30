@@ -5,7 +5,7 @@ import { ProofData } from '../components/dashboard/ProofData'
 import { RecentActivities } from '../components/dashboard/RecentActivities'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
-import { usePersonDocuments } from '@/features/documents'
+import { usePersonDocuments, useDocumentActions, PdfPreviewModal } from '@/features/documents'
 import { ApenadoDocumentsDialog } from '@/features/convicteds'
 
 const Dashboard = () => {
@@ -21,6 +21,17 @@ const Dashboard = () => {
     isLoading: documentosLoading,
     error: documentosError,
   } = usePersonDocuments(pessoaSelecionada)
+
+  const {
+    pdfDocument,
+    openPdf,
+    closePdf,
+    downloadPdf,
+    viewPdf,
+    downloadDocumentPdf,
+    isProcessing,
+    pdfError,
+  } = useDocumentActions()
 
   return (
     <div className="space-y-5">
@@ -84,9 +95,19 @@ const Dashboard = () => {
         comprovantes={comprovantes}
         isLoading={documentosLoading}
         error={documentosError}
+        onView={openPdf}
+        onDownload={downloadDocumentPdf}
         onOpenChange={(open) => {
           if (!open) setPessoaSelecionada(null)
         }}
+      />
+      <PdfPreviewModal
+        document={pdfDocument}
+        isProcessing={isProcessing}
+        error={pdfError}
+        onDownload={downloadPdf}
+        onView={viewPdf}
+        onClose={closePdf}
       />
     </div>
   )
