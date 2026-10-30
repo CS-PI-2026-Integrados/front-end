@@ -21,6 +21,8 @@ function formatarDataHora(data) {
 export function ApenadoDocumentsDialog({
   person,
   comprovantes = [],
+  termosGrupos = [],
+  certificados = [],
   isLoading = false,
   error = null,
   onDownload,
@@ -42,7 +44,10 @@ export function ApenadoDocumentsDialog({
         <Tabs defaultValue="comprovantes">
           <TabsList>
             <TabsTrigger value="comprovantes">Comprovantes ({comprovantes.length})</TabsTrigger>
-            <TabsTrigger value="certificados">Certificados (0)</TabsTrigger>
+            <TabsTrigger value="grupos">Termos de grupos ({termosGrupos.length})</TabsTrigger>
+            {certificados.length > 0 && (
+              <TabsTrigger value="certificados">Certificados ({certificados.length})</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="comprovantes" className="mt-4">
             {isLoading ? (
@@ -106,12 +111,34 @@ export function ApenadoDocumentsDialog({
               </div>
             )}
           </TabsContent>
-          <TabsContent
-            value="certificados"
-            className="text-muted-foreground py-10 text-center text-sm"
-          >
-            Nenhum certificado encontrado.
+
+          <TabsContent value="grupos" className="mt-4">
+            {termosGrupos.length === 0 ? (
+              <p className="text-muted-foreground py-10 text-center text-sm">
+                Documentos de grupos reflexivos indisponíveis até haver suporte da API.
+              </p>
+            ) : (
+              <ul className="divide-border divide-y">
+                {termosGrupos.map((termo) => (
+                  <li key={termo.id} className="py-2 text-sm">
+                    {termo.groupName || termo.nomeGrupo || 'Termo de grupo'}
+                  </li>
+                ))}
+              </ul>
+            )}
           </TabsContent>
+
+          {certificados.length > 0 && (
+            <TabsContent value="certificados" className="mt-4">
+              <ul className="divide-border divide-y">
+                {certificados.map((certificado) => (
+                  <li key={certificado.id} className="py-2 text-sm">
+                    {certificado.name || certificado.nome || 'Certificado'}
+                  </li>
+                ))}
+              </ul>
+            </TabsContent>
+          )}
         </Tabs>
       </DialogContent>
     </Dialog>
