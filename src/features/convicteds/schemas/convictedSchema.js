@@ -58,7 +58,12 @@ export const convictedFormSchema = z.object({
   photo: photoSchema.nullable().optional().default(null),
 })
 export const convictedCreateSchema = convictedFormSchema.extend({ photo: photoSchema })
-export const convictedUpdateSchema = convictedFormSchema
+export const convictedUpdateSchema = convictedFormSchema.extend({
+  cpf: z.preprocess(
+    (value) => (typeof value === 'string' && !value.trim() ? undefined : value),
+    convictedFormSchema.shape.cpf.optional()
+  ),
+})
 
 export function validateConvictedForm(form, { isEditing = false } = {}) {
   const result = (isEditing ? convictedUpdateSchema : convictedCreateSchema).safeParse(form)
