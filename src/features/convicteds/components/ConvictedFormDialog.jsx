@@ -90,15 +90,21 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
       <FormSection title="Dados pessoais">
         {input('name', 'Nome completo', { placeholder: 'Nome completo do apenado' })}
         <FormGrid>
-          <CpfField
-            id="convicted-cpf"
-            label="CPF"
-            required
-            variant="modal"
-            registration={register('cpf')}
-            disabled={disabled}
-            error={errors.cpf?.message}
-          />
+          <div>
+            {isEditing && (
+              <p className="text-muted-foreground mb-2 text-xs">CPF atual: {convicted.cpf}</p>
+            )}
+            <CpfField
+              id="convicted-cpf"
+              label={isEditing ? 'Novo CPF' : 'CPF'}
+              required={!isEditing}
+              description={isEditing ? 'Deixe vazio para manter o CPF atual' : undefined}
+              variant="modal"
+              registration={register('cpf')}
+              disabled={disabled}
+              error={errors.cpf?.message}
+            />
+          </div>
           {input('birthDate', 'Data de nascimento', { type: 'date' })}
         </FormGrid>
         <Controller

@@ -7,6 +7,9 @@ import {
 } from '@/shared/infrastructure/http/apiContracts'
 import { normalizePhoto, photoSchema } from '@/shared/lib/image'
 import { apiService, ApiRequestError } from '@/shared/infrastructure/http/apiService'
+import { convictedUpdateSchema } from '../schemas/convictedSchema'
+
+const cpfResponseSchema = z.object({ cpf: z.string().regex(/^\d{11}$/) })
 
 const normalizeAddressFromApi = (address) => {
   if (!address) return null
@@ -144,6 +147,17 @@ class ConvictedService {
     return toConvictedDetail(parseApiResponse(detailResponseSchema, response))
   }
 
+  /** Explicit sensitive-data lookup; never merged into cadastral detail. */
+  async getCpf(id, options) {
+    if (!id) throw new ApiRequestError('ID do apenado é obrigatório.', { kind: 'validation' })
+
+    const response = await apiService.get(`/convicted/${id}/cpf`, {
+      ...options,
+      cache: 'no-store',
+    })
+    return parseApiResponse(cpfResponseSchema, response).cpf
+  }
+
   /** Creates a convicted from camelCase data; returns cadastral detail. */
   async create(data, options) {
     const payload = {
@@ -184,7 +198,8 @@ class ConvictedService {
     const payload = {}
 
     if (data.name !== undefined) payload.name = data.name.trim()
-    if (data.cpf !== undefined) payload.cpf = data.cpf.replace(/\D/g, '')
+    const cpf = parseApiInput(convictedUpdateSchema.shape.cpf, data.cpf)
+    if (cpf !== undefined) payload.cpf = cpf.replace(/\D/g, '')
     if (data.birthDate !== undefined) payload.birth_date = data.birthDate
     if (data.phone !== undefined) payload.phone = data.phone.replace(/\D/g, '')
     if (data.employmentStatus !== undefined) payload.employment_status = data.employmentStatus

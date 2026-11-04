@@ -6,6 +6,7 @@ import { useConvictedDetail } from '@/features/convicteds/hooks/useConvictedDeta
 import { useConvictedPhoto } from '@/features/convicteds/hooks/useConvictedPhoto'
 import { ConvictedStatusDialog } from '@/features/convicteds/components/ConvictedStatusDialog'
 import { ConvictedFormDialog } from '@/features/convicteds/components/ConvictedFormDialog'
+import { ConvictedCpf } from '@/features/convicteds/components/ConvictedCpf'
 import { formatAddress, getConvictedStatusLabel } from '@/features/convicteds/utils/convictedUtils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
 import { Button } from '@/shared/components/ui/button'
@@ -75,7 +76,7 @@ export default function ConvictedProfile() {
             <AvatarFallback className="text-3xl">{initials}</AvatarFallback>
           </Avatar>
           <h1 className="text-foreground mt-4 text-xl font-semibold">{convicted.name}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">CPF: {convicted.cpf}</p>
+          <ConvictedCpf convictedId={convicted.id} maskedCpf={convicted.cpf} className="mt-1" />
           <span className="bg-secondary text-secondary-foreground mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold">
             {getConvictedStatusLabel(convicted.status)}
           </span>
