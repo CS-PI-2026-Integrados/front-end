@@ -36,12 +36,12 @@ export function ApenadoDocumentsDialog({
 
   return (
     <Dialog open={Boolean(person)} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{nome}</DialogTitle>
           <p className="text-muted-foreground text-sm">CPF: {cpf}</p>
         </DialogHeader>
-        <Tabs defaultValue="comprovantes">
+        <Tabs defaultValue="comprovantes" className="min-w-[40rem]">
           <TabsList>
             <TabsTrigger value="comprovantes">Comprovantes ({comprovantes.length})</TabsTrigger>
             <TabsTrigger value="grupos">Termos de grupos ({termosGrupos.length})</TabsTrigger>
