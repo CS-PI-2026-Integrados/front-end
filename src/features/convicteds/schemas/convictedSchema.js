@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { cpfSchema } from '@/shared/schemas/fieldSchemas'
+import { cpfSchema, optionalPhoneSchema } from '@/shared/schemas/fieldSchemas'
 import { formatCpf } from '@/shared/lib/cpf'
 import { photoSchema } from '@/shared/lib/image'
 
@@ -45,14 +45,11 @@ export const convictedFormSchema = z.object({
   }),
   name: z.string().trim().min(1, 'O nome é obrigatório.'),
   cpf: z.preprocess((value) => (typeof value === 'string' ? formatCpf(value) : value), cpfSchema),
-  birthDate: z.iso.date({ error: 'Informe uma data de nascimento válida.' }),
-  phone: z
-    .string()
-    .trim()
-    .refine(
-      (value) => [10, 11].includes(value.replace(/\D/g, '').length),
-      'Informe um telefone válido com DDD.'
-    ),
+  birthDate: z.preprocess(
+    (value) => (typeof value === 'string' ? value.trim() || null : value),
+    z.iso.date({ error: 'Informe uma data de nascimento válida.' }).nullish()
+  ),
+  phone: optionalPhoneSchema,
   address: addressSchema,
   processes: processesSchema.default([]),
   photo: photoSchema.nullable().optional().default(null),

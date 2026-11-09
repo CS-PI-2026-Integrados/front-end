@@ -84,7 +84,7 @@ export function ConvictedInfoCard({ disabled = false, errors = {} }) {
       </div>
       <div className="bg-muted/30 space-y-3 rounded-md border p-4">
         <div className="space-y-1.5">
-          <Label htmlFor="attendance-phone">Telefone</Label>
+          <Label htmlFor="attendance-phone">Telefone (opcional)</Label>
           <Input
             id="attendance-phone"
             type="tel"

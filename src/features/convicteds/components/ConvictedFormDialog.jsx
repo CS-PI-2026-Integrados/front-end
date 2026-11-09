@@ -105,7 +105,7 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
               error={errors.cpf?.message}
             />
           </div>
-          {input('birthDate', 'Data de nascimento', { type: 'date' })}
+          {input('birthDate', 'Data de nascimento', { type: 'date', required: false })}
         </FormGrid>
         <Controller
           control={control}
@@ -131,7 +131,6 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
             <MaskedInputField
               id="convicted-phone"
               label="Telefone de contato"
-              required
               variant="modal"
               field={field}
               mask={phoneMasks}
