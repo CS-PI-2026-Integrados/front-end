@@ -19,6 +19,7 @@ const listSchema = z.object({
   presenters: z.array(z.string()),
   status: z.enum(['PLANNED', 'ACTIVE', 'CLOSED']),
   participant_count: z.number(),
+  participants: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
   total_meetings_count: z.number().nullable().optional(),
   frequency: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY']).nullable().optional(),
   start_date: z.string().nullable().optional(),
@@ -45,6 +46,10 @@ const toListItem = (item) => ({
   presenters: item.presenters,
   status: item.status,
   participantCount: item.participant_count,
+  participants: item.participants?.map((person) => ({
+    id: person.id,
+    fullName: person.name,
+  })),
   totalMeetingsCount: item.total_meetings_count ?? item.total_meetings_counts,
   frequency: item.frequency,
   startDate: item.start_date,
