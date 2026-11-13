@@ -27,6 +27,7 @@ import {
 import { useGroups } from '../hooks/useGroups'
 import { groupFrequencies, groupStatuses } from '../schemas/groupSchemas'
 import { groupsService } from '../services/groupsService'
+import { GroupParticipantPreview } from '../components/GroupParticipantPreview'
 import GroupEditModal from '../components/GroupEditModal'
 import NewGroupForm from '../components/NewGroupForm'
 
@@ -169,8 +170,14 @@ export default function Groups() {
             <TableBody>
               {data.items.map((group) => (
                 <TableRow key={group.id}>
-                  <TableCell className="min-w-56 px-4 py-3 font-medium wrap-break-word whitespace-normal">
-                    {group.name}
+                  <TableCell className="min-w-56 px-4 py-3 wrap-break-word whitespace-normal">
+                    <div className="space-y-1">
+                      <p className="font-medium">{group.name}</p>
+                      <GroupParticipantPreview
+                        participants={group.participants}
+                        participantCount={group.participantCount}
+                      />
+                    </div>
                   </TableCell>
                   <TableCell className="px-4 py-3">{groupStatuses[group.status]}</TableCell>
                   <TableCell className="px-4 py-3">{group.participantCount}</TableCell>
