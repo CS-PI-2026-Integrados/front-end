@@ -281,6 +281,7 @@ export class ApiService {
     }, timeoutMs)
     try {
       const response = await fetch(`${getApiBaseUrl()}${path}`, {
+        cache: 'no-store',
         ...options,
         body: requestBody,
         headers: requestHeaders,

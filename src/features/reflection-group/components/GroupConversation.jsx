@@ -425,14 +425,8 @@ const GroupConversation = ({ data }) => {
                       className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
                     >
                       <div className="text-sm">{participant.fullName}</div>
-                      <Button size="sm" asChild>
-                        <a
-                          href="https://s2.q4cdn.com/175719177/files/doc_presentations/Placeholder-PDF.pdf"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Gerar certificado
-                        </a>
+                      <Button size="sm" disabled>
+                        Emissão indisponível
                       </Button>
                     </div>
                   ))}
@@ -497,16 +491,7 @@ const GroupConversation = ({ data }) => {
             </Card>
             {documentoDisponivel ? (
               <p className="text-muted-foreground">
-                Clique{' '}
-                <a
-                  className="font-medium text-blue-700"
-                  href="https://s2.q4cdn.com/175719177/files/doc_presentations/Placeholder-PDF.pdf"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  aqui
-                </a>{' '}
-                para acessar o documento de demonstração.
+                A emissão deste documento ainda não está disponível na API.
               </p>
             ) : (
               <Button

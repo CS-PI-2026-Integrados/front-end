@@ -1,7 +1,6 @@
 import { useReducer, useEffect } from 'react'
 import { useSession } from '@/features/authentication'
 import { TenantContext } from '../context/tenantContext'
-import { getTenantById } from '../services/tenantService'
 
 const DEFAULT_RECEIPT_CONFIG = {
   mostrarFotoReferencia: true,
@@ -34,7 +33,7 @@ function tenantReducer(state, action) {
     case 'LOAD_TENANT': {
       const tenant = action.payload
       return {
-        ...state,
+        ...initialState,
         nomeComarca: tenant.nomeComarca || '',
         unidade: tenant.unidade || '',
         endereco: tenant.address || '',
@@ -49,6 +48,9 @@ function tenantReducer(state, action) {
         isLoaded: true,
       }
     }
+
+    case 'RESET':
+      return initialState
 
     case 'SET_UNIT_DATA':
       return {
@@ -95,14 +97,12 @@ export function TenantProvider({ children }) {
   const { session } = useSession()
 
   useEffect(() => {
-    if (!session?.tenant?.id) return
-
-    const tenant = getTenantById(session.tenant.id)
-
-    if (tenant) {
-      dispatch({ type: 'LOAD_TENANT', payload: tenant })
+    if (!session?.tenant?.id) {
+      dispatch({ type: 'RESET' })
+      return
     }
-  }, [session?.tenant?.id])
+    dispatch({ type: 'LOAD_TENANT', payload: { nomeComarca: session.tenant.name } })
+  }, [session?.tenant?.id, session?.tenant?.name])
 
   return <TenantContext.Provider value={{ state, dispatch }}>{children}</TenantContext.Provider>
 }

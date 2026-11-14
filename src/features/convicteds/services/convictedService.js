@@ -49,7 +49,7 @@ const responseSchema = z.object({
     )
     .optional(),
   birth_date: z.string().nullish(),
-  main_process_number: z.string().optional(),
+  main_process_number: z.string().nullish(),
   same_process_convicted_count: z.number().optional(),
 })
 

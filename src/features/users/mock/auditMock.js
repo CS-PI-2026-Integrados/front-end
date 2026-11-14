@@ -1,7 +1,8 @@
 const AUDIT_STORAGE_KEY = '@sicape:audit-events'
 
 const getStoredAuditEvents = () => {
-  const storedEvents = localStorage.getItem(AUDIT_STORAGE_KEY)
+  localStorage.removeItem(AUDIT_STORAGE_KEY)
+  const storedEvents = sessionStorage.getItem(AUDIT_STORAGE_KEY)
 
   if (!storedEvents) return []
 
@@ -20,7 +21,7 @@ export const appendAuditEvent = async (event) => {
     ...event,
   }
 
-  localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify([nextEvent, ...events]))
+  sessionStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify([nextEvent, ...events]))
 
   return nextEvent
 }

@@ -1,8 +1,7 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useTenant } from '@/features/institutions/context/tenantContext'
 import {
   validateLogoFile,
-  validateLogoOnServer,
   convertFileToBase64,
   MAX_FIELD_LENGTH,
 } from '@/features/institutions/services/tenantService'
@@ -11,36 +10,20 @@ import toast from 'react-hot-toast'
 const LOGO_REMOVED_SENTINEL = '__REMOVED__'
 
 export function useInstitutionForm() {
-  const { state: tenantState, dispatch } = useTenant()
+  const { state: tenantState } = useTenant()
 
-  const [nomeComarca, setNomeComarca] = useState('')
-  const [unidade, setUnidade] = useState('')
-  const [endereco, setEndereco] = useState('')
+  const [nomeComarca, setNomeComarca] = useState(tenantState.nomeComarca || '')
+  const [unidade, setUnidade] = useState(tenantState.unidade || '')
+  const [endereco, setEndereco] = useState(tenantState.endereco || '')
 
-  const [logoPreview, setLogoPreview] = useState(null)
+  const [logoPreview, setLogoPreview] = useState(tenantState.logo || null)
   const [pendingLogoBase64, setPendingLogoBase64] = useState(null)
   const [logoError, setLogoError] = useState(null)
 
   const [fieldErrors, setFieldErrors] = useState({})
-  const [isSaving, setIsSaving] = useState(false)
+  const isSaving = false
 
   const fileInputRef = useRef(null)
-
-  useEffect(() => {
-    if (!tenantState.isLoaded) return
-
-    setNomeComarca(tenantState.nomeComarca || '')
-    setUnidade(tenantState.unidade || '')
-    setEndereco(tenantState.endereco || '')
-    setLogoPreview(tenantState.logo || null)
-    setPendingLogoBase64(null)
-  }, [
-    tenantState.isLoaded,
-    tenantState.nomeComarca,
-    tenantState.unidade,
-    tenantState.endereco,
-    tenantState.logo,
-  ])
 
   const handleFieldChange = useCallback((field, value) => {
     if (value.length > MAX_FIELD_LENGTH) return
@@ -108,44 +91,8 @@ export function useInstitutionForm() {
       return
     }
 
-    setIsSaving(true)
-
-    try {
-      if (pendingLogoBase64 && pendingLogoBase64 !== LOGO_REMOVED_SENTINEL) {
-        const serverResult = await validateLogoOnServer(pendingLogoBase64)
-        if (!serverResult.valid) {
-          setLogoError(serverResult.error)
-          toast.error(serverResult.error)
-          setIsSaving(false)
-          return
-        }
-      }
-
-      dispatch({
-        type: 'SET_UNIT_DATA',
-        payload: {
-          nomeComarca: nomeComarca.trim(),
-          unidade: unidade.trim(),
-          endereco: endereco.trim(),
-        },
-      })
-
-      if (pendingLogoBase64 === LOGO_REMOVED_SENTINEL) {
-        dispatch({ type: 'SET_LOGO', payload: null })
-      } else if (pendingLogoBase64) {
-        dispatch({ type: 'SET_LOGO', payload: pendingLogoBase64 })
-      }
-
-      setPendingLogoBase64(null)
-      setFieldErrors({})
-      setLogoError(null)
-      toast.success('Configurações salvas')
-    } catch {
-      toast.error('Erro ao salvar configurações. Tente novamente.')
-    } finally {
-      setIsSaving(false)
-    }
-  }, [nomeComarca, unidade, endereco, pendingLogoBase64, dispatch])
+    toast.error('O salvamento das configurações institucionais ainda não está disponível.')
+  }, [nomeComarca, endereco])
 
   const hasChanges = (() => {
     const nameChanged = nomeComarca.trim() !== (tenantState.nomeComarca || '')

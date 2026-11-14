@@ -1,7 +1,9 @@
-import { appendAuditEvent } from '@/features/users/mock/auditMock'
+import { readSessionJson, writeSessionJson } from '@/shared/infrastructure/storage/jsonStorage'
 
 export const registerUserAuditAction = async ({ action, actor, target }) => {
-  return appendAuditEvent({
+  const event = {
+    id: crypto.randomUUID(),
+    occurredAt: new Date().toISOString(),
     scope: 'E06',
     entity: 'user',
     action,
@@ -12,5 +14,7 @@ export const registerUserAuditAction = async ({ action, actor, target }) => {
     targetId: target.id,
     targetRoleId: target.roleId,
     targetRoleKey: target.role?.key,
-  })
+  }
+  writeSessionJson('@sicape:audit-events', [event, ...readSessionJson('@sicape:audit-events', [])])
+  return event
 }

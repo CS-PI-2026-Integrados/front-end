@@ -1,4 +1,7 @@
-import { readJson, writeJson } from '@/shared/infrastructure/storage/jsonStorage'
+import {
+  readSessionJson as readJson,
+  writeSessionJson as writeJson,
+} from '@/shared/infrastructure/storage/jsonStorage'
 
 const AUDIT_STORAGE_KEY = '@sicape:audit-events'
 

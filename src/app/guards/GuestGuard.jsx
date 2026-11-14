@@ -16,7 +16,10 @@ export default function GuestGuard() {
     }
 
     const redirect = new URLSearchParams(location.search).get('redirect')?.trim()
-    const destination = redirect && redirect !== '/' ? redirect : '/dashboard'
+    const destination =
+      redirect?.startsWith('/') && !redirect.startsWith('//') && !redirect.includes('\\')
+        ? redirect
+        : '/dashboard'
 
     return <Navigate to={destination} replace />
   }

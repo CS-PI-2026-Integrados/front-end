@@ -7,12 +7,29 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'reject-runtime-mocks',
+        apply: 'build',
+        moduleParsed({ id }) {
+          const normalized = id.replaceAll('\\', '/')
+          if (
+            normalized.includes('/src/') &&
+            (normalized.includes('/mock/') || /mockEmailGateway/.test(normalized))
+          ) {
+            this.error('Dados simulados não podem integrar o bundle de produção.')
+          }
+        },
+      },
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    build: { sourcemap: false },
     server: {
       proxy: {
         '/api': {

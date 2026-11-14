@@ -1,11 +1,5 @@
 import { apiService } from '@/shared/infrastructure/http/apiService'
-import { findAuthUserByCredentials } from '@/features/authentication/mock/authMock'
-import { updateIdentityPassword } from '@/features/authentication/mock/identityRepository'
-import {
-  createUserPasswordResetToken,
-  findUserByValidPasswordResetToken,
-} from '@/features/authentication/mock/passwordResetMock'
-import { sendPasswordResetEmail } from '@/shared/infrastructure/notifications/mockEmailGateway'
+import { clearSensitiveBrowserData } from '@/shared/infrastructure/storage/jsonStorage'
 
 const createApiSession = () => {
   const payload = apiService.getAccessTokenPayload()
@@ -29,14 +23,6 @@ const createApiSession = () => {
   }
 }
 
-const applyDefinedPassword = async ({ userId, password }) => {
-  return updateIdentityPassword({
-    userId,
-    password,
-    mustChangePassword: false,
-  })
-}
-
 export const login = async ({ cpf, password }) => {
   await apiService.login({ cpf, password })
 
@@ -50,7 +36,11 @@ export const login = async ({ cpf, password }) => {
 }
 
 export const logout = () => {
+  if (apiService.getTokens()) {
+    void apiService.post('/authentication/logout').catch(() => {})
+  }
   apiService.clearTokens()
+  clearSensitiveBrowserData()
 }
 
 export const restoreSession = async () => {
@@ -75,42 +65,18 @@ export const subscribeToAuthStateChanges = (listener) => {
   return apiService.subscribeToAuthChanges(listener)
 }
 
-export const requestPasswordReset = async (cpf) => {
-  const resetRequest = await createUserPasswordResetToken(cpf)
-
-  if (!resetRequest) return
-
-  await sendPasswordResetEmail(resetRequest.email, resetRequest.token)
+export const requestPasswordReset = async () => {
+  throw new Error('A recuperação por e-mail ainda não está disponível. Procure o administrador.')
 }
 
-export const validatePasswordResetToken = async (token) => {
-  const user = await findUserByValidPasswordResetToken(token)
+export const validatePasswordResetToken = async () => false
 
-  return Boolean(user)
+export const definePasswordWithResetToken = async () => {
+  throw new Error('Este link não é válido. Procure o administrador.')
 }
 
-export const definePasswordWithResetToken = async (token, password) => {
-  const user = await findUserByValidPasswordResetToken(token)
-
-  if (!user) {
-    throw new Error('Este link não é mais válido.')
-  }
-
-  return applyDefinedPassword({
-    userId: user.id,
-    password,
-  })
-}
-
-export const definePasswordForRequiredChange = async (session, password) => {
-  if (!session?.user?.mustChangePassword) {
-    throw new Error('A troca obrigatória de senha não está pendente.')
-  }
-
-  return applyDefinedPassword({
-    userId: session.user.id,
-    password,
-  })
+export const definePasswordForRequiredChange = async () => {
+  throw new Error('Altere a senha nas configurações informando a senha atual.')
 }
 
 export const changePassword = async (session, currentPassword, newPassword) => {
@@ -118,13 +84,10 @@ export const changePassword = async (session, currentPassword, newPassword) => {
     throw new Error('Sessão inválida.')
   }
 
-  await findAuthUserByCredentials(session.user.cpf, currentPassword)
-
-  const updated = await updateUserPassword({
-    userId: session.user.id,
-    password: newPassword,
-    mustChangePassword: false,
+  await apiService.post('/authentication/password', {
+    current_password: currentPassword,
+    new_password: newPassword,
   })
-
-  return updated
+  logout()
+  return true
 }
