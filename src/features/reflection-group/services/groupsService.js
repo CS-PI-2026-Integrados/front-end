@@ -75,6 +75,15 @@ const toDetail = (item) => ({
   })),
 })
 const detail = (response) => toDetail(parseApiResponse(detailSchema, response))
+const sameIds = (left, right) => left.size === right.size && [...left].every((id) => right.has(id))
+const participantSaveError = (cause, message) =>
+  new ApiRequestError(message, {
+    status: cause.status ?? null,
+    body: cause.body ?? null,
+    kind: cause.kind ?? 'backend',
+    fields: cause.fields ?? [],
+    cause,
+  })
 
 /** Official /group contract. Canonical camelCase models; throws ApiRequestError. */
 export const groupsService = {
@@ -220,18 +229,15 @@ export const groupsService = {
     if (current.status !== 'PLANNED') {
       throw Object.assign(
         new ApiRequestError('Os participantes só podem ser alterados em grupos em planejamento.'),
-        { currentGroup: current }
+        { currentGroup: current, possiblyChanged: false, partialSuccess: false }
       )
     }
 
-    let attempted = false
     try {
       for (const personId of removals) {
-        attempted = true
         await groupsService.removeConvicted(groupId, personId, options)
       }
       for (const personId of additions) {
-        attempted = true
         await groupsService.addConvicted(groupId, personId, options)
       }
       return await groupsService.getById(groupId, options)
@@ -244,14 +250,28 @@ export const groupsService = {
       } catch (readError) {
         if (readError.name === 'AbortError') throw readError
       }
+      if (!currentGroup) {
+        throw Object.assign(
+          participantSaveError(
+            cause,
+            'Não foi possível confirmar as alterações de participantes. Tente salvar novamente para consultar os vínculos atuais.'
+          ),
+          { currentGroup: null, possiblyChanged: true, partialSuccess: false }
+        )
+      }
+
+      const currentIds = new Set(currentGroup.convicteds.map((person) => person.id))
+      if (sameIds(currentIds, desired)) return currentGroup
+
+      const partialSuccess = !sameIds(currentIds, existing)
       throw Object.assign(
-        new ApiRequestError(
-          currentGroup
+        participantSaveError(
+          cause,
+          partialSuccess
             ? 'Nem todas as alterações de participantes foram concluídas. O estado atual foi reconciliado; tente salvar novamente.'
-            : 'Não foi possível confirmar as alterações de participantes. Tente novamente para consultar os vínculos atuais.',
-          { cause, fields: cause.fields || [] }
+            : cause.message || 'Não foi possível salvar os participantes.'
         ),
-        { currentGroup, possiblyChanged: attempted }
+        { currentGroup, possiblyChanged: partialSuccess, partialSuccess }
       )
     }
   },
