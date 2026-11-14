@@ -42,6 +42,7 @@ export function useGroupParticipantsDraft({
   const requestVersion = useRef(0)
   const mounted = useRef(true)
   const saveInFlight = useRef(false)
+  const saveController = useRef(null)
   const currentKey = useRef(requestKey)
 
   currentKey.current = requestKey
@@ -103,6 +104,7 @@ export function useGroupParticipantsDraft({
 
     return () => {
       controller.abort()
+      saveController.current?.abort()
     }
   }, [applyAuthoritativeGroup, enabled, groupId, requestKey, service])
 
@@ -161,18 +163,17 @@ export function useGroupParticipantsDraft({
     }
 
     saveInFlight.current = true
+    const controller = new AbortController()
+    saveController.current = controller
     setSaving(true)
     setSaveError(null)
     setSaveStatus('saving')
     try {
-      const result = service.saveParticipants
-        ? await service.saveParticipants(groupId, {
-            participantIds: draft.map((person) => person.id),
-          })
-        : await service.saveChanges(groupId, {
-            metadata: {},
-            participantIds: draft.map((person) => person.id),
-          })
+      const result = await service.saveParticipants(
+        groupId,
+        { participantIds: draft.map((person) => person.id) },
+        { signal: controller.signal }
+      )
       if (!mounted.current || requestKey !== currentKey.current) return false
       if (!result) throw new Error('O serviço não retornou o estado atualizado.')
 
@@ -195,6 +196,7 @@ export function useGroupParticipantsDraft({
       return false
     } finally {
       saveInFlight.current = false
+      if (saveController.current === controller) saveController.current = null
       if (mounted.current && requestKey === currentKey.current) setSaving(false)
     }
   }, [

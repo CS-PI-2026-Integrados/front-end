@@ -199,6 +199,62 @@ export const groupsService = {
       )
     }
   },
+  /** Reconciles participant links only and returns the authoritative group. */
+  async saveParticipants(id, input, options) {
+    const groupId = parseApiInput(groupParticipantIdSchema, id)
+    const { participantIds } = parseApiInput(
+      z.object({
+        participantIds: z
+          .array(groupParticipantIdSchema)
+          .refine((ids) => new Set(ids).size === ids.length, 'Não repita participantes.'),
+      }),
+      input
+    )
+    const current = await groupsService.getById(groupId, options)
+    const existing = new Set(current.convicteds.map((person) => person.id))
+    const desired = new Set(participantIds)
+    const removals = [...existing].filter((personId) => !desired.has(personId))
+    const additions = [...desired].filter((personId) => !existing.has(personId))
+
+    if (!removals.length && !additions.length) return current
+    if (current.status !== 'PLANNED') {
+      throw Object.assign(
+        new ApiRequestError('Os participantes só podem ser alterados em grupos em planejamento.'),
+        { currentGroup: current }
+      )
+    }
+
+    let attempted = false
+    try {
+      for (const personId of removals) {
+        attempted = true
+        await groupsService.removeConvicted(groupId, personId, options)
+      }
+      for (const personId of additions) {
+        attempted = true
+        await groupsService.addConvicted(groupId, personId, options)
+      }
+      return await groupsService.getById(groupId, options)
+    } catch (cause) {
+      if (cause.name === 'AbortError') throw cause
+
+      let currentGroup = null
+      try {
+        currentGroup = await groupsService.getById(groupId, options)
+      } catch (readError) {
+        if (readError.name === 'AbortError') throw readError
+      }
+      throw Object.assign(
+        new ApiRequestError(
+          currentGroup
+            ? 'Nem todas as alterações de participantes foram concluídas. O estado atual foi reconciliado; tente salvar novamente.'
+            : 'Não foi possível confirmar as alterações de participantes. Tente novamente para consultar os vínculos atuais.',
+          { cause, fields: cause.fields || [] }
+        ),
+        { currentGroup, possiblyChanged: attempted }
+      )
+    }
+  },
   /** Removes the group; resolves to null. */
   remove: (id, options) => apiService.delete(`/group/${id}`, options),
   /** Links a participant; success has no body. Caller must reload detail. */
