@@ -1,7 +1,9 @@
 import { Pencil, Plus, Search, Users } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useSession } from '@/features/authentication'
 import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
+import { ConfirmationDialog } from '@/shared/components/ConfirmationDialog'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
@@ -25,10 +27,12 @@ import {
   TableRow,
 } from '@/shared/components/ui/table'
 import { useGroups } from '../hooks/useGroups'
+import { useGroupParticipantsDraft } from '../hooks/useGroupParticipantsDraft'
 import { groupFrequencies, groupStatuses } from '../schemas/groupSchemas'
 import { groupsService } from '../services/groupsService'
 import { GroupParticipantPreview } from '../components/GroupParticipantPreview'
 import GroupEditModal from '../components/GroupEditModal'
+import { ManageParticipantsModal } from '../components/ManageParticipantsModal'
 import NewGroupForm from '../components/NewGroupForm'
 
 const formatDate = (value) => (value ? value.slice(0, 10).split('-').reverse().join('/') : '—')
@@ -46,7 +50,29 @@ export default function Groups() {
   const [page, setPage] = useState(1)
   const [creating, setCreating] = useState(false)
   const [editingGroup, setEditingGroup] = useState(null)
+  const [participantsGroup, setParticipantsGroup] = useState(null)
+  const [participantSummaries, setParticipantSummaries] = useState({})
+  const { session } = useSession()
   const data = useGroups({ name, status, page })
+  const participantDraft = useGroupParticipantsDraft({
+    groupId: participantsGroup?.id,
+    scopeKey: `${session?.tenant?.id ?? ''}:${session?.user?.id ?? ''}`,
+    enabled: Boolean(participantsGroup),
+    canEdit: data.canManage && participantsGroup?.status === 'PLANNED',
+    onUpdated: (participants) => {
+      if (!participantsGroup) return
+      setParticipantSummaries((current) => ({
+        ...current,
+        [participantsGroup.id]: {
+          participants,
+          participantCount: participants.length,
+        },
+      }))
+    },
+  })
+  const closeParticipants = () => {
+    if (participantDraft.requestClose()) setParticipantsGroup(null)
+  }
   return (
     <div className="space-y-5">
       <PageHeader
@@ -84,6 +110,49 @@ export default function Groups() {
           }}
         />
       )}
+      {participantsGroup && (
+        <ManageParticipantsModal
+          open
+          onOpenChange={(open) => {
+            if (!open) setParticipantsGroup(null)
+          }}
+          onRequestClose={closeParticipants}
+          group={participantsGroup}
+          participants={participantDraft.participants}
+          additions={participantDraft.additions}
+          removals={participantDraft.removals}
+          onAdd={participantDraft.add}
+          onRemove={participantDraft.remove}
+          onSave={async () => {
+            if (await participantDraft.save()) setParticipantsGroup(null)
+          }}
+          onCancel={participantDraft.cancel}
+          isLoading={participantDraft.isLoading}
+          isSaving={participantDraft.isSaving}
+          error={participantDraft.error}
+          saveError={participantDraft.saveError}
+          onRetry={() => participantDraft.reload?.()}
+          readOnly={!data.canManage || participantsGroup.status !== 'PLANNED'}
+          readOnlyReason={
+            !data.canManage
+              ? 'Seu perfil pode consultar os participantes, mas não pode alterá-los.'
+              : 'Somente grupos em planejamento permitem alterar participantes.'
+          }
+        />
+      )}
+      <ConfirmationDialog
+        open={participantDraft.discardConfirmationOpen}
+        onOpenChange={participantDraft.cancelDiscard}
+        title="Descartar alterações?"
+        description="As inclusões e remoções ainda não salvas serão descartadas."
+        confirmLabel="Descartar"
+        destructive
+        onConfirm={() => {
+          const discarded = participantDraft.confirmDiscard()
+          if (discarded) setParticipantsGroup(null)
+          return discarded
+        }}
+      />
       <FiltersPanel description="Pesquise e filtre os grupos cadastrados">
         <div className="relative min-w-0 flex-1">
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -173,14 +242,23 @@ export default function Groups() {
                   <TableCell className="min-w-56 px-4 py-3 wrap-break-word whitespace-normal">
                     <div className="space-y-1">
                       <p className="font-medium">{group.name}</p>
+                      <span className="sr-only" id={`group-${group.id}-participants-label`}>
+                        Participantes do grupo {group.name}
+                      </span>
                       <GroupParticipantPreview
-                        participants={group.participants}
-                        participantCount={group.participantCount}
+                        participants={
+                          participantSummaries[group.id]?.participants ?? group.participants
+                        }
+                        participantCount={
+                          participantSummaries[group.id]?.participantCount ?? group.participantCount
+                        }
                       />
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-3">{groupStatuses[group.status]}</TableCell>
-                  <TableCell className="px-4 py-3">{group.participantCount}</TableCell>
+                  <TableCell className="px-4 py-3">
+                    {participantSummaries[group.id]?.participantCount ?? group.participantCount}
+                  </TableCell>
                   <TableCell className="px-4 py-3">
                     {formatMeetings(group.totalMeetingsCount, group.frequency)}
                   </TableCell>
@@ -192,6 +270,15 @@ export default function Groups() {
                     <div className="flex items-center justify-end gap-1">
                       <Button asChild size="sm">
                         <Link to={`/grupos-reflexivos/${group.id}`}>Acessar</Link>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        aria-describedby={`group-${group.id}-participants-label`}
+                        onClick={() => setParticipantsGroup(group)}
+                      >
+                        Participantes
                       </Button>
                       {data.canManage && (
                         <Button

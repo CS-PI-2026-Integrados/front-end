@@ -39,6 +39,7 @@ export function useGroupParticipantsDraft({
   const [saveError, setSaveError] = useState(null)
   const [saveStatus, setSaveStatus] = useState('idle')
   const [discardConfirmationOpen, setDiscardConfirmationOpen] = useState(false)
+  const [revision, setRevision] = useState(0)
   const requestVersion = useRef(0)
   const mounted = useRef(true)
   const saveInFlight = useRef(false)
@@ -106,7 +107,7 @@ export function useGroupParticipantsDraft({
       controller.abort()
       saveController.current?.abort()
     }
-  }, [applyAuthoritativeGroup, enabled, groupId, requestKey, service])
+  }, [applyAuthoritativeGroup, enabled, groupId, requestKey, revision, service])
 
   const additions = useMemo(
     () => draft.filter((person) => !confirmed.some((item) => item.id === person.id)),
@@ -149,6 +150,7 @@ export function useGroupParticipantsDraft({
 
   const confirmDiscard = useCallback(() => cancel(), [cancel])
   const cancelDiscard = useCallback(() => setDiscardConfirmationOpen(false), [])
+  const reload = useCallback(() => setRevision((value) => value + 1), [])
 
   const save = useCallback(async () => {
     if (
@@ -231,5 +233,6 @@ export function useGroupParticipantsDraft({
     discardConfirmationOpen,
     confirmDiscard,
     cancelDiscard,
+    reload,
   }
 }

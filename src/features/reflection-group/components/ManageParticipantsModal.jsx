@@ -30,8 +30,10 @@ export function ManageParticipantsModal({
   isLoading = false,
   isSaving = false,
   error,
+  saveError,
   onRetry,
   readOnly = false,
+  readOnlyReason = 'Este grupo está disponível somente para consulta.',
 }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -193,7 +195,7 @@ export function ManageParticipantsModal({
 
           {readOnly && (
             <p className="bg-muted text-muted-foreground rounded-md px-3 py-2 text-sm">
-              Este grupo está disponível somente para consulta.
+              {readOnlyReason}
             </p>
           )}
 
@@ -266,6 +268,12 @@ export function ManageParticipantsModal({
                 </ul>
               )}
             </section>
+          )}
+
+          {saveError && (
+            <p role="alert" className="text-destructive text-sm">
+              {saveError}
+            </p>
           )}
 
           {!isLoading && !error && !readOnly && (
