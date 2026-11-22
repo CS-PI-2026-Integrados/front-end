@@ -29,17 +29,12 @@ export function UsersTable({ users, currentUser, onAction, isSaving = false }) {
         <TableRow className="bg-secondary border-y">
           {['Nome completo', 'CPF', 'E-mail', 'Nível de acesso', 'Status', 'Data de criação'].map(
             (column) => (
-              <TableHead
-                key={column}
-                className="text-foreground px-4 py-3 text-left text-xs font-semibold"
-              >
+              <TableHead key={column} className="text-foreground px-4 py-3 text-xs font-semibold">
                 {column}
               </TableHead>
             )
           )}
-          <TableHead className="text-foreground px-4 py-3 text-right text-xs font-semibold">
-            Ações
-          </TableHead>
+          <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">Ações</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

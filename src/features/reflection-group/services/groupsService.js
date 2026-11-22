@@ -39,6 +39,24 @@ const detailSchema = listSchema.omit({ participant_count: true }).extend({
   updated_at: z.string(),
   convicteds: z.array(z.object({ id: z.string(), name: z.string(), document: z.string() })),
 })
+const meetingAttendanceSchema = z.object({
+  convicted_uuid: z.string(),
+  convicted_name: z.string(),
+  membership_uuid: z.string().nullable(),
+  status: z.enum(['PRESENTE', 'AUSENTE', 'JUSTIFICADO']),
+  justification_type: z
+    .enum(['ATESTADO', 'DETERMINACAO_JUDICIAL', 'FORCA_MAIOR', 'OUTRO'])
+    .nullable(),
+  justification_text: z.string().nullable(),
+})
+const meetingSchema = z.object({
+  uuid: z.string(),
+  date: z.string(),
+  subject: z.string(),
+  status: z.enum(['PENDENTE', 'REALIZADO', 'CANCELADO']),
+  version: z.number(),
+  attendance: z.array(meetingAttendanceSchema),
+})
 const toListItem = (item) => ({
   id: item.uuid,
   name: item.name,
@@ -75,6 +93,34 @@ const toDetail = (item) => ({
   })),
 })
 const detail = (response) => toDetail(parseApiResponse(detailSchema, response))
+const toMeeting = (meeting) => ({
+  id: meeting.uuid,
+  date: meeting.date,
+  subject: meeting.subject,
+  status: meeting.status,
+  version: meeting.version,
+  attendance: meeting.attendance.map((record) => ({
+    convictedId: record.convicted_uuid,
+    convictedName: record.convicted_name,
+    membershipId: record.membership_uuid,
+    status: record.status,
+    justificationType: record.justification_type,
+    justificationText: record.justification_text,
+  })),
+})
+const toMeetingRequest = (meeting) => ({
+  uuid: meeting.id,
+  date: meeting.date,
+  subject: meeting.subject,
+  status: meeting.status,
+  version: meeting.version ?? null,
+  attendance: meeting.attendance.map((record) => ({
+    convicted_uuid: record.convictedId,
+    status: record.status,
+    justification_type: record.justificationType ?? null,
+    justification_text: record.justificationText ?? null,
+  })),
+})
 const sameIds = (left, right) => left.size === right.size && [...left].every((id) => right.has(id))
 const participantSaveError = (cause, message) =>
   new ApiRequestError(message, {
@@ -101,6 +147,24 @@ export const groupsService = {
   /** Gets a group's full planning and participants. */
   async getById(id, options) {
     return detail(await apiService.get(`/group/${id}`, options))
+  },
+  async getMeetings(id, options) {
+    return parseApiResponse(
+      z.array(meetingSchema),
+      await apiService.get(`/group/${id}/meetings`, options)
+    ).map(toMeeting)
+  },
+  async syncMeetings(id, meetings, options) {
+    return parseApiResponse(
+      z.array(meetingSchema),
+      await apiService.put(`/group/${id}/meetings`, meetings.map(toMeetingRequest), options)
+    ).map(toMeeting)
+  },
+  async importLegacyMeetings(id, meetings, options) {
+    return parseApiResponse(
+      z.array(meetingSchema),
+      await apiService.post(`/group/${id}/meetings/import`, meetings.map(toMeetingRequest), options)
+    ).map(toMeeting)
   },
   /** Creates a PLANNED group, optionally linking convictedUuids atomically. */
   async create(input, options) {
@@ -226,9 +290,11 @@ export const groupsService = {
     const additions = [...desired].filter((personId) => !existing.has(personId))
 
     if (!removals.length && !additions.length) return current
-    if (current.status !== 'PLANNED') {
+    if (!['PLANNED', 'ACTIVE'].includes(current.status)) {
       throw Object.assign(
-        new ApiRequestError('Os participantes só podem ser alterados em grupos em planejamento.'),
+        new ApiRequestError(
+          'Os participantes só podem ser alterados em grupos em planejamento ou em andamento.'
+        ),
         { currentGroup: current, possiblyChanged: false, partialSuccess: false }
       )
     }

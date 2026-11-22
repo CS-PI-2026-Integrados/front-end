@@ -3,6 +3,7 @@ import { cn } from '@/shared/lib/utils'
 
 export function DataTableCard({
   children,
+  action,
   className,
   count,
   emptyState,
@@ -22,7 +23,10 @@ export function DataTableCard({
             <p className="text-muted-foreground mt-1 text-sm">{count} registro(s) encontrado(s)</p>
           )}
         </div>
-        {icon}
+        <div className="flex shrink-0 items-center gap-2">
+          {action}
+          {icon}
+        </div>
       </CardHeader>
       <CardContent className="px-0">
         {isLoading ? (

@@ -6,11 +6,11 @@ import { HeaderButton } from '@/shared/components/buttons/HeaderButton'
 import { ConfirmationDialog } from '@/shared/components/ConfirmationDialog'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { TablePagination } from '@/shared/components/data-display/TablePagination'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
-import { Pagination } from '@/shared/components/ui/pagination'
 import {
   Select,
   SelectContent,
@@ -58,7 +58,7 @@ export default function Groups() {
     groupId: participantsGroup?.id,
     scopeKey: `${session?.tenant?.id ?? ''}:${session?.user?.id ?? ''}`,
     enabled: Boolean(participantsGroup),
-    canEdit: data.canManage && participantsGroup?.status === 'PLANNED',
+    canEdit: data.canManage && ['PLANNED', 'ACTIVE'].includes(participantsGroup?.status),
     onUpdated: (participants) => {
       if (!participantsGroup) return
       setParticipantSummaries((current) => ({
@@ -132,11 +132,16 @@ export default function Groups() {
           error={participantDraft.error}
           saveError={participantDraft.saveError}
           onRetry={() => participantDraft.reload?.()}
-          readOnly={!data.canManage || participantsGroup.status !== 'PLANNED'}
+          readOnly={
+            !data.canManage ||
+            !['PLANNED', 'ACTIVE'].includes(
+              participantDraft.groupStatus ?? participantsGroup.status
+            )
+          }
           readOnlyReason={
             !data.canManage
               ? 'Seu perfil pode consultar os participantes, mas não pode alterá-los.'
-              : 'Somente grupos em planejamento permitem alterar participantes.'
+              : `O grupo está ${participantDraft.groupStatus === 'CLOSED' ? 'encerrado' : 'indisponível para edição'}; os participantes estão somente para consulta.`
           }
         />
       )}
@@ -215,12 +220,12 @@ export default function Groups() {
             />
           }
           footer={
-            <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
-              <span className="font-medium">
-                Página {page} de {data.totalPages} · {data.totalItems} registros
-              </span>
-              <Pagination currentPage={page} totalPages={data.totalPages} onPageChange={setPage} />
-            </div>
+            <TablePagination
+              currentPage={page}
+              totalPages={data.totalPages}
+              totalItems={data.totalItems}
+              onPageChange={setPage}
+            />
           }
         >
           <Table contentColumns="fit-content(36ch) max-content max-content max-content max-content max-content max-content">
@@ -228,12 +233,12 @@ export default function Groups() {
               <TableRow className="bg-secondary border-y">
                 {['Nome do Grupo', 'Status', 'Participantes', 'Encontros', 'Início', 'Fim'].map(
                   (title) => (
-                    <TableHead key={title} className="px-4 py-3 text-left text-xs font-semibold">
+                    <TableHead key={title} className="px-4 py-3 text-xs font-semibold">
                       {title}
                     </TableHead>
                   )
                 )}
-                <TableHead className="px-4 py-3 text-right text-xs font-semibold">Ações</TableHead>
+                <TableHead className="px-4 py-3 text-center text-xs font-semibold">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

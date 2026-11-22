@@ -33,6 +33,7 @@ export function useGroupParticipantsDraft({
   const requestKey = `${scopeKey}:${groupId ?? ''}`
   const [confirmed, setConfirmed] = useState(EMPTY_LIST)
   const [draft, setDraft] = useState(EMPTY_LIST)
+  const [groupStatus, setGroupStatus] = useState(null)
   const [loadedKey, setLoadedKey] = useState(null)
   const [isLoading, setLoading] = useState(Boolean(enabled && groupId))
   const [savingLoadKey, setSavingLoadKey] = useState(null)
@@ -63,6 +64,7 @@ export function useGroupParticipantsDraft({
     const participants = toParticipants(group)
     setConfirmed(participants)
     setDraft(participants)
+    setGroupStatus(group?.status ?? null)
     return participants
   }, [])
 
@@ -79,6 +81,7 @@ export function useGroupParticipantsDraft({
       setLoading(false)
       setConfirmed(EMPTY_LIST)
       setDraft(EMPTY_LIST)
+      setGroupStatus(null)
       setLoadedKey(loadKey)
       return () => controller.abort()
     }
@@ -106,6 +109,7 @@ export function useGroupParticipantsDraft({
         ) {
           setConfirmed(EMPTY_LIST)
           setDraft(EMPTY_LIST)
+          setGroupStatus(null)
           setLoadedKey(loadKey)
           setError(cause.message || 'Não foi possível carregar os participantes.')
           setLoading(false)
@@ -235,6 +239,7 @@ export function useGroupParticipantsDraft({
       if (cause.currentGroup) {
         const participants = toParticipants(cause.currentGroup)
         setConfirmed(participants)
+        setGroupStatus(cause.currentGroup.status ?? null)
         onUpdated?.(participants)
         setSaveStatus(cause.partialSuccess === true ? 'partial' : 'error')
       } else {
@@ -271,6 +276,7 @@ export function useGroupParticipantsDraft({
   return {
     confirmed: currentConfirmed,
     participants: currentDraft,
+    groupStatus: isCurrentRequest ? groupStatus : null,
     additions,
     removals,
     hasChanges,

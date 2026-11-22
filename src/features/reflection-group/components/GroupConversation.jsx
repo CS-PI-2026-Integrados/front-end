@@ -4,8 +4,6 @@ import {
   FileText,
   CheckCircle,
   TriangleAlert,
-  Plus,
-  Trash,
   ListCheck,
   Pencil,
   Settings,
@@ -13,12 +11,13 @@ import {
 import { useSession } from '@/features/authentication'
 import { Spinner } from '@/shared/components/ui/spinner'
 import { BackButton } from '@/shared/components/buttons/BackButton'
+import { ConfirmationDialog } from '@/shared/components/ConfirmationDialog'
 import { MetricCard } from '@/shared/components/data-display/MetricCard'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { TablePagination } from '@/shared/components/data-display/TablePagination'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { Button } from '@/shared/components/ui/button'
-import { Pagination } from '@/shared/components/ui/pagination'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs.jsx'
 import {
   Table,
@@ -59,6 +58,7 @@ import {
   CardDescription,
   CardContent,
 } from '@/shared/components/ui/card.jsx'
+import { ManageParticipantsModal } from './ManageParticipantsModal'
 
 const getStatusBadgeColor = (situacao) => {
   const statusColors = {
@@ -86,13 +86,51 @@ const StatusBadge = ({ situacao }) => (
   </span>
 )
 
+const getMeetingAttendanceRows = (meeting, participants) => {
+  if (Array.isArray(meeting.attendance)) {
+    return meeting.attendance.map((record) => ({
+      id: record.convictedId,
+      fullName: record.convictedName,
+      status: record.status,
+      justificationType: record.justificationType,
+      justificationText: record.justificationText,
+    }))
+  }
+
+  return participants.map((participant) => {
+    const justification = meeting.justifications?.[participant.id]
+    return {
+      id: participant.id,
+      fullName: participant.fullName,
+      status: meeting.present?.includes(participant.id)
+        ? 'PRESENTE'
+        : meeting.absent?.includes(participant.id)
+          ? 'AUSENTE'
+          : 'JUSTIFICADO',
+      justificationType: typeof justification === 'object' ? justification?.type : null,
+      justificationText: typeof justification === 'object' ? justification?.text : justification,
+    }
+  })
+}
+
 const GroupConversation = ({ data }) => {
   const { session } = useSession()
   const [meetingsPage, setMeetingsPage] = useState(1)
+  const [participantsPage, setParticipantsPage] = useState(1)
   const [documentoDisponivel, setDocumentoDisponivel] = useState(false)
   const {
     isLoading,
+    isSavingMeeting,
     group,
+    isParticipantsModalOpen,
+    openParticipantsModal,
+    setParticipantsModalOpen,
+    requestCloseParticipants,
+    saveParticipants,
+    confirmDiscardParticipants,
+    cancelDiscardParticipants,
+    participantDraft,
+    canManageParticipants,
     isModalOpen,
     setIsModalOpen,
     selectedEncontro,
@@ -129,7 +167,6 @@ const GroupConversation = ({ data }) => {
     handleCreateEncontro,
     handleEditEncontro,
     handleSaveEditEncontro,
-    handleRemoveParticipant,
     openPresenceModal,
     closePresenceModal,
     handleParticipantStatusChange,
@@ -138,7 +175,6 @@ const GroupConversation = ({ data }) => {
     isConfirmDisabled,
     handleConfirmPresences,
     error,
-    isSaving,
     reload,
   } = data
   const meetings = group?.meetings ?? []
@@ -148,6 +184,14 @@ const GroupConversation = ({ data }) => {
   const visibleMeetings = meetings.slice(
     (currentMeetingsPage - 1) * meetingsPageSize,
     currentMeetingsPage * meetingsPageSize
+  )
+  const participants = group?.participants ?? []
+  const participantsPageSize = 5
+  const participantsTotalPages = Math.max(1, Math.ceil(participants.length / participantsPageSize))
+  const currentParticipantsPage = Math.min(participantsPage, participantsTotalPages)
+  const visibleParticipants = participants.slice(
+    (currentParticipantsPage - 1) * participantsPageSize,
+    currentParticipantsPage * participantsPageSize
   )
 
   if (!isLoading && !group)
@@ -178,6 +222,16 @@ const GroupConversation = ({ data }) => {
       <PageHeader
         title={group?.name ?? 'Grupos Reflexivos'}
         description={group?.description ?? 'Gerencie grupos de reflexão e acompanhe participantes'}
+        action={
+          <Button
+            type="button"
+            variant="outline"
+            onClick={openParticipantsModal}
+            aria-label={`Gerenciar participantes do grupo ${group.name}`}
+          >
+            Gerenciar participantes
+          </Button>
+        }
       />
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
@@ -214,19 +268,16 @@ const GroupConversation = ({ data }) => {
             <TabsTrigger value="documentos">Documentos da vara</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="encontros">
-            <div className="mb-4 flex items-center justify-between">
-              <h4 className="font-medium">Histórico de encontros</h4>
-              <Button size="sm" onClick={openNewEncontroModal}>
-                <Plus />
-                Registrar encontro
-              </Button>
-            </div>
-
+          <TabsContent value="encontros" className="mt-4">
             <DataTableCard
               title="Histórico de encontros"
               count={meetings.length}
               icon={<FileText className="text-muted-foreground size-5" aria-hidden="true" />}
+              action={
+                <Button size="sm" onClick={openNewEncontroModal}>
+                  Registrar encontro
+                </Button>
+              }
               isEmpty={!meetings.length}
               emptyState={
                 <EmptyTableState
@@ -236,51 +287,36 @@ const GroupConversation = ({ data }) => {
                 />
               }
               footer={
-                <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                  <span className="font-medium">
-                    Página {currentMeetingsPage} de {meetingsTotalPages} {'·'} {meetings.length}{' '}
-                    registros
-                  </span>
-                  <Pagination
-                    currentPage={currentMeetingsPage}
-                    totalPages={meetingsTotalPages}
-                    onPageChange={setMeetingsPage}
-                  />
-                </div>
+                <TablePagination
+                  currentPage={currentMeetingsPage}
+                  totalPages={meetingsTotalPages}
+                  totalItems={meetings.length}
+                  onPageChange={setMeetingsPage}
+                />
               }
             >
               <div className="overflow-x-auto">
                 <Table contentColumns="max-content fit-content(40ch) max-content max-content max-content">
                   <TableHeader>
                     <TableRow className="bg-secondary border-y">
-                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
-                        Data
-                      </TableHead>
-                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
-                        Tema
-                      </TableHead>
-                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
-                        Status
-                      </TableHead>
-                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
-                        Presenças
-                      </TableHead>
-                      <TableHead className="px-4 py-3 text-right text-xs font-semibold">
-                        Ações
-                      </TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Data</TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Tema</TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Status</TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Presenças</TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
 
                   <TableBody>
                     {visibleMeetings.map((encontro) => (
                       <TableRow key={encontro.id}>
-                        <TableCell className="px-4 py-3.5 whitespace-nowrap">
+                        <TableCell className="px-4 py-2 whitespace-nowrap">
                           {formatDate(encontro.date) || '—'}
                         </TableCell>
-                        <TableCell className="max-w-[40ch] px-4 py-3.5 wrap-break-word whitespace-normal">
+                        <TableCell className="max-w-[40ch] px-4 py-2 wrap-break-word whitespace-normal">
                           {encontro.subject}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="px-4 py-2">
                           <div className="flex items-center gap-2">
                             <StatusBadge situacao={encontro.status || 'PENDENTE'} />
                             {isEncontroAtrasado(encontro) && (
@@ -288,49 +324,50 @@ const GroupConversation = ({ data }) => {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="px-4 py-3.5 whitespace-nowrap">
-                          {`${encontro.present?.length ?? encontro.attendanceCount ?? 0}/${group?.participants?.length ?? 0}`}
+                        <TableCell className="px-4 py-2 whitespace-nowrap">
+                          {`${encontro.present?.length ?? 0}/${encontro.attendanceCount ?? group?.participants?.length ?? 0}`}
                         </TableCell>
-                        <TableCell className="px-4 py-3.5 text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                aria-label={`Ações do encontro ${encontro.subject}`}
-                              >
-                                <Settings />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuGroup>
-                                <DropdownMenuItem
-                                  disabled={
-                                    (encontro.status !== 'PENDENTE' &&
-                                      session?.user?.role?.key !== 'admin') ||
-                                    !['admin', 'operator'].includes(session?.user?.role?.key)
-                                  }
-                                  className="w-full justify-start"
-                                  onSelect={() => handleEditEncontro(encontro)}
+                        <TableCell className="px-4 py-2">
+                          <div className="flex justify-end">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  aria-label={`Ações do encontro ${encontro.subject}`}
                                 >
-                                  <Pencil /> Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="w-full justify-start"
-                                  onSelect={() => openPresenceModal(encontro)}
-                                  disabled={encontro.status === 'CANCELADO'}
-                                  title={
-                                    encontro.status === 'CANCELADO'
-                                      ? 'Não é possível registrar presenças para encontros cancelados'
-                                      : ''
-                                  }
-                                >
-                                  <ListCheck />
-                                  Presenças
-                                </DropdownMenuItem>
-                              </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                  <Settings />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuGroup>
+                                  <DropdownMenuItem
+                                    disabled={
+                                      encontro.status !== 'PENDENTE' ||
+                                      !['admin', 'operator'].includes(session?.user?.role?.key)
+                                    }
+                                    className="w-full justify-start"
+                                    onSelect={() => handleEditEncontro(encontro)}
+                                  >
+                                    <Pencil /> Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    className="w-full justify-start"
+                                    onSelect={() => openPresenceModal(encontro)}
+                                    disabled={encontro.status === 'CANCELADO'}
+                                    title={
+                                      encontro.status === 'CANCELADO'
+                                        ? 'Não é possível registrar presenças para encontros cancelados'
+                                        : ''
+                                    }
+                                  >
+                                    <ListCheck />
+                                    Presenças
+                                  </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -340,65 +377,83 @@ const GroupConversation = ({ data }) => {
             </DataTableCard>
           </TabsContent>
 
-          <TabsContent value="participantes">
-            <div className="bg-card rounded-md p-4">
-              <div className="mb-4 flex items-center justify-between">
-                <h4 className="font-medium">Participantes do grupo</h4>
-                <span className="text-muted-foreground text-sm">
-                  {group?.participants?.length ?? 0} participante(s)
-                </span>
-              </div>
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Presenças</TableHead>
-                    <TableHead>Faltas</TableHead>
-                    <TableHead>Elegibilidade</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {(group?.participants ?? []).length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-muted-foreground h-32 text-center">
-                        Nenhum participante cadastrado
-                      </TableCell>
+          <TabsContent value="participantes" className="mt-4">
+            <DataTableCard
+              title="Participantes do grupo"
+              count={group?.participants?.length ?? 0}
+              icon={<Users className="text-muted-foreground size-5" aria-hidden="true" />}
+              action={
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={openParticipantsModal}
+                  aria-label={`Gerenciar participantes do grupo ${group.name}`}
+                >
+                  Gerenciar participantes
+                </Button>
+              }
+              isEmpty={!group?.participants?.length}
+              emptyState={
+                <EmptyTableState
+                  icon={Users}
+                  title="Nenhum participante cadastrado"
+                  description="Os participantes vinculados ao grupo aparecerão aqui."
+                />
+              }
+              footer={
+                <TablePagination
+                  currentPage={currentParticipantsPage}
+                  totalPages={participantsTotalPages}
+                  totalItems={participants.length}
+                  onPageChange={setParticipantsPage}
+                />
+              }
+            >
+              <div className="overflow-x-auto">
+                <Table contentColumns="max-content max-content max-content max-content">
+                  <TableHeader>
+                    <TableRow className="bg-secondary border-y">
+                      <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
+                        Nome
+                      </TableHead>
+                      <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
+                        Presenças
+                      </TableHead>
+                      <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
+                        Faltas
+                      </TableHead>
+                      <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
+                        Elegibilidade
+                      </TableHead>
                     </TableRow>
-                  ) : (
-                    (group?.participants ?? []).map((participante) => {
+                  </TableHeader>
+
+                  <TableBody>
+                    {visibleParticipants.map((participante) => {
                       const presencas = getParticipantPresencas(participante)
                       const faltas = getParticipantFaltas(participante)
                       const elegibilidade = getParticipantElegibilidade(participante)
 
                       return (
-                        <TableRow key={participante.id}>
-                          <TableCell className="font-medium">{participante.fullName}</TableCell>
-                          <TableCell>{presencas}</TableCell>
-                          <TableCell>{faltas}</TableCell>
-                          <TableCell>
-                            {elegibilidade === 0 ? 'Elegível' : 'Faltam ' + elegibilidade}
+                        <TableRow
+                          key={participante.id}
+                          className="hover:bg-muted/50 border-b transition-colors"
+                        >
+                          <TableCell className="px-4 py-3.5 font-medium">
+                            {participante.fullName}
                           </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleRemoveParticipant(participante.id)}
-                              disabled={isSaving}
-                              aria-label={`Remover ${participante.fullName}`}
-                            >
-                              <Trash />
-                            </Button>
+                          <TableCell className="px-4 py-3.5">{presencas}</TableCell>
+                          <TableCell className="px-4 py-3.5">{faltas}</TableCell>
+                          <TableCell className="px-4 py-3.5">
+                            {elegibilidade === 0 ? 'Elegível' : 'Faltam ' + elegibilidade}
                           </TableCell>
                         </TableRow>
                       )
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </DataTableCard>
           </TabsContent>
 
           <TabsContent value="certificados">
@@ -519,10 +574,53 @@ const GroupConversation = ({ data }) => {
           </TabsContent>
         </Tabs>
       </div>
-
+      <ManageParticipantsModal
+        open={isParticipantsModalOpen}
+        onOpenChange={setParticipantsModalOpen}
+        onRequestClose={requestCloseParticipants}
+        group={group}
+        participants={participantDraft.participants}
+        additions={participantDraft.additions}
+        removals={participantDraft.removals}
+        onAdd={participantDraft.add}
+        onRemove={participantDraft.remove}
+        onSave={saveParticipants}
+        onCancel={participantDraft.cancel}
+        isLoading={participantDraft.isLoading}
+        isSaving={participantDraft.isSaving}
+        error={participantDraft.error}
+        saveError={participantDraft.saveError}
+        onRetry={participantDraft.reload}
+        readOnly={
+          !canManageParticipants ||
+          !['PLANNED', 'ACTIVE'].includes(participantDraft.groupStatus ?? group.status)
+        }
+        readOnlyReason={
+          !canManageParticipants
+            ? 'Seu perfil pode consultar os participantes, mas não pode alterá-los.'
+            : `O grupo está ${participantDraft.groupStatus === 'CLOSED' ? 'encerrado' : 'indisponível para edição'}; os participantes estão somente para consulta.`
+        }
+      />
+      <ConfirmationDialog
+        open={participantDraft.discardConfirmationOpen}
+        onOpenChange={cancelDiscardParticipants}
+        title="Descartar alterações?"
+        description="As inclusões e remoções ainda não salvas serão descartadas."
+        confirmLabel="Descartar"
+        destructive
+        onConfirm={confirmDiscardParticipants}
+      />
       {/* Modal de Registrar Presenças */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto lg:min-w-4xl" showCloseButton={true}>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          if (!isSavingMeeting) setIsModalOpen(open)
+        }}
+      >
+        <DialogContent
+          className="max-h-[90vh] overflow-y-auto lg:min-w-4xl"
+          showCloseButton={!isSavingMeeting}
+        >
           {selectedEncontro && (
             <>
               <DialogHeader>
@@ -549,7 +647,7 @@ const GroupConversation = ({ data }) => {
                       onClick={() => setEncontroNewStatus('CANCELADO')}
                       className="w-1/2"
                     >
-                      Cancelar encontro
+                      Marcar como não realizado
                     </Button>
                   </div>
                 )}
@@ -645,36 +743,26 @@ const GroupConversation = ({ data }) => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {(group?.participants || []).map((participant) => {
-                          const status = selectedEncontro.present?.includes(participant.id)
-                            ? 'PRESENTE'
-                            : selectedEncontro.absent?.includes(participant.id)
-                              ? 'AUSENTE'
-                              : 'JUSTIFICADO'
-                          const justificationData =
-                            selectedEncontro.justifications?.[participant.id]
-                          const justificationType =
-                            typeof justificationData === 'object' ? justificationData?.type : null
-                          const justificationText =
-                            typeof justificationData === 'object'
-                              ? justificationData?.text
-                              : justificationData
-
-                          return (
-                            <TableRow key={participant.id}>
-                              <TableCell className="font-medium">{participant.fullName}</TableCell>
+                        {getMeetingAttendanceRows(selectedEncontro, group?.participants || []).map(
+                          (record) => (
+                            <TableRow key={record.id}>
+                              <TableCell className="font-medium">{record.fullName}</TableCell>
                               <TableCell>
                                 <span
-                                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getParticipantStatusColor(status)}`}
+                                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getParticipantStatusColor(record.status)}`}
                                 >
-                                  {status}
+                                  {record.status}
                                 </span>
                               </TableCell>
-                              <TableCell className="text-sm">{justificationType || '-'}</TableCell>
-                              <TableCell className="text-sm">{justificationText || '-'}</TableCell>
+                              <TableCell className="text-sm">
+                                {record.justificationType || '-'}
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                {record.justificationText || '-'}
+                              </TableCell>
                             </TableRow>
                           )
-                        })}
+                        )}
                       </TableBody>
                     </Table>
                   </div>
@@ -700,12 +788,16 @@ const GroupConversation = ({ data }) => {
                 </p>
               )}
               <DialogFooter className="gap-2">
-                <Button variant="outline" onClick={closePresenceModal}>
+                <Button variant="outline" onClick={closePresenceModal} disabled={isSavingMeeting}>
                   {selectedEncontro.status === 'REALIZADO' ? 'Fechar' : 'Cancelar'}
                 </Button>
                 {selectedEncontro.status === 'PENDENTE' && encontroNewStatus && (
-                  <Button onClick={handleConfirmPresences} disabled={isConfirmDisabled()}>
-                    Salvar
+                  <Button
+                    onClick={handleConfirmPresences}
+                    disabled={isConfirmDisabled()}
+                    aria-busy={isSavingMeeting}
+                  >
+                    {isSavingMeeting ? 'Salvando...' : 'Salvar'}
                   </Button>
                 )}
               </DialogFooter>
@@ -715,8 +807,13 @@ const GroupConversation = ({ data }) => {
       </Dialog>
 
       {/* Modal de Novo Encontro */}
-      <Dialog open={isNewEncontroModalOpen} onOpenChange={setIsNewEncontroModalOpen}>
-        <DialogContent className="max-w-md" showCloseButton={true}>
+      <Dialog
+        open={isNewEncontroModalOpen}
+        onOpenChange={(open) => {
+          if (!isSavingMeeting) setIsNewEncontroModalOpen(open)
+        }}
+      >
+        <DialogContent className="max-w-md" showCloseButton={!isSavingMeeting}>
           <DialogHeader>
             <DialogTitle>Registrar Novo Encontro</DialogTitle>
             <DialogDescription>Preencha os dados do encontro que será realizado</DialogDescription>
@@ -757,26 +854,32 @@ const GroupConversation = ({ data }) => {
             </p>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={closeNewEncontroModal}>
+            <Button variant="outline" onClick={closeNewEncontroModal} disabled={isSavingMeeting}>
               Cancelar
             </Button>
             <Button
               onClick={handleCreateEncontro}
-              disabled={!newEncontroData || !newEncontroTema.trim()}
+              disabled={!newEncontroData || !newEncontroTema.trim() || isSavingMeeting}
+              aria-busy={isSavingMeeting}
             >
-              Criar encontro
+              {isSavingMeeting ? 'Salvando...' : 'Criar encontro'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       {/* Modal de Editar Encontro */}
-      <Dialog open={isEditEncontroOpen} onOpenChange={setIsEditEncontroOpen}>
-        <DialogContent className="max-w-md" showCloseButton={true}>
+      <Dialog
+        open={isEditEncontroOpen}
+        onOpenChange={(open) => {
+          if (!isSavingMeeting) setIsEditEncontroOpen(open)
+        }}
+      >
+        <DialogContent className="max-w-md" showCloseButton={!isSavingMeeting}>
           <DialogHeader>
             <DialogTitle>Editar Encontro</DialogTitle>
             <DialogDescription>
-              Altere data e tema do encontro (PENDENTE). Administradores podem editar qualquer
-              status.
+              Altere a data e o tema de um encontro pendente. Encontros realizados ou não realizados
+              preservam seu histórico.
             </DialogDescription>
           </DialogHeader>
 
@@ -814,14 +917,19 @@ const GroupConversation = ({ data }) => {
             </p>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditEncontroOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditEncontroOpen(false)}
+              disabled={isSavingMeeting}
+            >
               Cancelar
             </Button>
             <Button
               onClick={handleSaveEditEncontro}
-              disabled={!editEncontroData || !editEncontroTema.trim()}
+              disabled={!editEncontroData || !editEncontroTema.trim() || isSavingMeeting}
+              aria-busy={isSavingMeeting}
             >
-              Salvar
+              {isSavingMeeting ? 'Salvando...' : 'Salvar'}
             </Button>
           </DialogFooter>
         </DialogContent>
