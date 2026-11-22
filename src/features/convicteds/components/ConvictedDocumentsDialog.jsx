@@ -66,7 +66,7 @@ export function ApenadoDocumentsDialog({
               <div className="overflow-x-auto">
                 <Table className="text-sm">
                   <TableHeader>
-                    <TableRow className="border-b text-left">
+                    <TableRow className="border-b">
                       <TableHead className="p-2">Data/hora</TableHead>
                       <TableHead className="p-2">Protocolo</TableHead>
                       <TableHead className="p-2">Operador</TableHead>

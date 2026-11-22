@@ -21,16 +21,11 @@ export function AttendanceHistoryTable({
       <TableHeader>
         <TableRow className="bg-secondary border-y">
           {['Data/Hora', 'Apenado', 'CPF', 'Código', 'Operador'].map((label) => (
-            <TableHead
-              key={label}
-              className="text-foreground px-4 py-3 text-left text-xs font-semibold"
-            >
+            <TableHead key={label} className="text-foreground px-4 py-3 text-xs font-semibold">
               {label}
             </TableHead>
           ))}
-          <TableHead className="text-foreground px-4 py-3 text-right text-xs font-semibold">
-            Ações
-          </TableHead>
+          <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">Ações</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

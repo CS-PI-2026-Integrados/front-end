@@ -1,26 +1,46 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSession } from '@/features/authentication'
+import { useGroupParticipantsDraft } from './useGroupParticipantsDraft'
 import { groupConversationService } from '../services/groupConversationService'
 
 export function useGroupConversation(id) {
   const { session } = useSession()
   const scope = `${session?.tenant?.id ?? ''}:${session?.user?.id ?? ''}`
   const requestKey = `${scope}:${id}`
-  const active = useRef(true)
-  const busy = useRef(false)
-  const scopeRef = useRef(requestKey)
-  scopeRef.current = requestKey
   const [error, setError] = useState(null)
-  const [isSaving, setSaving] = useState(false)
   const [loadedKey, setLoadedKey] = useState(null)
   const [revision, setRevision] = useState(0)
+  const [isLoading, setLoading] = useState(true)
+  const [isSavingMeeting, setSavingMeeting] = useState(false)
+  const [group, setGroup] = useState(null)
+  const [isParticipantsModalOpen, setParticipantsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedEncontro, setSelectedEncontro] = useState(null)
+  const [encontroNewStatus, setEncontroNewStatus] = useState(null)
+  const [participantStatuses, setParticipantStatuses] = useState({})
+  const [justifications, setJustifications] = useState({})
+  const [isConfirmed, setIsConfirmed] = useState(false)
+  const [editEncontro, setEditEncontro] = useState(null)
+  const [isEditEncontroOpen, setIsEditEncontroOpen] = useState(false)
+  const [editEncontroData, setEditEncontroData] = useState('')
+  const [editEncontroTema, setEditEncontroTema] = useState('')
+  const [isNewEncontroModalOpen, setIsNewEncontroModalOpen] = useState(false)
+  const [newEncontroData, setNewEncontroData] = useState('')
+  const [newEncontroTema, setNewEncontroTema] = useState('')
+  const [justificationTypes, setJustificationTypes] = useState({})
+  const meetingSaveInFlight = useRef(false)
   const reload = () => setRevision((value) => value + 1)
-  useEffect(() => {
-    active.current = true
-    return () => {
-      active.current = false
-    }
-  }, [])
+  const canManageParticipants = ['admin', 'operator'].includes(session?.user?.role?.key)
+  const participantDraft = useGroupParticipantsDraft({
+    groupId: group?.id,
+    scopeKey: scope,
+    enabled: isParticipantsModalOpen,
+    canEdit: canManageParticipants && ['PLANNED', 'ACTIVE'].includes(group?.status),
+    onUpdated: (participants) => {
+      setGroup((current) => (current ? { ...current, participants } : current))
+    },
+  })
+
   useEffect(() => {
     const controller = new AbortController()
     let current = true
@@ -51,37 +71,34 @@ export function useGroupConversation(id) {
       controller.abort()
     }
   }, [id, scope, requestKey, revision])
-  const commit = (updated) => {
-    if (busy.current) return false
+  const commit = async (updated) => {
+    if (meetingSaveInFlight.current) return false
+    meetingSaveInFlight.current = true
+    setSavingMeeting(true)
     try {
-      setGroup(groupConversationService.save(updated, scope))
+      const saved = await groupConversationService.save(updated, scope)
+      setGroup(saved)
       setError(null)
       return true
     } catch (cause) {
       setError(cause.message)
       return false
+    } finally {
+      meetingSaveInFlight.current = false
+      setSavingMeeting(false)
     }
   }
-  const [isLoading, setLoading] = useState(true)
-  const [group, setGroup] = useState(null)
-
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedEncontro, setSelectedEncontro] = useState(null)
-  const [encontroNewStatus, setEncontroNewStatus] = useState(null)
-  const [participantStatuses, setParticipantStatuses] = useState({})
-  const [justifications, setJustifications] = useState({})
-  const [isConfirmed, setIsConfirmed] = useState(false)
-
-  const [editEncontro, setEditEncontro] = useState(null)
-  const [isEditEncontroOpen, setIsEditEncontroOpen] = useState(false)
-  const [editEncontroData, setEditEncontroData] = useState('')
-  const [editEncontroTema, setEditEncontroTema] = useState('')
-
-  const [isNewEncontroModalOpen, setIsNewEncontroModalOpen] = useState(false)
-  const [newEncontroData, setNewEncontroData] = useState('')
-  const [newEncontroTema, setNewEncontroTema] = useState('')
-
-  const [justificationTypes, setJustificationTypes] = useState({})
+  const requestCloseParticipants = () => {
+    if (participantDraft.requestClose()) setParticipantsModalOpen(false)
+  }
+  const saveParticipants = async () => {
+    if (await participantDraft.save()) setParticipantsModalOpen(false)
+  }
+  const confirmDiscardParticipants = () => {
+    const discarded = participantDraft.confirmDiscard()
+    if (discarded) setParticipantsModalOpen(false)
+    return discarded
+  }
 
   const formatDate = (date) => {
     try {
@@ -157,7 +174,7 @@ export function useGroupConversation(id) {
     setNewEncontroTema('')
   }
 
-  const handleCreateEncontro = () => {
+  const handleCreateEncontro = async () => {
     if (!group || !newEncontroData || !newEncontroTema.trim()) {
       return
     }
@@ -178,16 +195,14 @@ export function useGroupConversation(id) {
       meetings: [...(group.meetings || []), newEncontro],
     }
 
-    if (!commit(updatedGroup)) return
+    if (!(await commit(updatedGroup))) return
 
     closeNewEncontroModal()
   }
 
   const handleEditEncontro = (encontro) => {
     if (!encontro) return
-    const isAdmin = session?.user?.role?.key === 'admin'
-
-    if (encontro.status !== 'PENDENTE' && !isAdmin) return
+    if (encontro.status !== 'PENDENTE') return
 
     setEditEncontro(encontro)
     setEditEncontroData(encontro.date || '')
@@ -195,10 +210,9 @@ export function useGroupConversation(id) {
     setIsEditEncontroOpen(true)
   }
 
-  const handleSaveEditEncontro = () => {
+  const handleSaveEditEncontro = async () => {
     if (!editEncontro) return
-    const isAdmin = session?.user?.role?.key === 'admin'
-    if (editEncontro.status !== 'PENDENTE' && !isAdmin) return
+    if (editEncontro.status !== 'PENDENTE') return
 
     const updatedEncontro = {
       ...editEncontro,
@@ -211,29 +225,12 @@ export function useGroupConversation(id) {
       meetings: (group.meetings || []).map((e) => (e.id === editEncontro.id ? updatedEncontro : e)),
     }
 
-    if (!commit(updatedGroup)) return
+    if (!(await commit(updatedGroup))) return
 
     setIsEditEncontroOpen(false)
     setEditEncontro(null)
     setEditEncontroData('')
     setEditEncontroTema('')
-  }
-
-  const handleRemoveParticipant = async (participantId) => {
-    if (!group || busy.current) return
-    const startedScope = scopeRef.current
-    busy.current = true
-    setSaving(true)
-    setError(null)
-    try {
-      const updated = await groupConversationService.removeParticipant(group, participantId, scope)
-      if (active.current && scopeRef.current === startedScope) setGroup(updated)
-    } catch (cause) {
-      if (active.current && scopeRef.current === startedScope) setError(cause.message)
-    } finally {
-      busy.current = false
-      if (active.current && scopeRef.current === startedScope) setSaving(false)
-    }
   }
 
   const openPresenceModal = (encontro) => {
@@ -285,14 +282,15 @@ export function useGroupConversation(id) {
   }
 
   const isConfirmDisabled = () => {
-    if (encontroNewStatus === 'CANCELADO') {
-      return !isConfirmed
-    }
-
-    return !isConfirmed || !areAllParticipantsStatusFilled()
+    if (!isConfirmed || isSavingMeeting) return true
+    if (encontroNewStatus === 'CANCELADO') return false
+    if (!areAllParticipantsStatusFilled()) return true
+    return Object.entries(participantStatuses).some(
+      ([participantId, status]) => status === 'JUSTIFICADO' && !justificationTypes[participantId]
+    )
   }
 
-  const handleConfirmPresences = () => {
+  const handleConfirmPresences = async () => {
     if (!group || !selectedEncontro || isConfirmDisabled()) return
 
     const updatedEncontro = {
@@ -326,14 +324,24 @@ export function useGroupConversation(id) {
       ),
     }
 
-    if (!commit(updatedGroup)) return
+    if (!(await commit(updatedGroup))) return
 
     closePresenceModal()
   }
 
   return {
     isLoading: isLoading || loadedKey !== requestKey,
+    isSavingMeeting,
     group,
+    isParticipantsModalOpen,
+    openParticipantsModal: () => setParticipantsModalOpen(true),
+    setParticipantsModalOpen,
+    requestCloseParticipants,
+    saveParticipants,
+    confirmDiscardParticipants,
+    cancelDiscardParticipants: participantDraft.cancelDiscard,
+    participantDraft,
+    canManageParticipants,
     isModalOpen,
     setIsModalOpen,
     selectedEncontro,
@@ -370,7 +378,6 @@ export function useGroupConversation(id) {
     handleCreateEncontro,
     handleEditEncontro,
     handleSaveEditEncontro,
-    handleRemoveParticipant,
     openPresenceModal,
     closePresenceModal,
     handleParticipantStatusChange,
@@ -379,7 +386,6 @@ export function useGroupConversation(id) {
     isConfirmDisabled,
     handleConfirmPresences,
     error,
-    isSaving,
     reload,
   }
 }

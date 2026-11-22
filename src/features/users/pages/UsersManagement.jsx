@@ -1,6 +1,7 @@
 import { Search, UserCog, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { TablePagination } from '@/shared/components/data-display/TablePagination'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
@@ -11,7 +12,6 @@ import { maskCpf } from '@/features/users/utils/userFormattersUtils'
 import { UsersTable } from '@/features/users/components/users/UsersTable'
 import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'
-import { Pagination } from '@/shared/components/ui/pagination'
 import {
   Select,
   SelectContent,
@@ -173,12 +173,12 @@ export default function UsersManagement() {
           )
         }
         footer={
-          <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <span className="font-medium">
-              Página {currentPage} de {totalPages} · {filteredUsers.length} registros
-            </span>
-            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
-          </div>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredUsers.length}
+            onPageChange={setPage}
+          />
         }
       >
         <UsersTable

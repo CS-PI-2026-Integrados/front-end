@@ -39,6 +39,24 @@ const detailSchema = listSchema.omit({ participant_count: true }).extend({
   updated_at: z.string(),
   convicteds: z.array(z.object({ id: z.string(), name: z.string(), document: z.string() })),
 })
+const meetingAttendanceSchema = z.object({
+  convicted_uuid: z.string(),
+  convicted_name: z.string(),
+  membership_uuid: z.string().nullable(),
+  status: z.enum(['PRESENTE', 'AUSENTE', 'JUSTIFICADO']),
+  justification_type: z
+    .enum(['ATESTADO', 'DETERMINACAO_JUDICIAL', 'FORCA_MAIOR', 'OUTRO'])
+    .nullable(),
+  justification_text: z.string().nullable(),
+})
+const meetingSchema = z.object({
+  uuid: z.string(),
+  date: z.string(),
+  subject: z.string(),
+  status: z.enum(['PENDENTE', 'REALIZADO', 'CANCELADO']),
+  version: z.number(),
+  attendance: z.array(meetingAttendanceSchema),
+})
 const toListItem = (item) => ({
   id: item.uuid,
   name: item.name,
@@ -75,6 +93,43 @@ const toDetail = (item) => ({
   })),
 })
 const detail = (response) => toDetail(parseApiResponse(detailSchema, response))
+const toMeeting = (meeting) => ({
+  id: meeting.uuid,
+  date: meeting.date,
+  subject: meeting.subject,
+  status: meeting.status,
+  version: meeting.version,
+  attendance: meeting.attendance.map((record) => ({
+    convictedId: record.convicted_uuid,
+    convictedName: record.convicted_name,
+    membershipId: record.membership_uuid,
+    status: record.status,
+    justificationType: record.justification_type,
+    justificationText: record.justification_text,
+  })),
+})
+const toMeetingRequest = (meeting) => ({
+  uuid: meeting.id,
+  date: meeting.date,
+  subject: meeting.subject,
+  status: meeting.status,
+  version: meeting.version ?? null,
+  attendance: meeting.attendance.map((record) => ({
+    convicted_uuid: record.convictedId,
+    status: record.status,
+    justification_type: record.justificationType ?? null,
+    justification_text: record.justificationText ?? null,
+  })),
+})
+const sameIds = (left, right) => left.size === right.size && [...left].every((id) => right.has(id))
+const participantSaveError = (cause, message) =>
+  new ApiRequestError(message, {
+    status: cause.status ?? null,
+    body: cause.body ?? null,
+    kind: cause.kind ?? 'backend',
+    fields: cause.fields ?? [],
+    cause,
+  })
 
 /** Official /group contract. Canonical camelCase models; throws ApiRequestError. */
 export const groupsService = {
@@ -92,6 +147,24 @@ export const groupsService = {
   /** Gets a group's full planning and participants. */
   async getById(id, options) {
     return detail(await apiService.get(`/group/${id}`, options))
+  },
+  async getMeetings(id, options) {
+    return parseApiResponse(
+      z.array(meetingSchema),
+      await apiService.get(`/group/${id}/meetings`, options)
+    ).map(toMeeting)
+  },
+  async syncMeetings(id, meetings, options) {
+    return parseApiResponse(
+      z.array(meetingSchema),
+      await apiService.put(`/group/${id}/meetings`, meetings.map(toMeetingRequest), options)
+    ).map(toMeeting)
+  },
+  async importLegacyMeetings(id, meetings, options) {
+    return parseApiResponse(
+      z.array(meetingSchema),
+      await apiService.post(`/group/${id}/meetings/import`, meetings.map(toMeetingRequest), options)
+    ).map(toMeeting)
   },
   /** Creates a PLANNED group, optionally linking convictedUuids atomically. */
   async create(input, options) {
@@ -196,6 +269,75 @@ export const groupsService = {
           { cause, fields: cause.fields || [] }
         ),
         { currentGroup, possiblyChanged: attempted }
+      )
+    }
+  },
+  /** Reconciles participant links only and returns the authoritative group. */
+  async saveParticipants(id, input, options) {
+    const groupId = parseApiInput(groupParticipantIdSchema, id)
+    const { participantIds } = parseApiInput(
+      z.object({
+        participantIds: z
+          .array(groupParticipantIdSchema)
+          .refine((ids) => new Set(ids).size === ids.length, 'Não repita participantes.'),
+      }),
+      input
+    )
+    const current = await groupsService.getById(groupId, options)
+    const existing = new Set(current.convicteds.map((person) => person.id))
+    const desired = new Set(participantIds)
+    const removals = [...existing].filter((personId) => !desired.has(personId))
+    const additions = [...desired].filter((personId) => !existing.has(personId))
+
+    if (!removals.length && !additions.length) return current
+    if (!['PLANNED', 'ACTIVE'].includes(current.status)) {
+      throw Object.assign(
+        new ApiRequestError(
+          'Os participantes só podem ser alterados em grupos em planejamento ou em andamento.'
+        ),
+        { currentGroup: current, possiblyChanged: false, partialSuccess: false }
+      )
+    }
+
+    try {
+      for (const personId of removals) {
+        await groupsService.removeConvicted(groupId, personId, options)
+      }
+      for (const personId of additions) {
+        await groupsService.addConvicted(groupId, personId, options)
+      }
+      return await groupsService.getById(groupId, options)
+    } catch (cause) {
+      if (cause.name === 'AbortError') throw cause
+
+      let currentGroup = null
+      try {
+        currentGroup = await groupsService.getById(groupId, options)
+      } catch (readError) {
+        if (readError.name === 'AbortError') throw readError
+      }
+      if (!currentGroup) {
+        throw Object.assign(
+          participantSaveError(
+            cause,
+            'Não foi possível confirmar as alterações de participantes. Tente salvar novamente para consultar os vínculos atuais.'
+          ),
+          { currentGroup: null, possiblyChanged: true, partialSuccess: false }
+        )
+      }
+
+      const currentIds = new Set(currentGroup.convicteds.map((person) => person.id))
+      if (sameIds(currentIds, desired)) return currentGroup
+
+      const partialSuccess = !sameIds(currentIds, existing)
+      throw Object.assign(
+        participantSaveError(
+          cause,
+          partialSuccess
+            ? 'Nem todas as alterações de participantes foram concluídas. O estado atual foi reconciliado; tente salvar novamente.'
+            : cause.message || 'Não foi possível salvar os participantes.'
+        ),
+        { currentGroup, possiblyChanged: partialSuccess, partialSuccess }
       )
     }
   },

@@ -1,8 +1,8 @@
 import { LayoutGrid, List } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { CardDescription } from '@/shared/components/ui/card'
-import { Pagination } from '@/shared/components/ui/pagination'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { TablePagination } from '@/shared/components/data-display/TablePagination'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { useDocuments } from '../hooks/useDocuments'
@@ -122,16 +122,12 @@ export function DocumentArchive({
           )
         }
         footer={
-          <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <span className="font-medium">
-              Página {data.page} de {data.totalPages} · {data.totalItems} registros
-            </span>
-            <Pagination
-              currentPage={data.page}
-              totalPages={data.totalPages}
-              onPageChange={data.setPage}
-            />
-          </div>
+          <TablePagination
+            currentPage={data.page}
+            totalPages={data.totalPages}
+            totalItems={data.totalItems}
+            onPageChange={data.setPage}
+          />
         }
       >
         <div className={data.viewMode === 'grid' ? 'border-t p-4 sm:p-6' : undefined}>
