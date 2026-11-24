@@ -75,6 +75,16 @@ export function GroupParticipantsField({ field, error, disabled, readOnly }) {
             <UserPlus />
             Cadastrar novo apenado
           </Button>
+          <ConvictedFormDialog
+            open={createOpen}
+            onOpenChange={setCreateOpen}
+            onSuccess={(created) =>
+              field.onChange([
+                ...selected,
+                { id: created.id, fullName: created.fullName, cpf: created.cpf },
+              ])
+            }
+          />
         </>
       )}
       {selected.map((person) => (
