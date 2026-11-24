@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { useConvictedList } from '@/features/convicteds'
+import { ConvictedFormDialog } from '@/features/convicteds'
 import { SearchPopover } from '@/shared/components/SearchPopover'
 import { FieldLayout } from '@/shared/components/form-fields/FieldLayout'
 import { Button } from '@/shared/components/ui/button'
@@ -8,6 +9,7 @@ import { Button } from '@/shared/components/ui/button'
 export function GroupParticipantsField({ field, error, disabled, readOnly }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
   const selected = field.value || []
   const list = useConvictedList({
     search: query.trim(),
