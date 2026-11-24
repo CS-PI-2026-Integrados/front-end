@@ -78,12 +78,13 @@ export function GroupParticipantsField({ field, error, disabled, readOnly }) {
           <ConvictedFormDialog
             open={createOpen}
             onOpenChange={setCreateOpen}
-            onSuccess={(created) =>
-              field.onChange([
-                ...selected,
-                { id: created.id, fullName: created.fullName, cpf: created.cpf },
-              ])
-            }
+            onSuccess={(created) => {
+              if (!selected.some((item) => item.id === created.id))
+                field.onChange([
+                  ...selected,
+                  { id: created.id, fullName: created.fullName, cpf: created.cpf },
+                ])
+            }}
           />
         </>
       )}
