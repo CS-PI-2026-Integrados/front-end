@@ -1,26 +1,103 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSession } from '@/features/authentication'
+import { useGroupParticipantsDraft } from './useGroupParticipantsDraft'
 import { groupConversationService } from '../services/groupConversationService'
+
+export function hasMeetingRecords(encontro) {
+  if (!encontro) return false
+  return (
+    (encontro.attendance?.length ?? 0) > 0 ||
+    (encontro.present?.length ?? 0) > 0 ||
+    (encontro.absent?.length ?? 0) > 0 ||
+    Object.keys(encontro.justifications ?? {}).length > 0
+  )
+}
+
+export function getPertinentMeetingParticipants(group, encontro) {
+  if (!encontro) return []
+
+  if (encontro.status === 'REALIZADO' && Array.isArray(encontro.attendance)) {
+    return encontro.attendance.map((record) => ({
+      id: record.convictedId,
+      fullName: record.convictedName,
+    }))
+  }
+
+  const memberships = group?.participantMemberships
+  if (Array.isArray(memberships) && memberships.length > 0 && encontro.date) {
+    const meetingDate = encontro.date.slice(0, 10)
+    const currentById = new Map((group?.participants ?? []).map((person) => [person.id, person]))
+    const unique = new Map()
+
+    memberships.forEach((membership) => {
+      const start = membership.startDate?.slice(0, 10)
+      const end = membership.endDate ? membership.endDate.slice(0, 10) : null
+      if (start && start <= meetingDate && (!end || meetingDate <= end)) {
+        if (!unique.has(membership.convictedId)) {
+          const current = currentById.get(membership.convictedId)
+          unique.set(membership.convictedId, {
+            id: membership.convictedId,
+            fullName: current?.fullName ?? membership.convictedName,
+          })
+        }
+      }
+    })
+
+    return [...unique.values()]
+  }
+
+  return group?.participants ?? []
+}
 
 export function useGroupConversation(id) {
   const { session } = useSession()
   const scope = `${session?.tenant?.id ?? ''}:${session?.user?.id ?? ''}`
   const requestKey = `${scope}:${id}`
-  const active = useRef(true)
-  const busy = useRef(false)
-  const scopeRef = useRef(requestKey)
-  scopeRef.current = requestKey
   const [error, setError] = useState(null)
-  const [isSaving, setSaving] = useState(false)
   const [loadedKey, setLoadedKey] = useState(null)
   const [revision, setRevision] = useState(0)
+  const [isLoading, setLoading] = useState(true)
+  const [isSavingMeeting, setSavingMeeting] = useState(false)
+  const [group, setGroup] = useState(null)
+  const [isParticipantsModalOpen, setParticipantsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedEncontro, setSelectedEncontro] = useState(null)
+  const [participantStatuses, setParticipantStatuses] = useState({})
+  const [justifications, setJustifications] = useState({})
+  const [isConfirmed, setIsConfirmed] = useState(false)
+  const [editEncontro, setEditEncontro] = useState(null)
+  const [isEditEncontroOpen, setIsEditEncontroOpen] = useState(false)
+  const [editEncontroData, setEditEncontroData] = useState('')
+  const [editEncontroTema, setEditEncontroTema] = useState('')
+  const [isNewEncontroModalOpen, setIsNewEncontroModalOpen] = useState(false)
+  const [newEncontroData, setNewEncontroData] = useState('')
+  const [newEncontroTema, setNewEncontroTema] = useState('')
+  const [justificationTypes, setJustificationTypes] = useState({})
+  const [notRealizedEncontro, setNotRealizedEncontro] = useState(null)
+  const [notRealizedError, setNotRealizedError] = useState(null)
+  const meetingSaveInFlight = useRef(false)
   const reload = () => setRevision((value) => value + 1)
-  useEffect(() => {
-    active.current = true
-    return () => {
-      active.current = false
-    }
-  }, [])
+  const canManageParticipants = ['admin', 'operator'].includes(session?.user?.role?.key)
+  const canManageMeetings = canManageParticipants
+  const participantDraft = useGroupParticipantsDraft({
+    groupId: group?.id,
+    scopeKey: scope,
+    enabled: isParticipantsModalOpen,
+    canEdit: canManageParticipants && ['PLANNED', 'ACTIVE'].includes(group?.status),
+    onUpdated: (participants, updatedGroup) => {
+      setGroup((current) =>
+        current
+          ? {
+              ...current,
+              participants,
+              participantMemberships:
+                updatedGroup?.participantMemberships ?? current.participantMemberships,
+            }
+          : current
+      )
+    },
+  })
+
   useEffect(() => {
     const controller = new AbortController()
     let current = true
@@ -36,6 +113,8 @@ export function useGroupConversation(id) {
           setSelectedEncontro(null)
           setIsEditEncontroOpen(false)
           setIsNewEncontroModalOpen(false)
+          setNotRealizedEncontro(null)
+          setNotRealizedError(null)
         }
       })
       .catch((cause) => {
@@ -51,37 +130,41 @@ export function useGroupConversation(id) {
       controller.abort()
     }
   }, [id, scope, requestKey, revision])
-  const commit = (updated) => {
-    if (busy.current) return false
+
+  const commit = async (updated, { onError } = {}) => {
+    if (meetingSaveInFlight.current) return false
+    meetingSaveInFlight.current = true
+    setSavingMeeting(true)
     try {
-      setGroup(groupConversationService.save(updated, scope))
+      const saved = await groupConversationService.save(updated, scope)
+      setGroup(saved)
       setError(null)
+      setNotRealizedError(null)
       return true
     } catch (cause) {
-      setError(cause.message)
+      if (onError) {
+        onError(cause.message)
+      } else {
+        setError(cause.message)
+      }
       return false
+    } finally {
+      meetingSaveInFlight.current = false
+      setSavingMeeting(false)
     }
   }
-  const [isLoading, setLoading] = useState(true)
-  const [group, setGroup] = useState(null)
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedEncontro, setSelectedEncontro] = useState(null)
-  const [encontroNewStatus, setEncontroNewStatus] = useState(null)
-  const [participantStatuses, setParticipantStatuses] = useState({})
-  const [justifications, setJustifications] = useState({})
-  const [isConfirmed, setIsConfirmed] = useState(false)
-
-  const [editEncontro, setEditEncontro] = useState(null)
-  const [isEditEncontroOpen, setIsEditEncontroOpen] = useState(false)
-  const [editEncontroData, setEditEncontroData] = useState('')
-  const [editEncontroTema, setEditEncontroTema] = useState('')
-
-  const [isNewEncontroModalOpen, setIsNewEncontroModalOpen] = useState(false)
-  const [newEncontroData, setNewEncontroData] = useState('')
-  const [newEncontroTema, setNewEncontroTema] = useState('')
-
-  const [justificationTypes, setJustificationTypes] = useState({})
+  const requestCloseParticipants = () => {
+    if (participantDraft.requestClose()) setParticipantsModalOpen(false)
+  }
+  const saveParticipants = async () => {
+    if (await participantDraft.save()) setParticipantsModalOpen(false)
+  }
+  const confirmDiscardParticipants = () => {
+    const discarded = participantDraft.confirmDiscard()
+    if (discarded) setParticipantsModalOpen(false)
+    return discarded
+  }
 
   const formatDate = (date) => {
     try {
@@ -145,7 +228,18 @@ export function useGroupConversation(id) {
     }
   }
 
+  const getPertinentParticipants = (encontro) => getPertinentMeetingParticipants(group, encontro)
+
+  const canMarkNotRealized = (encontro) =>
+    Boolean(
+      canManageMeetings &&
+      encontro &&
+      encontro.status === 'PENDENTE' &&
+      !hasMeetingRecords(encontro)
+    )
+
   const openNewEncontroModal = () => {
+    setError(null)
     setNewEncontroData('')
     setNewEncontroTema('')
     setIsNewEncontroModalOpen(true)
@@ -155,10 +249,11 @@ export function useGroupConversation(id) {
     setIsNewEncontroModalOpen(false)
     setNewEncontroData('')
     setNewEncontroTema('')
+    setError(null)
   }
 
-  const handleCreateEncontro = () => {
-    if (!group || !newEncontroData || !newEncontroTema.trim()) {
+  const handleCreateEncontro = async () => {
+    if (!group || !canManageMeetings || !newEncontroData || !newEncontroTema.trim()) {
       return
     }
 
@@ -166,7 +261,7 @@ export function useGroupConversation(id) {
     const newEncontro = {
       id: newId,
       date: newEncontroData,
-      subject: newEncontroTema,
+      subject: newEncontroTema.trim(),
       present: [],
       absent: [],
       justifications: {},
@@ -178,32 +273,30 @@ export function useGroupConversation(id) {
       meetings: [...(group.meetings || []), newEncontro],
     }
 
-    if (!commit(updatedGroup)) return
+    if (!(await commit(updatedGroup))) return
 
     closeNewEncontroModal()
   }
 
   const handleEditEncontro = (encontro) => {
-    if (!encontro) return
-    const isAdmin = session?.user?.role?.key === 'admin'
+    if (!encontro || !canManageMeetings) return
+    if (encontro.status !== 'PENDENTE') return
 
-    if (encontro.status !== 'PENDENTE' && !isAdmin) return
-
+    setError(null)
     setEditEncontro(encontro)
     setEditEncontroData(encontro.date || '')
     setEditEncontroTema(encontro.subject || '')
     setIsEditEncontroOpen(true)
   }
 
-  const handleSaveEditEncontro = () => {
-    if (!editEncontro) return
-    const isAdmin = session?.user?.role?.key === 'admin'
-    if (editEncontro.status !== 'PENDENTE' && !isAdmin) return
+  const handleSaveEditEncontro = async () => {
+    if (!editEncontro || !canManageMeetings) return
+    if (editEncontro.status !== 'PENDENTE') return
 
     const updatedEncontro = {
       ...editEncontro,
       date: editEncontroData,
-      subject: editEncontroTema,
+      subject: editEncontroTema.trim(),
     }
 
     const updatedGroup = {
@@ -211,7 +304,7 @@ export function useGroupConversation(id) {
       meetings: (group.meetings || []).map((e) => (e.id === editEncontro.id ? updatedEncontro : e)),
     }
 
-    if (!commit(updatedGroup)) return
+    if (!(await commit(updatedGroup))) return
 
     setIsEditEncontroOpen(false)
     setEditEncontro(null)
@@ -219,26 +312,10 @@ export function useGroupConversation(id) {
     setEditEncontroTema('')
   }
 
-  const handleRemoveParticipant = async (participantId) => {
-    if (!group || busy.current) return
-    const startedScope = scopeRef.current
-    busy.current = true
-    setSaving(true)
-    setError(null)
-    try {
-      const updated = await groupConversationService.removeParticipant(group, participantId, scope)
-      if (active.current && scopeRef.current === startedScope) setGroup(updated)
-    } catch (cause) {
-      if (active.current && scopeRef.current === startedScope) setError(cause.message)
-    } finally {
-      busy.current = false
-      if (active.current && scopeRef.current === startedScope) setSaving(false)
-    }
-  }
-
   const openPresenceModal = (encontro) => {
+    if (!encontro) return
+    setError(null)
     setSelectedEncontro(encontro)
-    setEncontroNewStatus(encontro.status)
     setParticipantStatuses({})
     setJustifications({})
     setJustificationTypes({})
@@ -247,13 +324,14 @@ export function useGroupConversation(id) {
   }
 
   const closePresenceModal = () => {
+    if (isSavingMeeting) return
     setIsModalOpen(false)
     setSelectedEncontro(null)
-    setEncontroNewStatus(null)
     setParticipantStatuses({})
     setJustifications({})
     setJustificationTypes({})
     setIsConfirmed(false)
+    setError(null)
   }
 
   const handleParticipantStatusChange = (participantId, status) => {
@@ -278,45 +356,51 @@ export function useGroupConversation(id) {
     }))
   }
 
-  const areAllParticipantsStatusFilled = () => {
-    if (!group?.participants || encontroNewStatus !== 'REALIZADO') return true
-
-    return group.participants.every((p) => participantStatuses[p.id])
-  }
-
   const isConfirmDisabled = () => {
-    if (encontroNewStatus === 'CANCELADO') {
-      return !isConfirmed
+    if (
+      !selectedEncontro ||
+      selectedEncontro.status !== 'PENDENTE' ||
+      !canManageMeetings ||
+      !isConfirmed ||
+      isSavingMeeting
+    ) {
+      return true
     }
 
-    return !isConfirmed || !areAllParticipantsStatusFilled()
+    const pertinent = getPertinentParticipants(selectedEncontro)
+    if (!pertinent.every((person) => participantStatuses[person.id])) {
+      return true
+    }
+
+    return pertinent.some(
+      (person) => participantStatuses[person.id] === 'JUSTIFICADO' && !justificationTypes[person.id]
+    )
   }
 
-  const handleConfirmPresences = () => {
+  const handleConfirmPresences = async () => {
     if (!group || !selectedEncontro || isConfirmDisabled()) return
 
+    const pertinent = getPertinentParticipants(selectedEncontro)
     const updatedEncontro = {
       ...selectedEncontro,
-      status: encontroNewStatus,
-    }
-
-    if (encontroNewStatus === 'REALIZADO') {
-      updatedEncontro.present = group.participants
+      status: 'REALIZADO',
+      present: pertinent
         .filter((person) => participantStatuses[person.id] === 'PRESENTE')
-        .map((person) => person.id)
-      updatedEncontro.absent = group.participants
+        .map((person) => person.id),
+      absent: pertinent
         .filter((person) => participantStatuses[person.id] === 'AUSENTE')
-        .map((person) => person.id)
-
-      updatedEncontro.justifications = {}
-      Object.keys(participantStatuses).forEach((id) => {
-        if (participantStatuses[id] === 'JUSTIFICADO') {
-          updatedEncontro.justifications[id] = {
-            text: justifications[id] || '',
-            type: justificationTypes[id] || '',
-          }
-        }
-      })
+        .map((person) => person.id),
+      justifications: Object.fromEntries(
+        pertinent
+          .filter((person) => participantStatuses[person.id] === 'JUSTIFICADO')
+          .map((person) => [
+            person.id,
+            {
+              text: justifications[person.id] || '',
+              type: justificationTypes[person.id] || '',
+            },
+          ])
+      ),
     }
 
     const updatedGroup = {
@@ -326,19 +410,69 @@ export function useGroupConversation(id) {
       ),
     }
 
-    if (!commit(updatedGroup)) return
+    if (!(await commit(updatedGroup))) return
 
     closePresenceModal()
   }
 
+  const openNotRealizedDialog = (encontro) => {
+    if (!canMarkNotRealized(encontro)) return
+    setNotRealizedError(null)
+    setNotRealizedEncontro(encontro)
+  }
+
+  const closeNotRealizedDialog = () => {
+    if (isSavingMeeting) return
+    setNotRealizedEncontro(null)
+    setNotRealizedError(null)
+  }
+
+  const handleConfirmNotRealized = async () => {
+    if (!group || !notRealizedEncontro || isSavingMeeting) return false
+    if (!canMarkNotRealized(notRealizedEncontro)) {
+      setNotRealizedError(
+        'Não é possível marcar como não realizado um encontro já realizado ou com presenças registradas.'
+      )
+      return false
+    }
+
+    const updatedEncontro = {
+      ...notRealizedEncontro,
+      status: 'CANCELADO',
+    }
+
+    const updatedGroup = {
+      ...group,
+      meetings: (group.meetings || []).map((e) =>
+        e.id === notRealizedEncontro.id ? updatedEncontro : e
+      ),
+    }
+
+    const saved = await commit(updatedGroup, { onError: setNotRealizedError })
+    if (!saved) return false
+
+    setNotRealizedEncontro(null)
+    setNotRealizedError(null)
+    return true
+  }
+
   return {
     isLoading: isLoading || loadedKey !== requestKey,
+    isSavingMeeting,
     group,
+    isParticipantsModalOpen,
+    openParticipantsModal: () => setParticipantsModalOpen(true),
+    setParticipantsModalOpen,
+    requestCloseParticipants,
+    saveParticipants,
+    confirmDiscardParticipants,
+    cancelDiscardParticipants: participantDraft.cancelDiscard,
+    participantDraft,
+    canManageParticipants,
+    canManageMeetings,
     isModalOpen,
     setIsModalOpen,
     selectedEncontro,
-    encontroNewStatus,
-    setEncontroNewStatus,
     participantStatuses,
     justifications,
     isConfirmed,
@@ -356,6 +490,8 @@ export function useGroupConversation(id) {
     newEncontroTema,
     setNewEncontroTema,
     justificationTypes,
+    notRealizedEncontro,
+    notRealizedError,
     formatDate,
     getParticipantPresencas,
     getParticipantFaltas,
@@ -364,13 +500,15 @@ export function useGroupConversation(id) {
     getTotalEncontrosNotCanceled,
     getUnjustifiedAbsentees,
     getEligibleParticipants,
+    getPertinentParticipants,
+    hasMeetingRecords,
+    canMarkNotRealized,
     isEncontroAtrasado,
     openNewEncontroModal,
     closeNewEncontroModal,
     handleCreateEncontro,
     handleEditEncontro,
     handleSaveEditEncontro,
-    handleRemoveParticipant,
     openPresenceModal,
     closePresenceModal,
     handleParticipantStatusChange,
@@ -378,8 +516,10 @@ export function useGroupConversation(id) {
     handleJustificationTypeChange,
     isConfirmDisabled,
     handleConfirmPresences,
+    openNotRealizedDialog,
+    closeNotRealizedDialog,
+    handleConfirmNotRealized,
     error,
-    isSaving,
     reload,
   }
 }

@@ -22,6 +22,8 @@ export function SearchPopover({
   items,
   onSelect,
   renderItem,
+  closeOnSelect = true,
+  footer,
   isLoading,
   error,
   disabled,
@@ -90,7 +92,7 @@ export function SearchPopover({
                       className="py-2"
                       onSelect={() => {
                         onSelect(item)
-                        changeOpen(false)
+                        if (closeOnSelect) changeOpen(false)
                       }}
                     >
                       {renderItem(item)}
@@ -100,6 +102,7 @@ export function SearchPopover({
               ))}
           </CommandList>
         </Command>
+        {footer}
       </PopoverContent>
     </Popover>
   )

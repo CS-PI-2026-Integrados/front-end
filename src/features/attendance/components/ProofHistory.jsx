@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { FileText, Search } from 'lucide-react'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { TablePagination } from '@/shared/components/data-display/TablePagination'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
-import { Pagination } from '@/shared/components/ui/pagination'
 import { useAttendanceList } from '../hooks/useAttendanceList'
 import { useReceiptPdfActions } from '../hooks/useReceiptPdfActions'
 import { useAttendancePhoto } from '../hooks/useAttendancePhoto'
@@ -73,12 +73,12 @@ export function ProofHistory() {
           />
         }
         footer={
-          <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <span className="font-medium">
-              Página {page} de {data.totalPages} · {data.totalItems} registros
-            </span>
-            <Pagination currentPage={page} totalPages={data.totalPages} onPageChange={setPage} />
-          </div>
+          <TablePagination
+            currentPage={page}
+            totalPages={data.totalPages}
+            totalItems={data.totalItems}
+            onPageChange={setPage}
+          />
         }
       >
         <AttendanceHistoryTable

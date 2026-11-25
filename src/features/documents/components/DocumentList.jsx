@@ -8,7 +8,7 @@ export function DocumentList({ columns, documents, renderRow }) {
           {columns.map((column) => (
             <TableHead
               key={column}
-              className="text-foreground px-4 py-3 text-left text-xs font-semibold last:w-32 last:text-right"
+              className="text-foreground px-4 py-3 text-xs font-semibold last:w-32 last:text-right"
             >
               {column}
             </TableHead>

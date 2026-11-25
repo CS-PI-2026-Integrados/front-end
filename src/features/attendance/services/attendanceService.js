@@ -6,6 +6,7 @@ import {
   parsePage,
   pageParamsSchema,
 } from '@/shared/infrastructure/http/apiContracts'
+import { optionalPhoneSchema } from '@/shared/schemas/fieldSchemas'
 import { normalizePhoto } from '@/shared/lib/image'
 import { getConvictedById } from '@/features/convicteds'
 
@@ -37,7 +38,7 @@ const responseSchema = z.object({
   receipt_issued: z.boolean().optional(),
   photo_available: z.boolean().optional(),
   address: addressSchema,
-  phone: z.string(),
+  phone: z.string().nullish(),
   employment_status: employmentStatus,
   user_id: z.string(),
   user_name: z.string().nullish(),
@@ -49,9 +50,7 @@ const inputSchema = z.object({
   convictedId: uuid,
   processId: uuid,
   employmentStatus,
-  phone: required
-    .transform((phone) => phone.replace(/\D/g, ''))
-    .refine((phone) => /^\d{10,11}$/.test(phone), 'Informe um telefone com DDD.'),
+  phone: optionalPhoneSchema,
   address: z.object({
     zipCode: required
       .transform((zip) => zip.replace(/\D/g, ''))

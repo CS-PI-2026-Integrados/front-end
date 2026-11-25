@@ -1,24 +1,14 @@
 import { useState } from 'react'
-import {
-  Users,
-  FileText,
-  CheckCircle,
-  TriangleAlert,
-  Plus,
-  Trash,
-  ListCheck,
-  Pencil,
-  Settings,
-} from 'lucide-react'
-import { useSession } from '@/features/authentication'
+import { Ban, Users, FileText, CheckCircle, TriangleAlert, Pencil, Settings } from 'lucide-react'
 import { Spinner } from '@/shared/components/ui/spinner'
 import { BackButton } from '@/shared/components/buttons/BackButton'
+import { ConfirmationDialog } from '@/shared/components/ConfirmationDialog'
 import { MetricCard } from '@/shared/components/data-display/MetricCard'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { TablePagination } from '@/shared/components/data-display/TablePagination'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { Button } from '@/shared/components/ui/button'
-import { Pagination } from '@/shared/components/ui/pagination'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs.jsx'
 import {
   Table,
@@ -43,15 +33,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/shared/components/ui/dialog.jsx'
-import { Checkbox } from '@/shared/components/ui/checkbox.jsx'
 import { Input } from '@/shared/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/ui/select'
 import {
   Card,
   CardHeader,
@@ -59,6 +41,14 @@ import {
   CardDescription,
   CardContent,
 } from '@/shared/components/ui/card.jsx'
+import { ManageParticipantsModal } from './ManageParticipantsModal'
+import { MeetingPresenceDialog } from './MeetingPresenceDialog'
+
+const MEETING_STATUS_LABELS = {
+  PENDENTE: 'Pendente',
+  REALIZADO: 'Realizado',
+  CANCELADO: 'Não realizado',
+}
 
 const getStatusBadgeColor = (situacao) => {
   const statusColors = {
@@ -69,35 +59,34 @@ const getStatusBadgeColor = (situacao) => {
   return statusColors[situacao] || 'bg-gray-200 text-gray-800'
 }
 
-const getParticipantStatusColor = (situacao) => {
-  const statusColors = {
-    PRESENTE: 'bg-green-900 text-green-200',
-    AUSENTE: 'bg-red-600 text-red-200',
-    JUSTIFICADO: 'bg-blue-600 text-blue-200',
-  }
-  return statusColors[situacao] || 'bg-gray-100 text-gray-800 border-gray-300'
-}
-
 const StatusBadge = ({ situacao }) => (
   <span
     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeColor(situacao)}`}
   >
-    {situacao}
+    {MEETING_STATUS_LABELS[situacao] || situacao}
   </span>
 )
 
 const GroupConversation = ({ data }) => {
-  const { session } = useSession()
   const [meetingsPage, setMeetingsPage] = useState(1)
+  const [participantsPage, setParticipantsPage] = useState(1)
   const [documentoDisponivel, setDocumentoDisponivel] = useState(false)
   const {
     isLoading,
+    isSavingMeeting,
     group,
+    isParticipantsModalOpen,
+    openParticipantsModal,
+    setParticipantsModalOpen,
+    requestCloseParticipants,
+    saveParticipants,
+    confirmDiscardParticipants,
+    cancelDiscardParticipants,
+    participantDraft,
+    canManageParticipants,
+    canManageMeetings = canManageParticipants,
     isModalOpen,
-    setIsModalOpen,
     selectedEncontro,
-    encontroNewStatus,
-    setEncontroNewStatus,
     participantStatuses,
     justifications,
     isConfirmed,
@@ -115,6 +104,8 @@ const GroupConversation = ({ data }) => {
     newEncontroTema,
     setNewEncontroTema,
     justificationTypes,
+    notRealizedEncontro,
+    notRealizedError,
     formatDate,
     getParticipantPresencas,
     getParticipantFaltas,
@@ -123,13 +114,15 @@ const GroupConversation = ({ data }) => {
     getTotalEncontrosNotCanceled,
     getUnjustifiedAbsentees,
     getEligibleParticipants,
+    getPertinentParticipants,
+    hasMeetingRecords,
+    canMarkNotRealized,
     isEncontroAtrasado,
     openNewEncontroModal,
     closeNewEncontroModal,
     handleCreateEncontro,
     handleEditEncontro,
     handleSaveEditEncontro,
-    handleRemoveParticipant,
     openPresenceModal,
     closePresenceModal,
     handleParticipantStatusChange,
@@ -137,8 +130,10 @@ const GroupConversation = ({ data }) => {
     handleJustificationTypeChange,
     isConfirmDisabled,
     handleConfirmPresences,
+    openNotRealizedDialog,
+    closeNotRealizedDialog,
+    handleConfirmNotRealized,
     error,
-    isSaving,
     reload,
   } = data
   const meetings = group?.meetings ?? []
@@ -149,6 +144,22 @@ const GroupConversation = ({ data }) => {
     (currentMeetingsPage - 1) * meetingsPageSize,
     currentMeetingsPage * meetingsPageSize
   )
+  const participants = group?.participants ?? []
+  const participantsPageSize = 5
+  const participantsTotalPages = Math.max(1, Math.ceil(participants.length / participantsPageSize))
+  const currentParticipantsPage = Math.min(participantsPage, participantsTotalPages)
+  const visibleParticipants = participants.slice(
+    (currentParticipantsPage - 1) * participantsPageSize,
+    currentParticipantsPage * participantsPageSize
+  )
+  const resolvePertinentParticipants = (encontro) =>
+    getPertinentParticipants ? getPertinentParticipants(encontro) : participants
+  const isMeetingBlockedForNotRealized = (encontro) =>
+    canMarkNotRealized
+      ? !canMarkNotRealized(encontro)
+      : !canManageMeetings ||
+        encontro.status !== 'PENDENTE' ||
+        Boolean(hasMeetingRecords?.(encontro))
 
   if (!isLoading && !group)
     return (
@@ -170,14 +181,28 @@ const GroupConversation = ({ data }) => {
   ) : (
     <div className="flex flex-col">
       <BackButton to="/grupos-reflexivos" className="mb-2" />
-      {error && !isModalOpen && !isNewEncontroModalOpen && !isEditEncontroOpen && (
-        <p role="alert" className="text-destructive">
-          {error}
-        </p>
-      )}
+      {error &&
+        !isModalOpen &&
+        !isNewEncontroModalOpen &&
+        !isEditEncontroOpen &&
+        !notRealizedEncontro && (
+          <p role="alert" className="text-destructive">
+            {error}
+          </p>
+        )}
       <PageHeader
         title={group?.name ?? 'Grupos Reflexivos'}
         description={group?.description ?? 'Gerencie grupos de reflexão e acompanhe participantes'}
+        action={
+          <Button
+            type="button"
+            variant="outline"
+            onClick={openParticipantsModal}
+            aria-label={`Gerenciar participantes do grupo ${group.name}`}
+          >
+            Gerenciar participantes
+          </Button>
+        }
       />
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
@@ -214,19 +239,18 @@ const GroupConversation = ({ data }) => {
             <TabsTrigger value="documentos">Documentos da vara</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="encontros">
-            <div className="mb-4 flex items-center justify-between">
-              <h4 className="font-medium">Histórico de encontros</h4>
-              <Button size="sm" onClick={openNewEncontroModal}>
-                <Plus />
-                Registrar encontro
-              </Button>
-            </div>
-
+          <TabsContent value="encontros" className="mt-4">
             <DataTableCard
               title="Histórico de encontros"
               count={meetings.length}
               icon={<FileText className="text-muted-foreground size-5" aria-hidden="true" />}
+              action={
+                canManageMeetings && (
+                  <Button size="sm" onClick={openNewEncontroModal}>
+                    Registrar encontro
+                  </Button>
+                )
+              }
               isEmpty={!meetings.length}
               emptyState={
                 <EmptyTableState
@@ -236,169 +260,220 @@ const GroupConversation = ({ data }) => {
                 />
               }
               footer={
-                <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                  <span className="font-medium">
-                    Página {currentMeetingsPage} de {meetingsTotalPages} {'·'} {meetings.length}{' '}
-                    registros
-                  </span>
-                  <Pagination
-                    currentPage={currentMeetingsPage}
-                    totalPages={meetingsTotalPages}
-                    onPageChange={setMeetingsPage}
-                  />
-                </div>
+                <TablePagination
+                  currentPage={currentMeetingsPage}
+                  totalPages={meetingsTotalPages}
+                  totalItems={meetings.length}
+                  onPageChange={setMeetingsPage}
+                />
               }
             >
               <div className="overflow-x-auto">
                 <Table contentColumns="max-content fit-content(40ch) max-content max-content max-content">
                   <TableHeader>
                     <TableRow className="bg-secondary border-y">
-                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
-                        Data
-                      </TableHead>
-                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
-                        Tema
-                      </TableHead>
-                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
-                        Status
-                      </TableHead>
-                      <TableHead className="px-4 py-3 text-left text-xs font-semibold">
-                        Presenças
-                      </TableHead>
-                      <TableHead className="px-4 py-3 text-right text-xs font-semibold">
-                        Ações
-                      </TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Data</TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Tema</TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Status</TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Presenças</TableHead>
+                      <TableHead className="px-4 py-3 text-xs font-semibold">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
 
                   <TableBody>
-                    {visibleMeetings.map((encontro) => (
-                      <TableRow key={encontro.id}>
-                        <TableCell className="px-4 py-3.5 whitespace-nowrap">
-                          {formatDate(encontro.date) || '—'}
-                        </TableCell>
-                        <TableCell className="max-w-[40ch] px-4 py-3.5 wrap-break-word whitespace-normal">
-                          {encontro.subject}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <StatusBadge situacao={encontro.status || 'PENDENTE'} />
-                            {isEncontroAtrasado(encontro) && (
-                              <span className="text-xs text-red-600/85">Registro em atraso</span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-4 py-3.5 whitespace-nowrap">
-                          {`${encontro.present?.length ?? encontro.attendanceCount ?? 0}/${group?.participants?.length ?? 0}`}
-                        </TableCell>
-                        <TableCell className="px-4 py-3.5 text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                    {visibleMeetings.map((encontro) => {
+                      const formattedDate = formatDate(encontro.date) || '—'
+                      const pertinentCount = resolvePertinentParticipants(encontro).length
+                      const notRealizedDisabled = isMeetingBlockedForNotRealized(encontro)
+                      const isCanceled = encontro.status === 'CANCELADO'
+
+                      return (
+                        <TableRow key={encontro.id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell
+                            className="cursor-pointer px-4 py-2 whitespace-nowrap"
+                            onClick={() => openPresenceModal(encontro)}
+                          >
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                openPresenceModal(encontro)
+                              }}
+                              className="cursor-pointer font-medium hover:underline"
+                            >
+                              {formattedDate}
+                            </button>
+                          </TableCell>
+                          <TableCell
+                            className="max-w-[40ch] cursor-pointer px-4 py-2 wrap-break-word whitespace-normal"
+                            onClick={() => openPresenceModal(encontro)}
+                          >
+                            {encontro.subject}
+                          </TableCell>
+                          <TableCell
+                            className="cursor-pointer px-4 py-2"
+                            onClick={() => openPresenceModal(encontro)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <StatusBadge situacao={encontro.status || 'PENDENTE'} />
+                              {isEncontroAtrasado(encontro) && (
+                                <span className="text-xs text-red-600/85">Registro em atraso</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell
+                            className="cursor-pointer px-4 py-2 whitespace-nowrap"
+                            onClick={() => openPresenceModal(encontro)}
+                          >
+                            {isCanceled && !encontro.attendanceCount
+                              ? '—'
+                              : `${encontro.present?.length ?? 0}/${encontro.attendanceCount ?? pertinentCount}`}
+                          </TableCell>
+                          <TableCell className="px-4 py-2">
+                            <div className="flex items-center justify-end gap-2">
                               <Button
-                                variant="secondary"
+                                type="button"
+                                variant="outline"
                                 size="sm"
-                                aria-label={`Ações do encontro ${encontro.subject}`}
+                                disabled={isCanceled}
+                                title={
+                                  isCanceled
+                                    ? 'Não é possível registrar presenças para encontros marcados como não realizados'
+                                    : ''
+                                }
+                                onClick={() => openPresenceModal(encontro)}
                               >
-                                <Settings />
+                                {encontro.status === 'REALIZADO'
+                                  ? 'Ver presenças'
+                                  : 'Registrar presenças'}
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuGroup>
-                                <DropdownMenuItem
-                                  disabled={
-                                    (encontro.status !== 'PENDENTE' &&
-                                      session?.user?.role?.key !== 'admin') ||
-                                    !['admin', 'operator'].includes(session?.user?.role?.key)
-                                  }
-                                  className="w-full justify-start"
-                                  onSelect={() => handleEditEncontro(encontro)}
-                                >
-                                  <Pencil /> Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="w-full justify-start"
-                                  onSelect={() => openPresenceModal(encontro)}
-                                  disabled={encontro.status === 'CANCELADO'}
-                                  title={
-                                    encontro.status === 'CANCELADO'
-                                      ? 'Não é possível registrar presenças para encontros cancelados'
-                                      : ''
-                                  }
-                                >
-                                  <ListCheck />
-                                  Presenças
-                                </DropdownMenuItem>
-                              </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    aria-label={`Ações do encontro ${encontro.subject}`}
+                                  >
+                                    <Settings />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuGroup>
+                                    <DropdownMenuItem
+                                      disabled={
+                                        encontro.status !== 'PENDENTE' || !canManageMeetings
+                                      }
+                                      className="w-full justify-start"
+                                      onSelect={() => handleEditEncontro(encontro)}
+                                    >
+                                      <Pencil /> Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      disabled={notRealizedDisabled}
+                                      title={
+                                        encontro.status === 'REALIZADO'
+                                          ? 'Encontros realizados não podem ser marcados como não realizados'
+                                          : encontro.status === 'CANCELADO'
+                                            ? 'Este encontro já está marcado como não realizado'
+                                            : ''
+                                      }
+                                      className="text-destructive focus:text-destructive w-full justify-start"
+                                      onSelect={() => openNotRealizedDialog?.(encontro)}
+                                    >
+                                      <Ban />
+                                      Marcar como não realizado
+                                    </DropdownMenuItem>
+                                  </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
                   </TableBody>
                 </Table>
               </div>
             </DataTableCard>
           </TabsContent>
 
-          <TabsContent value="participantes">
-            <div className="bg-card rounded-md p-4">
-              <div className="mb-4 flex items-center justify-between">
-                <h4 className="font-medium">Participantes do grupo</h4>
-                <span className="text-muted-foreground text-sm">
-                  {group?.participants?.length ?? 0} participante(s)
-                </span>
-              </div>
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Presenças</TableHead>
-                    <TableHead>Faltas</TableHead>
-                    <TableHead>Elegibilidade</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {(group?.participants ?? []).length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-muted-foreground h-32 text-center">
-                        Nenhum participante cadastrado
-                      </TableCell>
+          <TabsContent value="participantes" className="mt-4">
+            <DataTableCard
+              title="Participantes do grupo"
+              count={group?.participants?.length ?? 0}
+              icon={<Users className="text-muted-foreground size-5" aria-hidden="true" />}
+              action={
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={openParticipantsModal}
+                  aria-label={`Gerenciar participantes do grupo ${group.name}`}
+                >
+                  Gerenciar participantes
+                </Button>
+              }
+              isEmpty={!group?.participants?.length}
+              emptyState={
+                <EmptyTableState
+                  icon={Users}
+                  title="Nenhum participante cadastrado"
+                  description="Os participantes vinculados ao grupo aparecerão aqui."
+                />
+              }
+              footer={
+                <TablePagination
+                  currentPage={currentParticipantsPage}
+                  totalPages={participantsTotalPages}
+                  totalItems={participants.length}
+                  onPageChange={setParticipantsPage}
+                />
+              }
+            >
+              <div className="overflow-x-auto">
+                <Table contentColumns="max-content max-content max-content max-content">
+                  <TableHeader>
+                    <TableRow className="bg-secondary border-y">
+                      <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
+                        Nome
+                      </TableHead>
+                      <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
+                        Presenças
+                      </TableHead>
+                      <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
+                        Faltas
+                      </TableHead>
+                      <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
+                        Elegibilidade
+                      </TableHead>
                     </TableRow>
-                  ) : (
-                    (group?.participants ?? []).map((participante) => {
+                  </TableHeader>
+
+                  <TableBody>
+                    {visibleParticipants.map((participante) => {
                       const presencas = getParticipantPresencas(participante)
                       const faltas = getParticipantFaltas(participante)
                       const elegibilidade = getParticipantElegibilidade(participante)
 
                       return (
-                        <TableRow key={participante.id}>
-                          <TableCell className="font-medium">{participante.fullName}</TableCell>
-                          <TableCell>{presencas}</TableCell>
-                          <TableCell>{faltas}</TableCell>
-                          <TableCell>
-                            {elegibilidade === 0 ? 'Elegível' : 'Faltam ' + elegibilidade}
+                        <TableRow
+                          key={participante.id}
+                          className="hover:bg-muted/50 border-b transition-colors"
+                        >
+                          <TableCell className="px-4 py-3.5 font-medium">
+                            {participante.fullName}
                           </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleRemoveParticipant(participante.id)}
-                              disabled={isSaving}
-                              aria-label={`Remover ${participante.fullName}`}
-                            >
-                              <Trash />
-                            </Button>
+                          <TableCell className="px-4 py-3.5">{presencas}</TableCell>
+                          <TableCell className="px-4 py-3.5">{faltas}</TableCell>
+                          <TableCell className="px-4 py-3.5">
+                            {elegibilidade === 0 ? 'Elegível' : 'Faltam ' + elegibilidade}
                           </TableCell>
                         </TableRow>
                       )
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </DataTableCard>
           </TabsContent>
 
           <TabsContent value="certificados">
@@ -519,204 +594,89 @@ const GroupConversation = ({ data }) => {
           </TabsContent>
         </Tabs>
       </div>
+      <ManageParticipantsModal
+        open={isParticipantsModalOpen}
+        onOpenChange={setParticipantsModalOpen}
+        onRequestClose={requestCloseParticipants}
+        group={group}
+        participants={participantDraft.participants}
+        additions={participantDraft.additions}
+        removals={participantDraft.removals}
+        onAdd={participantDraft.add}
+        onRemove={participantDraft.remove}
+        onSave={saveParticipants}
+        onCancel={participantDraft.cancel}
+        isLoading={participantDraft.isLoading}
+        isSaving={participantDraft.isSaving}
+        error={participantDraft.error}
+        saveError={participantDraft.saveError}
+        onRetry={participantDraft.reload}
+        readOnly={
+          !canManageParticipants ||
+          !['PLANNED', 'ACTIVE'].includes(participantDraft.groupStatus ?? group.status)
+        }
+        readOnlyReason={
+          !canManageParticipants
+            ? 'Seu perfil pode consultar os participantes, mas não pode alterá-los.'
+            : `O grupo está ${participantDraft.groupStatus === 'CLOSED' ? 'encerrado' : 'indisponível para edição'}; os participantes estão somente para consulta.`
+        }
+      />
+      <ConfirmationDialog
+        open={participantDraft.discardConfirmationOpen}
+        onOpenChange={cancelDiscardParticipants}
+        title="Descartar alterações?"
+        description="As inclusões e remoções ainda não salvas serão descartadas."
+        confirmLabel="Descartar"
+        destructive
+        onConfirm={confirmDiscardParticipants}
+      />
+      <ConfirmationDialog
+        open={Boolean(notRealizedEncontro)}
+        onOpenChange={(open) => {
+          if (!open) closeNotRealizedDialog?.()
+        }}
+        title="Marcar encontro como não realizado?"
+        description={
+          notRealizedEncontro
+            ? `Tem certeza que deseja marcar "${notRealizedEncontro.subject}" (${formatDate(notRealizedEncontro.date)}) como não realizado? Esta ação preserva o histórico.`
+            : ''
+        }
+        confirmLabel={isSavingMeeting ? 'Salvando...' : 'Marcar como não realizado'}
+        destructive
+        isConfirming={isSavingMeeting}
+        error={notRealizedError}
+        onConfirm={handleConfirmNotRealized}
+      />
 
-      {/* Modal de Registrar Presenças */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto lg:min-w-4xl" showCloseButton={true}>
-          {selectedEncontro && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Registrar Presenças - {selectedEncontro.subject}</DialogTitle>
-                <DialogDescription>Data: {formatDate(selectedEncontro.date)}</DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-6">
-                {selectedEncontro.status === 'PENDENTE' && (
-                  <div className="flex gap-3">
-                    <Button
-                      variant={encontroNewStatus === 'REALIZADO' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => {
-                        setEncontroNewStatus('REALIZADO')
-                      }}
-                      className="w-1/2"
-                    >
-                      Marcar como realizado
-                    </Button>
-                    <Button
-                      variant={encontroNewStatus === 'CANCELADO' ? 'destructive' : 'outline'}
-                      size="sm"
-                      onClick={() => setEncontroNewStatus('CANCELADO')}
-                      className="w-1/2"
-                    >
-                      Cancelar encontro
-                    </Button>
-                  </div>
-                )}
-
-                {encontroNewStatus === 'REALIZADO' && selectedEncontro.status === 'PENDENTE' && (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Tipo de justificação</TableHead>
-                          <TableHead>Observações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {(group?.participants || []).map((participant) => (
-                          <TableRow key={participant.id}>
-                            <TableCell className="font-medium">{participant.fullName}</TableCell>
-                            <TableCell>
-                              <Select
-                                value={participantStatuses[participant.id] || ''}
-                                onValueChange={(value) =>
-                                  handleParticipantStatusChange(participant.id, value)
-                                }
-                              >
-                                <SelectTrigger aria-label={`Presença de ${participant.fullName}`}>
-                                  <SelectValue placeholder="Selecionar..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="PRESENTE">Presente</SelectItem>
-                                  <SelectItem value="AUSENTE">Ausente</SelectItem>
-                                  <SelectItem value="JUSTIFICADO">Justificado</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </TableCell>
-                            <TableCell>
-                              {participantStatuses[participant.id] === 'JUSTIFICADO' && (
-                                <Select
-                                  value={justificationTypes[participant.id] || ''}
-                                  onValueChange={(value) =>
-                                    handleJustificationTypeChange(participant.id, value)
-                                  }
-                                >
-                                  <SelectTrigger
-                                    aria-label={`Justificação de ${participant.fullName}`}
-                                  >
-                                    <SelectValue placeholder="Selecionar..." />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="ATESTADO">Atestado médico</SelectItem>
-                                    <SelectItem value="DETERMINACAO_JUDICIAL">
-                                      Determinação judicial
-                                    </SelectItem>
-                                    <SelectItem value="FORCA_MAIOR">Força maior</SelectItem>
-                                    <SelectItem value="OUTRO">Outro</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {participantStatuses[participant.id] === 'JUSTIFICADO' && (
-                                <div className="flex flex-col gap-1">
-                                  <Input
-                                    type="text"
-                                    placeholder="Digite a justificação (máx 200 caracteres)"
-                                    maxLength={200}
-                                    value={justifications[participant.id] || ''}
-                                    onChange={(e) =>
-                                      handleJustificationChange(participant.id, e.target.value)
-                                    }
-                                    className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
-                                  />
-                                </div>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-
-                {selectedEncontro.status === 'REALIZADO' && (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Tipo de Justificação</TableHead>
-                          <TableHead>Observações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {(group?.participants || []).map((participant) => {
-                          const status = selectedEncontro.present?.includes(participant.id)
-                            ? 'PRESENTE'
-                            : selectedEncontro.absent?.includes(participant.id)
-                              ? 'AUSENTE'
-                              : 'JUSTIFICADO'
-                          const justificationData =
-                            selectedEncontro.justifications?.[participant.id]
-                          const justificationType =
-                            typeof justificationData === 'object' ? justificationData?.type : null
-                          const justificationText =
-                            typeof justificationData === 'object'
-                              ? justificationData?.text
-                              : justificationData
-
-                          return (
-                            <TableRow key={participant.id}>
-                              <TableCell className="font-medium">{participant.fullName}</TableCell>
-                              <TableCell>
-                                <span
-                                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getParticipantStatusColor(status)}`}
-                                >
-                                  {status}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-sm">{justificationType || '-'}</TableCell>
-                              <TableCell className="text-sm">{justificationText || '-'}</TableCell>
-                            </TableRow>
-                          )
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-
-                {encontroNewStatus && selectedEncontro.status === 'PENDENTE' && (
-                  <div className="flex items-center gap-2 p-4">
-                    <Checkbox
-                      id="confirm-checkbox"
-                      checked={isConfirmed}
-                      onCheckedChange={setIsConfirmed}
-                    />
-                    <label htmlFor="confirm-checkbox" className="cursor-pointer text-sm">
-                      Confirmo que estou registrando o encontro correto
-                    </label>
-                  </div>
-                )}
-              </div>
-
-              {error && (
-                <p role="alert" className="text-destructive">
-                  {error}
-                </p>
-              )}
-              <DialogFooter className="gap-2">
-                <Button variant="outline" onClick={closePresenceModal}>
-                  {selectedEncontro.status === 'REALIZADO' ? 'Fechar' : 'Cancelar'}
-                </Button>
-                {selectedEncontro.status === 'PENDENTE' && encontroNewStatus && (
-                  <Button onClick={handleConfirmPresences} disabled={isConfirmDisabled()}>
-                    Salvar
-                  </Button>
-                )}
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <MeetingPresenceDialog
+        open={isModalOpen}
+        meeting={selectedEncontro}
+        pertinentParticipants={resolvePertinentParticipants(selectedEncontro)}
+        canEdit={canManageMeetings}
+        isSaving={isSavingMeeting}
+        formatDate={formatDate}
+        participantStatuses={participantStatuses}
+        justificationTypes={justificationTypes}
+        justifications={justifications}
+        isConfirmed={isConfirmed}
+        isConfirmDisabled={isConfirmDisabled()}
+        error={error}
+        onClose={closePresenceModal}
+        onParticipantStatusChange={handleParticipantStatusChange}
+        onJustificationTypeChange={handleJustificationTypeChange}
+        onJustificationChange={handleJustificationChange}
+        onConfirmedChange={setIsConfirmed}
+        onConfirm={handleConfirmPresences}
+      />
 
       {/* Modal de Novo Encontro */}
-      <Dialog open={isNewEncontroModalOpen} onOpenChange={setIsNewEncontroModalOpen}>
-        <DialogContent className="max-w-md" showCloseButton={true}>
+      <Dialog
+        open={isNewEncontroModalOpen}
+        onOpenChange={(open) => {
+          if (!isSavingMeeting) setIsNewEncontroModalOpen(open)
+        }}
+      >
+        <DialogContent className="max-w-md" showCloseButton={!isSavingMeeting}>
           <DialogHeader>
             <DialogTitle>Registrar Novo Encontro</DialogTitle>
             <DialogDescription>Preencha os dados do encontro que será realizado</DialogDescription>
@@ -757,26 +717,32 @@ const GroupConversation = ({ data }) => {
             </p>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={closeNewEncontroModal}>
+            <Button variant="outline" onClick={closeNewEncontroModal} disabled={isSavingMeeting}>
               Cancelar
             </Button>
             <Button
               onClick={handleCreateEncontro}
-              disabled={!newEncontroData || !newEncontroTema.trim()}
+              disabled={!newEncontroData || !newEncontroTema.trim() || isSavingMeeting}
+              aria-busy={isSavingMeeting}
             >
-              Criar encontro
+              {isSavingMeeting ? 'Salvando...' : 'Criar encontro'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       {/* Modal de Editar Encontro */}
-      <Dialog open={isEditEncontroOpen} onOpenChange={setIsEditEncontroOpen}>
-        <DialogContent className="max-w-md" showCloseButton={true}>
+      <Dialog
+        open={isEditEncontroOpen}
+        onOpenChange={(open) => {
+          if (!isSavingMeeting) setIsEditEncontroOpen(open)
+        }}
+      >
+        <DialogContent className="max-w-md" showCloseButton={!isSavingMeeting}>
           <DialogHeader>
             <DialogTitle>Editar Encontro</DialogTitle>
             <DialogDescription>
-              Altere data e tema do encontro (PENDENTE). Administradores podem editar qualquer
-              status.
+              Altere a data e o tema de um encontro pendente. Encontros realizados ou não realizados
+              preservam seu histórico.
             </DialogDescription>
           </DialogHeader>
 
@@ -814,14 +780,19 @@ const GroupConversation = ({ data }) => {
             </p>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditEncontroOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditEncontroOpen(false)}
+              disabled={isSavingMeeting}
+            >
               Cancelar
             </Button>
             <Button
               onClick={handleSaveEditEncontro}
-              disabled={!editEncontroData || !editEncontroTema.trim()}
+              disabled={!editEncontroData || !editEncontroTema.trim() || isSavingMeeting}
+              aria-busy={isSavingMeeting}
             >
-              Salvar
+              {isSavingMeeting ? 'Salvando...' : 'Salvar'}
             </Button>
           </DialogFooter>
         </DialogContent>

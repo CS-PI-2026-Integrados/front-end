@@ -39,6 +39,7 @@ function DialogContent({
   children,
   showCloseButton = true,
   dismissible = false,
+  dismissOnEscapeKeyDown = dismissible,
   ...props
 }) {
   return (
@@ -55,7 +56,7 @@ function DialogContent({
           if (!dismissible) event.preventDefault()
         }}
         onEscapeKeyDown={(event) => {
-          if (!dismissible) event.preventDefault()
+          if (!dismissOnEscapeKeyDown) event.preventDefault()
         }}
       >
         {children}

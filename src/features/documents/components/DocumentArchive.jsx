@@ -1,7 +1,8 @@
 import { LayoutGrid, List } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { CardDescription } from '@/shared/components/ui/card'
-import { DataTableCard, DataTablePagination } from '@/shared/components/data-display/DataTableCard'
+import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { TablePagination } from '@/shared/components/data-display/TablePagination'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { useDocuments } from '../hooks/useDocuments'
@@ -121,7 +122,7 @@ export function DocumentArchive({
           )
         }
         footer={
-          <DataTablePagination
+          <TablePagination
             currentPage={data.page}
             totalPages={data.totalPages}
             totalItems={data.totalItems}

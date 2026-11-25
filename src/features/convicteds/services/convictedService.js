@@ -28,7 +28,7 @@ const responseSchema = z.object({
   id: z.string(),
   name: z.string(),
   cpf: z.string(),
-  phone: z.string().optional(),
+  phone: z.string().nullish(),
   address: z
     .object({
       zip_code: z.string(),
@@ -48,15 +48,13 @@ const responseSchema = z.object({
       z.object({ id: z.string(), number: z.string(), status: z.string(), principal: z.boolean() })
     )
     .optional(),
-  birth_date: z.string().optional(),
+  birth_date: z.string().nullish(),
   main_process_number: z.string().optional(),
   same_process_convicted_count: z.number().optional(),
 })
 
 const detailResponseSchema = responseSchema.extend({
   status: z.enum(['ACTIVE', 'INACTIVE']),
-  birth_date: z.string(),
-  phone: z.string(),
   processes: z.array(
     z.object({ id: z.string(), number: z.string(), status: z.string(), principal: z.boolean() })
   ),
@@ -163,9 +161,9 @@ class ConvictedService {
     const payload = {
       name: data.name?.trim(),
       cpf: (data.cpf || '').replace(/\D/g, ''),
-      birth_date: data.birthDate,
+      birth_date: parseApiInput(convictedUpdateSchema.shape.birthDate, data.birthDate),
       employment_status: data.employmentStatus,
-      phone: data.phone?.replace(/\D/g, ''),
+      phone: parseApiInput(convictedUpdateSchema.shape.phone, data.phone),
       address: {
         zip_code: (data.address?.zipCode || '').replace(/\D/g, ''),
         street: data.address?.street?.trim(),
@@ -200,8 +198,10 @@ class ConvictedService {
     if (data.name !== undefined) payload.name = data.name.trim()
     const cpf = parseApiInput(convictedUpdateSchema.shape.cpf, data.cpf)
     if (cpf !== undefined) payload.cpf = cpf.replace(/\D/g, '')
-    if (data.birthDate !== undefined) payload.birth_date = data.birthDate
-    if (data.phone !== undefined) payload.phone = data.phone.replace(/\D/g, '')
+    const birthDate = parseApiInput(convictedUpdateSchema.shape.birthDate, data.birthDate)
+    if (birthDate !== undefined) payload.birth_date = birthDate
+    const phone = parseApiInput(convictedUpdateSchema.shape.phone, data.phone)
+    if (phone !== undefined) payload.phone = phone
     if (data.employmentStatus !== undefined) payload.employment_status = data.employmentStatus
     if (data.address) {
       payload.address = {

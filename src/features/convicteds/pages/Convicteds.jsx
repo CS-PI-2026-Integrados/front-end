@@ -9,11 +9,11 @@ import { AuthenticatedConvictedImage } from '@/features/convicteds/components/Au
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar'
 import { Button } from '@/shared/components/ui/button'
 import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
+import { TablePagination } from '@/shared/components/data-display/TablePagination'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { Input } from '@/shared/components/ui/input'
-import { Pagination } from '@/shared/components/ui/pagination'
 import {
   Select,
   SelectContent,
@@ -164,34 +164,34 @@ export default function Convicteds() {
           />
         }
         footer={
-          <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <span className="font-medium">
-              Página {page} de {totalPages} · {totalItems} registros
-            </span>
-            <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
-          </div>
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            onPageChange={setPage}
+          />
         }
       >
         <div className="overflow-x-auto md:block">
           <Table contentColumns="max-content fit-content(28ch) max-content max-content fit-content(48ch) max-content">
             <TableHeader>
               <TableRow className="bg-secondary border-y">
-                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold">
+                <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
                   Foto
                 </TableHead>
-                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold">
+                <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
                   Nome
                 </TableHead>
-                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                <TableHead className="text-foreground px-4 py-3 text-xs font-semibold whitespace-nowrap">
                   Processo
                 </TableHead>
-                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">
+                <TableHead className="text-foreground px-4 py-3 text-xs font-semibold whitespace-nowrap">
                   Telefone
                 </TableHead>
-                <TableHead className="text-foreground px-4 py-3 text-left text-xs font-semibold">
+                <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">
                   Endereço
                 </TableHead>
-                <TableHead className="text-foreground px-4 py-3 text-right text-xs font-semibold whitespace-nowrap">
+                <TableHead className="text-foreground px-4 py-3 text-xs font-semibold whitespace-nowrap">
                   Ações
                 </TableHead>
               </TableRow>

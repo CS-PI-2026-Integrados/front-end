@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { UserPlus, X } from 'lucide-react'
 import { useConvictedList } from '@/features/convicteds'
+import { ConvictedFormDialog } from '@/features/convicteds'
 import { SearchPopover } from '@/shared/components/SearchPopover'
 import { FieldLayout } from '@/shared/components/form-fields/FieldLayout'
 import { Button } from '@/shared/components/ui/button'
@@ -8,6 +9,7 @@ import { Button } from '@/shared/components/ui/button'
 export function GroupParticipantsField({ field, error, disabled, readOnly }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
   const selected = field.value || []
   const list = useConvictedList({
     search: query.trim(),
@@ -18,47 +20,75 @@ export function GroupParticipantsField({ field, error, disabled, readOnly }) {
   return (
     <div className="space-y-2">
       {!readOnly && (
-        <FieldLayout
-          id="group-participants"
-          label="Apenados"
-          variant="modal"
-          error={error}
-          disabled={disabled}
-        >
-          {(controls) => (
-            <SearchPopover
-              {...controls}
-              label="Apenados"
-              placeholder="Selecione um apenado"
-              searchPlaceholder="Buscar por nome ou CPF"
-              open={open}
-              onOpenChange={(next) => {
-                setOpen(next)
-                if (!next) field.onBlur()
-              }}
-              query={query}
-              onQueryChange={setQuery}
-              items={list.items.filter((person) => !selected.some((item) => item.id === person.id))}
-              isLoading={list.isLoading}
-              error={list.error}
-              emptyMessage="Nenhum apenado encontrado."
-              loadingMessage="Buscando apenados..."
-              onSelect={(person) => {
-                if (!selected.some((item) => item.id === person.id))
+        <>
+          <FieldLayout
+            id="group-participants"
+            label="Apenados"
+            variant="modal"
+            error={error}
+            disabled={disabled}
+          >
+            {(controls) => (
+              <SearchPopover
+                {...controls}
+                label="Apenados"
+                placeholder="Selecione um apenado"
+                searchPlaceholder="Buscar por nome ou CPF"
+                open={open}
+                onOpenChange={(next) => {
+                  setOpen(next)
+                  if (!next) field.onBlur()
+                }}
+                query={query}
+                onQueryChange={setQuery}
+                items={list.items.filter(
+                  (person) => !selected.some((item) => item.id === person.id)
+                )}
+                isLoading={list.isLoading}
+                error={list.error}
+                emptyMessage="Nenhum apenado encontrado."
+                loadingMessage="Buscando apenados..."
+                onSelect={(person) => {
+                  if (!selected.some((item) => item.id === person.id))
+                    field.onChange([
+                      ...selected,
+                      { id: person.id, fullName: person.fullName, cpf: person.cpf },
+                    ])
+                }}
+                renderItem={(person) => (
+                  <div className="flex min-w-0 gap-3">
+                    <span className="truncate">{person.fullName}</span>
+                    <span className="text-muted-foreground text-xs">{person.cpf}</span>
+                  </div>
+                )}
+              />
+            )}
+          </FieldLayout>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full"
+            disabled={disabled}
+            onClick={() => setCreateOpen(true)}
+          >
+            <UserPlus />
+            Cadastrar novo apenado
+          </Button>
+          <div style={{ display: 'contents' }} onSubmit={(event) => event.stopPropagation()}>
+            <ConvictedFormDialog
+              open={createOpen}
+              onOpenChange={setCreateOpen}
+              onSuccess={(created) => {
+                if (!selected.some((item) => item.id === created.id))
                   field.onChange([
                     ...selected,
-                    { id: person.id, fullName: person.fullName, cpf: person.cpf },
+                    { id: created.id, fullName: created.fullName, cpf: created.cpf },
                   ])
               }}
-              renderItem={(person) => (
-                <div className="flex min-w-0 gap-3">
-                  <span className="truncate">{person.fullName}</span>
-                  <span className="text-muted-foreground text-xs">{person.cpf}</span>
-                </div>
-              )}
             />
-          )}
-        </FieldLayout>
+          </div>
+        </>
       )}
       {selected.map((person) => (
         <div
