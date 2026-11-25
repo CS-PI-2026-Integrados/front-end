@@ -218,7 +218,7 @@ export function useGroupParticipantsDraft({
       if (!result) throw new Error('O serviço não retornou o estado atualizado.')
 
       const participants = applyAuthoritativeGroup(result)
-      onUpdated?.(participants)
+      onUpdated?.(participants, result)
       setSaveStatus('success')
       return true
     } catch (cause) {

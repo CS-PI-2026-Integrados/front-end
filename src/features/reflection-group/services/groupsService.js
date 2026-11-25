@@ -26,6 +26,13 @@ const listSchema = z.object({
   predicted_end_date: z.string().nullable().optional(),
   real_end_date: z.string().nullable().optional(),
 })
+const membershipSchema = z.object({
+  uuid: z.string(),
+  convicted_uuid: z.string(),
+  convicted_name: z.string(),
+  start_date: z.string(),
+  end_date: z.string().nullable().optional(),
+})
 const detailSchema = listSchema.omit({ participant_count: true }).extend({
   description: z.string().nullable().optional(),
   total_meetings_counts: z.number(),
@@ -38,6 +45,7 @@ const detailSchema = listSchema.omit({ participant_count: true }).extend({
   created_at: z.string(),
   updated_at: z.string(),
   convicteds: z.array(z.object({ id: z.string(), name: z.string(), document: z.string() })),
+  participant_memberships: z.array(membershipSchema).optional(),
 })
 const meetingAttendanceSchema = z.object({
   convicted_uuid: z.string(),
@@ -90,6 +98,13 @@ const toDetail = (item) => ({
     id: person.id,
     fullName: person.name,
     cpf: person.document,
+  })),
+  participantMemberships: (item.participant_memberships ?? []).map((membership) => ({
+    id: membership.uuid,
+    convictedId: membership.convicted_uuid,
+    convictedName: membership.convicted_name,
+    startDate: membership.start_date,
+    endDate: membership.end_date ?? null,
   })),
 })
 const detail = (response) => toDetail(parseApiResponse(detailSchema, response))

@@ -16,6 +16,17 @@ const conversationSchema = z.object({
       cpf: z.string().optional(),
     })
   ),
+  participantMemberships: z
+    .array(
+      z.object({
+        id: z.string(),
+        convictedId: z.string(),
+        convictedName: z.string(),
+        startDate: z.string(),
+        endDate: z.string().nullable().optional(),
+      })
+    )
+    .optional(),
   meetings: z.array(
     z.object({
       id: z.union([z.string(), z.number()]),
@@ -187,6 +198,7 @@ export const groupConversationService = {
       minimumMeetings: group.minimumMeetingsCount,
       source: 'api',
       participants: group.convicteds,
+      participantMemberships: group.participantMemberships ?? [],
       meetings,
     })
   },
