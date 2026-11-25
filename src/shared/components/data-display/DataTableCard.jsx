@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card'
+import { Pagination } from '@/shared/components/ui/pagination'
 import { cn } from '@/shared/lib/utils'
 
 export function DataTableCard({
@@ -37,5 +38,16 @@ export function DataTableCard({
       </CardContent>
       {!isLoading && !isEmpty && footer}
     </Card>
+  )
+}
+
+export function DataTablePagination({ currentPage, totalPages, totalItems, onPageChange }) {
+  return (
+    <div className="text-muted-foreground flex flex-col gap-3 border-t px-4 py-3.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <span className="font-medium">
+        Página {currentPage} de {totalPages} · {totalItems} registros
+      </span>
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+    </div>
   )
 }
