@@ -1,14 +1,5 @@
 import { useState } from 'react'
-import {
-  Users,
-  FileText,
-  CheckCircle,
-  TriangleAlert,
-  ListCheck,
-  Pencil,
-  Settings,
-} from 'lucide-react'
-import { useSession } from '@/features/authentication'
+import { Ban, Users, FileText, CheckCircle, TriangleAlert, Pencil, Settings } from 'lucide-react'
 import { Spinner } from '@/shared/components/ui/spinner'
 import { BackButton } from '@/shared/components/buttons/BackButton'
 import { ConfirmationDialog } from '@/shared/components/ConfirmationDialog'
@@ -42,15 +33,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/shared/components/ui/dialog.jsx'
-import { Checkbox } from '@/shared/components/ui/checkbox.jsx'
 import { Input } from '@/shared/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/ui/select'
 import {
   Card,
   CardHeader,
@@ -59,6 +42,13 @@ import {
   CardContent,
 } from '@/shared/components/ui/card.jsx'
 import { ManageParticipantsModal } from './ManageParticipantsModal'
+import { MeetingPresenceDialog } from './MeetingPresenceDialog'
+
+const MEETING_STATUS_LABELS = {
+  PENDENTE: 'Pendente',
+  REALIZADO: 'Realizado',
+  CANCELADO: 'Não realizado',
+}
 
 const getStatusBadgeColor = (situacao) => {
   const statusColors = {
@@ -69,52 +59,15 @@ const getStatusBadgeColor = (situacao) => {
   return statusColors[situacao] || 'bg-gray-200 text-gray-800'
 }
 
-const getParticipantStatusColor = (situacao) => {
-  const statusColors = {
-    PRESENTE: 'bg-green-900 text-green-200',
-    AUSENTE: 'bg-red-600 text-red-200',
-    JUSTIFICADO: 'bg-blue-600 text-blue-200',
-  }
-  return statusColors[situacao] || 'bg-gray-100 text-gray-800 border-gray-300'
-}
-
 const StatusBadge = ({ situacao }) => (
   <span
     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeColor(situacao)}`}
   >
-    {situacao}
+    {MEETING_STATUS_LABELS[situacao] || situacao}
   </span>
 )
 
-const getMeetingAttendanceRows = (meeting, participants) => {
-  if (Array.isArray(meeting.attendance)) {
-    return meeting.attendance.map((record) => ({
-      id: record.convictedId,
-      fullName: record.convictedName,
-      status: record.status,
-      justificationType: record.justificationType,
-      justificationText: record.justificationText,
-    }))
-  }
-
-  return participants.map((participant) => {
-    const justification = meeting.justifications?.[participant.id]
-    return {
-      id: participant.id,
-      fullName: participant.fullName,
-      status: meeting.present?.includes(participant.id)
-        ? 'PRESENTE'
-        : meeting.absent?.includes(participant.id)
-          ? 'AUSENTE'
-          : 'JUSTIFICADO',
-      justificationType: typeof justification === 'object' ? justification?.type : null,
-      justificationText: typeof justification === 'object' ? justification?.text : justification,
-    }
-  })
-}
-
 const GroupConversation = ({ data }) => {
-  const { session } = useSession()
   const [meetingsPage, setMeetingsPage] = useState(1)
   const [participantsPage, setParticipantsPage] = useState(1)
   const [documentoDisponivel, setDocumentoDisponivel] = useState(false)
@@ -131,11 +84,9 @@ const GroupConversation = ({ data }) => {
     cancelDiscardParticipants,
     participantDraft,
     canManageParticipants,
+    canManageMeetings = canManageParticipants,
     isModalOpen,
-    setIsModalOpen,
     selectedEncontro,
-    encontroNewStatus,
-    setEncontroNewStatus,
     participantStatuses,
     justifications,
     isConfirmed,
@@ -153,6 +104,8 @@ const GroupConversation = ({ data }) => {
     newEncontroTema,
     setNewEncontroTema,
     justificationTypes,
+    notRealizedEncontro,
+    notRealizedError,
     formatDate,
     getParticipantPresencas,
     getParticipantFaltas,
@@ -161,6 +114,9 @@ const GroupConversation = ({ data }) => {
     getTotalEncontrosNotCanceled,
     getUnjustifiedAbsentees,
     getEligibleParticipants,
+    getPertinentParticipants,
+    hasMeetingRecords,
+    canMarkNotRealized,
     isEncontroAtrasado,
     openNewEncontroModal,
     closeNewEncontroModal,
@@ -174,6 +130,9 @@ const GroupConversation = ({ data }) => {
     handleJustificationTypeChange,
     isConfirmDisabled,
     handleConfirmPresences,
+    openNotRealizedDialog,
+    closeNotRealizedDialog,
+    handleConfirmNotRealized,
     error,
     reload,
   } = data
@@ -193,6 +152,14 @@ const GroupConversation = ({ data }) => {
     (currentParticipantsPage - 1) * participantsPageSize,
     currentParticipantsPage * participantsPageSize
   )
+  const resolvePertinentParticipants = (encontro) =>
+    getPertinentParticipants ? getPertinentParticipants(encontro) : participants
+  const isMeetingBlockedForNotRealized = (encontro) =>
+    canMarkNotRealized
+      ? !canMarkNotRealized(encontro)
+      : !canManageMeetings ||
+        encontro.status !== 'PENDENTE' ||
+        Boolean(hasMeetingRecords?.(encontro))
 
   if (!isLoading && !group)
     return (
@@ -214,11 +181,15 @@ const GroupConversation = ({ data }) => {
   ) : (
     <div className="flex flex-col">
       <BackButton to="/grupos-reflexivos" className="mb-2" />
-      {error && !isModalOpen && !isNewEncontroModalOpen && !isEditEncontroOpen && (
-        <p role="alert" className="text-destructive">
-          {error}
-        </p>
-      )}
+      {error &&
+        !isModalOpen &&
+        !isNewEncontroModalOpen &&
+        !isEditEncontroOpen &&
+        !notRealizedEncontro && (
+          <p role="alert" className="text-destructive">
+            {error}
+          </p>
+        )}
       <PageHeader
         title={group?.name ?? 'Grupos Reflexivos'}
         description={group?.description ?? 'Gerencie grupos de reflexão e acompanhe participantes'}
@@ -274,9 +245,11 @@ const GroupConversation = ({ data }) => {
               count={meetings.length}
               icon={<FileText className="text-muted-foreground size-5" aria-hidden="true" />}
               action={
-                <Button size="sm" onClick={openNewEncontroModal}>
-                  Registrar encontro
-                </Button>
+                canManageMeetings && (
+                  <Button size="sm" onClick={openNewEncontroModal}>
+                    Registrar encontro
+                  </Button>
+                )
               }
               isEmpty={!meetings.length}
               emptyState={
@@ -308,69 +281,116 @@ const GroupConversation = ({ data }) => {
                   </TableHeader>
 
                   <TableBody>
-                    {visibleMeetings.map((encontro) => (
-                      <TableRow key={encontro.id}>
-                        <TableCell className="px-4 py-2 whitespace-nowrap">
-                          {formatDate(encontro.date) || '—'}
-                        </TableCell>
-                        <TableCell className="max-w-[40ch] px-4 py-2 wrap-break-word whitespace-normal">
-                          {encontro.subject}
-                        </TableCell>
-                        <TableCell className="px-4 py-2">
-                          <div className="flex items-center gap-2">
-                            <StatusBadge situacao={encontro.status || 'PENDENTE'} />
-                            {isEncontroAtrasado(encontro) && (
-                              <span className="text-xs text-red-600/85">Registro em atraso</span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-4 py-2 whitespace-nowrap">
-                          {`${encontro.present?.length ?? 0}/${encontro.attendanceCount ?? group?.participants?.length ?? 0}`}
-                        </TableCell>
-                        <TableCell className="px-4 py-2">
-                          <div className="flex justify-end">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  aria-label={`Ações do encontro ${encontro.subject}`}
-                                >
-                                  <Settings />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent>
-                                <DropdownMenuGroup>
-                                  <DropdownMenuItem
-                                    disabled={
-                                      encontro.status !== 'PENDENTE' ||
-                                      !['admin', 'operator'].includes(session?.user?.role?.key)
-                                    }
-                                    className="w-full justify-start"
-                                    onSelect={() => handleEditEncontro(encontro)}
+                    {visibleMeetings.map((encontro) => {
+                      const formattedDate = formatDate(encontro.date) || '—'
+                      const pertinentCount = resolvePertinentParticipants(encontro).length
+                      const notRealizedDisabled = isMeetingBlockedForNotRealized(encontro)
+                      const isCanceled = encontro.status === 'CANCELADO'
+
+                      return (
+                        <TableRow key={encontro.id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell
+                            className="cursor-pointer px-4 py-2 whitespace-nowrap"
+                            onClick={() => openPresenceModal(encontro)}
+                          >
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                openPresenceModal(encontro)
+                              }}
+                              className="cursor-pointer font-medium hover:underline"
+                            >
+                              {formattedDate}
+                            </button>
+                          </TableCell>
+                          <TableCell
+                            className="max-w-[40ch] cursor-pointer px-4 py-2 wrap-break-word whitespace-normal"
+                            onClick={() => openPresenceModal(encontro)}
+                          >
+                            {encontro.subject}
+                          </TableCell>
+                          <TableCell
+                            className="cursor-pointer px-4 py-2"
+                            onClick={() => openPresenceModal(encontro)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <StatusBadge situacao={encontro.status || 'PENDENTE'} />
+                              {isEncontroAtrasado(encontro) && (
+                                <span className="text-xs text-red-600/85">Registro em atraso</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell
+                            className="cursor-pointer px-4 py-2 whitespace-nowrap"
+                            onClick={() => openPresenceModal(encontro)}
+                          >
+                            {isCanceled && !encontro.attendanceCount
+                              ? '—'
+                              : `${encontro.present?.length ?? 0}/${encontro.attendanceCount ?? pertinentCount}`}
+                          </TableCell>
+                          <TableCell className="px-4 py-2">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={isCanceled}
+                                title={
+                                  isCanceled
+                                    ? 'Não é possível registrar presenças para encontros marcados como não realizados'
+                                    : ''
+                                }
+                                onClick={() => openPresenceModal(encontro)}
+                              >
+                                {encontro.status === 'REALIZADO'
+                                  ? 'Ver presenças'
+                                  : 'Registrar presenças'}
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    aria-label={`Ações do encontro ${encontro.subject}`}
                                   >
-                                    <Pencil /> Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    className="w-full justify-start"
-                                    onSelect={() => openPresenceModal(encontro)}
-                                    disabled={encontro.status === 'CANCELADO'}
-                                    title={
-                                      encontro.status === 'CANCELADO'
-                                        ? 'Não é possível registrar presenças para encontros cancelados'
-                                        : ''
-                                    }
-                                  >
-                                    <ListCheck />
-                                    Presenças
-                                  </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                                    <Settings />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuGroup>
+                                    <DropdownMenuItem
+                                      disabled={
+                                        encontro.status !== 'PENDENTE' || !canManageMeetings
+                                      }
+                                      className="w-full justify-start"
+                                      onSelect={() => handleEditEncontro(encontro)}
+                                    >
+                                      <Pencil /> Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      disabled={notRealizedDisabled}
+                                      title={
+                                        encontro.status === 'REALIZADO'
+                                          ? 'Encontros realizados não podem ser marcados como não realizados'
+                                          : encontro.status === 'CANCELADO'
+                                            ? 'Este encontro já está marcado como não realizado'
+                                            : ''
+                                      }
+                                      className="text-destructive focus:text-destructive w-full justify-start"
+                                      onSelect={() => openNotRealizedDialog?.(encontro)}
+                                    >
+                                      <Ban />
+                                      Marcar como não realizado
+                                    </DropdownMenuItem>
+                                  </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -610,201 +630,44 @@ const GroupConversation = ({ data }) => {
         destructive
         onConfirm={confirmDiscardParticipants}
       />
-      {/* Modal de Registrar Presenças */}
-      <Dialog
-        open={isModalOpen}
+      <ConfirmationDialog
+        open={Boolean(notRealizedEncontro)}
         onOpenChange={(open) => {
-          if (!isSavingMeeting) setIsModalOpen(open)
+          if (!open) closeNotRealizedDialog?.()
         }}
-      >
-        <DialogContent
-          className="max-h-[90vh] overflow-y-auto lg:min-w-4xl"
-          showCloseButton={!isSavingMeeting}
-        >
-          {selectedEncontro && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Registrar Presenças - {selectedEncontro.subject}</DialogTitle>
-                <DialogDescription>Data: {formatDate(selectedEncontro.date)}</DialogDescription>
-              </DialogHeader>
+        title="Marcar encontro como não realizado?"
+        description={
+          notRealizedEncontro
+            ? `Tem certeza que deseja marcar "${notRealizedEncontro.subject}" (${formatDate(notRealizedEncontro.date)}) como não realizado? Esta ação preserva o histórico.`
+            : ''
+        }
+        confirmLabel={isSavingMeeting ? 'Salvando...' : 'Marcar como não realizado'}
+        destructive
+        isConfirming={isSavingMeeting}
+        error={notRealizedError}
+        onConfirm={handleConfirmNotRealized}
+      />
 
-              <div className="space-y-6">
-                {selectedEncontro.status === 'PENDENTE' && (
-                  <div className="flex gap-3">
-                    <Button
-                      variant={encontroNewStatus === 'REALIZADO' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => {
-                        setEncontroNewStatus('REALIZADO')
-                      }}
-                      className="w-1/2"
-                    >
-                      Marcar como realizado
-                    </Button>
-                    <Button
-                      variant={encontroNewStatus === 'CANCELADO' ? 'destructive' : 'outline'}
-                      size="sm"
-                      onClick={() => setEncontroNewStatus('CANCELADO')}
-                      className="w-1/2"
-                    >
-                      Marcar como não realizado
-                    </Button>
-                  </div>
-                )}
-
-                {encontroNewStatus === 'REALIZADO' && selectedEncontro.status === 'PENDENTE' && (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Tipo de justificação</TableHead>
-                          <TableHead>Observações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {(group?.participants || []).map((participant) => (
-                          <TableRow key={participant.id}>
-                            <TableCell className="font-medium">{participant.fullName}</TableCell>
-                            <TableCell>
-                              <Select
-                                value={participantStatuses[participant.id] || ''}
-                                onValueChange={(value) =>
-                                  handleParticipantStatusChange(participant.id, value)
-                                }
-                              >
-                                <SelectTrigger aria-label={`Presença de ${participant.fullName}`}>
-                                  <SelectValue placeholder="Selecionar..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="PRESENTE">Presente</SelectItem>
-                                  <SelectItem value="AUSENTE">Ausente</SelectItem>
-                                  <SelectItem value="JUSTIFICADO">Justificado</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </TableCell>
-                            <TableCell>
-                              {participantStatuses[participant.id] === 'JUSTIFICADO' && (
-                                <Select
-                                  value={justificationTypes[participant.id] || ''}
-                                  onValueChange={(value) =>
-                                    handleJustificationTypeChange(participant.id, value)
-                                  }
-                                >
-                                  <SelectTrigger
-                                    aria-label={`Justificação de ${participant.fullName}`}
-                                  >
-                                    <SelectValue placeholder="Selecionar..." />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="ATESTADO">Atestado médico</SelectItem>
-                                    <SelectItem value="DETERMINACAO_JUDICIAL">
-                                      Determinação judicial
-                                    </SelectItem>
-                                    <SelectItem value="FORCA_MAIOR">Força maior</SelectItem>
-                                    <SelectItem value="OUTRO">Outro</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {participantStatuses[participant.id] === 'JUSTIFICADO' && (
-                                <div className="flex flex-col gap-1">
-                                  <Input
-                                    type="text"
-                                    placeholder="Digite a justificação (máx 200 caracteres)"
-                                    maxLength={200}
-                                    value={justifications[participant.id] || ''}
-                                    onChange={(e) =>
-                                      handleJustificationChange(participant.id, e.target.value)
-                                    }
-                                    className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
-                                  />
-                                </div>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-
-                {selectedEncontro.status === 'REALIZADO' && (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Tipo de Justificação</TableHead>
-                          <TableHead>Observações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {getMeetingAttendanceRows(selectedEncontro, group?.participants || []).map(
-                          (record) => (
-                            <TableRow key={record.id}>
-                              <TableCell className="font-medium">{record.fullName}</TableCell>
-                              <TableCell>
-                                <span
-                                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getParticipantStatusColor(record.status)}`}
-                                >
-                                  {record.status}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {record.justificationType || '-'}
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {record.justificationText || '-'}
-                              </TableCell>
-                            </TableRow>
-                          )
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-
-                {encontroNewStatus && selectedEncontro.status === 'PENDENTE' && (
-                  <div className="flex items-center gap-2 p-4">
-                    <Checkbox
-                      id="confirm-checkbox"
-                      checked={isConfirmed}
-                      onCheckedChange={setIsConfirmed}
-                    />
-                    <label htmlFor="confirm-checkbox" className="cursor-pointer text-sm">
-                      Confirmo que estou registrando o encontro correto
-                    </label>
-                  </div>
-                )}
-              </div>
-
-              {error && (
-                <p role="alert" className="text-destructive">
-                  {error}
-                </p>
-              )}
-              <DialogFooter className="gap-2">
-                <Button variant="outline" onClick={closePresenceModal} disabled={isSavingMeeting}>
-                  {selectedEncontro.status === 'REALIZADO' ? 'Fechar' : 'Cancelar'}
-                </Button>
-                {selectedEncontro.status === 'PENDENTE' && encontroNewStatus && (
-                  <Button
-                    onClick={handleConfirmPresences}
-                    disabled={isConfirmDisabled()}
-                    aria-busy={isSavingMeeting}
-                  >
-                    {isSavingMeeting ? 'Salvando...' : 'Salvar'}
-                  </Button>
-                )}
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <MeetingPresenceDialog
+        open={isModalOpen}
+        meeting={selectedEncontro}
+        pertinentParticipants={resolvePertinentParticipants(selectedEncontro)}
+        canEdit={canManageMeetings}
+        isSaving={isSavingMeeting}
+        formatDate={formatDate}
+        participantStatuses={participantStatuses}
+        justificationTypes={justificationTypes}
+        justifications={justifications}
+        isConfirmed={isConfirmed}
+        isConfirmDisabled={isConfirmDisabled()}
+        error={error}
+        onClose={closePresenceModal}
+        onParticipantStatusChange={handleParticipantStatusChange}
+        onJustificationTypeChange={handleJustificationTypeChange}
+        onJustificationChange={handleJustificationChange}
+        onConfirmedChange={setIsConfirmed}
+        onConfirm={handleConfirmPresences}
+      />
 
       {/* Modal de Novo Encontro */}
       <Dialog
