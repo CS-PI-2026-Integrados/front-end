@@ -37,7 +37,6 @@ export function GroupForm({ form, editing, persistedStatus, isSaving }) {
         <TextareaField
           id="group-description"
           label="Descrição"
-          required
           variant="modal"
           registration={register('description')}
           placeholder="Descreva os objetivos e a proposta do grupo"
@@ -57,22 +56,25 @@ export function GroupForm({ form, editing, persistedStatus, isSaving }) {
       </FormSection>
       <FormSection title="Planejamento">
         {editing ? (
-          <Controller
-            control={control}
-            name="status"
-            render={({ field }) => (
-              <SelectField
-                id="group-status"
-                label="Status"
-                required
-                variant="modal"
-                field={field}
-                options={statuses}
-                disabled={isSaving}
-                error={errors.status?.message}
-              />
-            )}
-          />
+          <FormGrid>
+            <Controller
+              control={control}
+              name="status"
+              render={({ field }) => (
+                <SelectField
+                  id="group-status"
+                  label="Status"
+                  required
+                  variant="modal"
+                  field={field}
+                  options={statuses}
+                  disabled={isSaving}
+                  error={errors.status?.message}
+                />
+              )}
+            />
+            {input('meetingBaseTime', 'Horário', { type: 'time', required: false })}
+          </FormGrid>
         ) : (
           <>
             <FormGrid>
@@ -96,7 +98,7 @@ export function GroupForm({ form, editing, persistedStatus, isSaving }) {
                   />
                 )}
               />
-              {input('meetingBaseTime', 'Horário', { type: 'time' })}
+              {input('meetingBaseTime', 'Horário', { type: 'time', required: false })}
             </FormGrid>
           </>
         )}

@@ -62,11 +62,12 @@ export function useGroupForm({ group, open, onSubmit, onOpenChange }) {
         ? {
             metadata: {
               name: data.name,
-              description: data.description,
+              description: data.description?.trim() || null,
               subject: data.subject,
               presenters: data.presenters,
               status: data.status,
               predictedEndDate: data.predictedEndDate || null,
+              meetingBaseTime: data.meetingBaseTime || null,
               ...(persistedStatus === 'PLANNED' ? { startDate: data.startDate } : {}),
             },
             participantIds,
