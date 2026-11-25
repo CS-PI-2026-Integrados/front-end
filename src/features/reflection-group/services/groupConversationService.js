@@ -5,7 +5,7 @@ import { groupsService } from './groupsService'
 const conversationSchema = z.object({
   id: z.union([z.string(), z.number()]),
   name: z.string(),
-  description: z.string(),
+  description: z.string().nullable().optional(),
   status: z.enum(['PLANNED', 'ACTIVE', 'CLOSED']),
   minimumMeetings: z.number(),
   source: z.enum(['mock', 'api']),
@@ -182,7 +182,7 @@ export const groupConversationService = {
     return conversationSchema.parse({
       id: group.id,
       name: group.name,
-      description: group.description,
+      description: group.description ?? null,
       status: group.status,
       minimumMeetings: group.minimumMeetingsCount,
       source: 'api',

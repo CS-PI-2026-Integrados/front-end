@@ -27,11 +27,11 @@ const listSchema = z.object({
   real_end_date: z.string().nullable().optional(),
 })
 const detailSchema = listSchema.omit({ participant_count: true }).extend({
-  description: z.string(),
+  description: z.string().nullable().optional(),
   total_meetings_counts: z.number(),
   minimum_meetings_count: z.number(),
   frequency: z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY']),
-  meeting_base_time: z.string(),
+  meeting_base_time: z.string().nullable().optional(),
   start_date: z.string(),
   predicted_end_date: z.string().nullable().optional(),
   real_end_date: z.string().nullable().optional(),
@@ -76,11 +76,11 @@ const toListItem = (item) => ({
 })
 const toDetail = (item) => ({
   ...toListItem({ ...item, participant_count: item.convicteds.length }),
-  description: item.description,
+  description: item.description ?? null,
   totalMeetingsCount: item.total_meetings_counts ?? item.total_meetings_count,
   minimumMeetingsCount: item.minimum_meetings_count,
   frequency: item.frequency,
-  meetingBaseTime: item.meeting_base_time,
+  meetingBaseTime: item.meeting_base_time ?? null,
   startDate: item.start_date,
   predictedEndDate: item.predicted_end_date ?? null,
   realEndDate: item.real_end_date ?? null,
@@ -174,12 +174,12 @@ export const groupsService = {
         '/group',
         {
           name: data.name,
-          description: data.description,
+          description: data.description?.trim() || null,
           subject: data.subject,
           presenters: data.presenters,
           total_meetings_count: data.totalMeetingsCount,
           minimum_meetings_count: data.minimumMeetingsCount,
-          meeting_base_time: data.meetingBaseTime,
+          meeting_base_time: data.meetingBaseTime || null,
           frequency: data.frequency,
           start_date: data.startDate,
           predicted_end_date: data.predictedEndDate || null,
@@ -192,11 +192,24 @@ export const groupsService = {
   /** Updates supported metadata only. Participants have dedicated operations. */
   async update(id, input, options) {
     const data = parseApiInput(groupUpdateSchema, input)
-    const names = { startDate: 'start_date', predictedEndDate: 'predicted_end_date' }
+    const names = {
+      startDate: 'start_date',
+      predictedEndDate: 'predicted_end_date',
+      meetingBaseTime: 'meeting_base_time',
+    }
     return detail(
       await apiService.put(
         `/group/${id}`,
-        Object.fromEntries(Object.entries(data).map(([key, value]) => [names[key] || key, value])),
+        Object.fromEntries(
+          Object.entries(data).map(([key, value]) => [
+            names[key] || key,
+            key === 'description'
+              ? value?.trim() || null
+              : key === 'meetingBaseTime'
+                ? value || null
+                : value,
+          ])
+        ),
         options
       )
     )
