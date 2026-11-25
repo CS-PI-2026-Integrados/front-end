@@ -1,0 +1,22 @@
+@media (min-width: 80rem) {
+  .convicted-profile {
+    grid-template-columns: minmax(11rem, 14rem) minmax(0, 1fr) minmax(18rem, 21rem);
+    grid-template-areas: 'summary details agenda';
+  }
+
+  .convicted-profile > div {
+    display: grid;
+  }
+
+  .convicted-profile-summary {
+    grid-area: summary;
+  }
+
+  .convicted-profile-agenda {
+    grid-area: agenda;
+  }
+
+  .convicted-profile-details {
+    grid-area: details;
+  }
+}

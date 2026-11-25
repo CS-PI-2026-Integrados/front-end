@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { AtendimentoProvider, ReceiptsPage } from '@/features/attendance'
+import { AtendimentoProvider, ConvictedReceipts, ReceiptsPage } from '@/features/attendance'
 import { SettingsPage } from '@/features/settings'
 import { DefinePasswordPage, LoginPage, RecoverPasswordPage } from '@/features/authentication'
 import { GroupManagementPage, GroupsPage } from '@/features/reflection-group'
@@ -45,7 +45,10 @@ const AppRouter = () => {
             <Route path="instituicoes" element={<InstitutionsPage />} />
             <Route path="comprovante" element={<CertificatePage />} />
             <Route path="documentos" element={<DocumentsPage />} />
-            <Route path="apenados/:id" element={<ConvictedProfilePage />} />
+            <Route
+              path="apenados/:id"
+              element={<ConvictedProfilePage Receipts={ConvictedReceipts} />}
+            />
             <Route path="configuracoes" element={<SettingsPage />} />
             <Route element={<RoleGuard canAccess={canAccessUsersPage} />}>
               <Route path="usuarios" element={<UsersManagementPage />} />
