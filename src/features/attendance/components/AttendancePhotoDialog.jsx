@@ -1,14 +1,22 @@
 import { ImageOff } from 'lucide-react'
 import { formatDateTime } from '@/shared/lib/formatDateTime'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
+import { Button } from '@/shared/components/ui/button'
 
-export function AttendancePhotoDialog({ document, onClose, isLoading, error }) {
+export function AttendancePhotoDialog({
+  document,
+  onClose,
+  isLoading,
+  error,
+  onRetry,
+  onCloseAutoFocus,
+}) {
   const open = Boolean(document)
   const hasPhoto = Boolean(document?.photoUrl)
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg" onCloseAutoFocus={onCloseAutoFocus}>
         <DialogHeader>
           <DialogTitle>{document?.convictedName}</DialogTitle>
         </DialogHeader>
@@ -17,9 +25,16 @@ export function AttendancePhotoDialog({ document, onClose, isLoading, error }) {
           {isLoading ? (
             <p>Carregando foto...</p>
           ) : error ? (
-            <p role="alert" className="text-destructive">
-              {error}
-            </p>
+            <div className="flex flex-col items-center gap-2">
+              <p role="alert" className="text-destructive">
+                {error}
+              </p>
+              {onRetry && (
+                <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+                  Tentar novamente
+                </Button>
+              )}
+            </div>
           ) : hasPhoto ? (
             <img
               src={document.photoUrl}

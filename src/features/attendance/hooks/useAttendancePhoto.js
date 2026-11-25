@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSession } from '@/features/authentication'
 import { attendanceService } from '../services/attendanceService'
 
 export function useAttendancePhoto(id) {
   const { session } = useSession()
-  const key = JSON.stringify([id, session?.user?.id, session?.tenant?.id])
+  const [attempt, setAttempt] = useState(0)
+  const retry = useCallback(() => setAttempt((value) => value + 1), [])
+  const key = JSON.stringify([id, session?.user?.id, session?.tenant?.id, attempt])
   const [state, setState] = useState({ key, url: null, isLoading: Boolean(id), error: null })
   if (state.key !== key) {
     setState({ key, url: null, isLoading: Boolean(id), error: null })
@@ -32,5 +34,6 @@ export function useAttendancePhoto(id) {
       if (url) URL.revokeObjectURL(url)
     }
   }, [id, key])
-  return state.key === key ? state : { url: null, isLoading: Boolean(id), error: null }
+  const result = state.key === key ? state : { url: null, isLoading: Boolean(id), error: null }
+  return { ...result, retry }
 }

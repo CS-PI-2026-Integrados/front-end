@@ -6,7 +6,13 @@ import {
   subscribeAttendanceChanges,
 } from '../services/attendanceService'
 
-export function useAttendanceList({ search = '', page = 1, size = 5, all = false } = {}) {
+export function useAttendanceList({
+  convictedId,
+  search = '',
+  page = 1,
+  size = 5,
+  all = false,
+} = {}) {
   const { session } = useSession()
   const scope = `${session?.user?.id || ''}:${session?.tenant?.id || ''}`
   const revision = useSyncExternalStore(subscribeAttendanceChanges, getAttendanceRevision)
@@ -18,23 +24,24 @@ export function useAttendanceList({ search = '', page = 1, size = 5, all = false
     isLoading: true,
     error: null,
   })
-  const key = JSON.stringify([scope, search, page, size, all, revision, reloadId])
+  const queryKey = JSON.stringify([scope, convictedId, search, page, size, all])
+  const key = JSON.stringify([queryKey, revision, reloadId])
   const reload = useCallback(() => setReloadId((value) => value + 1), [setReloadId])
   useEffect(() => {
     const controller = new AbortController()
     let current = true
     const timer = setTimeout(async () => {
-      setState({ items: [], totalItems: 0, totalPages: 1, isLoading: true, error: null })
       try {
         const result = all
           ? await attendanceService.listAll({ signal: controller.signal })
           : await attendanceService.list({
+              convictedId,
               search,
               page: page - 1,
               size,
               signal: controller.signal,
             })
-        if (current) setState({ ...result, key, isLoading: false, error: null })
+        if (current) setState({ ...result, key, queryKey, isLoading: false, error: null })
       } catch (error) {
         if (current && error.name !== 'AbortError')
           setState({
@@ -52,9 +59,9 @@ export function useAttendanceList({ search = '', page = 1, size = 5, all = false
       clearTimeout(timer)
       controller.abort()
     }
-  }, [search, page, size, all, scope, revision, reloadId, key])
+  }, [convictedId, search, page, size, all, key, queryKey])
   const result =
-    state.key === key
+    state.key === key || (convictedId && state.queryKey === queryKey)
       ? state
       : { items: [], totalItems: 0, totalPages: 1, isLoading: true, error: null }
   return { ...result, totalPages: Math.max(1, result.totalPages), reload }

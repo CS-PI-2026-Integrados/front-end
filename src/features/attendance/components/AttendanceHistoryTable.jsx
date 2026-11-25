@@ -1,4 +1,4 @@
-import { Download, Eye, Image } from 'lucide-react'
+import { Download, Eye, Image, Loader2 } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import {
   Table,
@@ -15,12 +15,13 @@ export function AttendanceHistoryTable({
   onViewPhoto,
   onDownloadPdf,
   isProcessing = false,
+  pdfFeedback,
 }) {
   return (
-    <Table contentColumns="max-content fit-content(28ch) max-content max-content fit-content(28ch) max-content">
+    <Table contentColumns="max-content fit-content(24ch) max-content max-content max-content fit-content(24ch) max-content">
       <TableHeader>
         <TableRow className="bg-secondary border-y">
-          {['Data/Hora', 'Apenado', 'CPF', 'Código', 'Operador'].map((label) => (
+          {['Data/Hora', 'Apenado', 'CPF', 'Código', 'Processo', 'Operador'].map((label) => (
             <TableHead
               key={label}
               className="text-foreground px-4 py-3 text-left text-xs font-semibold"
@@ -34,81 +35,107 @@ export function AttendanceHistoryTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {records.map((record) => (
-          <TableRow key={record.id} className="hover:bg-muted/50 border-b transition-colors">
-            <TableCell className="px-4 py-3.5">
-              <span className="text-foreground text-sm">
-                {new Date(record.createdAt).toLocaleDateString('pt-BR')}
-              </span>
-              <span className="text-muted-foreground ml-1.5 text-xs">
-                {new Date(record.createdAt).toLocaleTimeString('pt-BR', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            </TableCell>
-            <TableCell
-              className="min-w-40 px-4 py-3.5 font-medium wrap-anywhere whitespace-normal"
-              title={record.convictedName}
-            >
-              {record.convictedName}
-            </TableCell>
-            <TableCell className="text-muted-foreground px-4 py-3.5">
-              {record.convictedCpf}
-            </TableCell>
-            <TableCell className="px-4 py-3.5">
-              <span
-                className="bg-muted text-muted-foreground inline-block rounded-md px-2 py-0.5 align-middle font-mono text-xs font-medium"
-                title={record.id}
+        {records.map((record) => {
+          const feedback = pdfFeedback?.recordId === record.id ? pdfFeedback : null
+          return (
+            <TableRow key={record.id} className="hover:bg-muted/50 border-b transition-colors">
+              <TableCell className="px-4 py-3.5">
+                <span className="text-foreground text-sm">
+                  {new Date(record.createdAt).toLocaleDateString('pt-BR')}
+                </span>
+                <span className="text-muted-foreground ml-1.5 text-xs">
+                  {new Date(record.createdAt).toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </TableCell>
+              <TableCell
+                className="min-w-28 px-4 py-3.5 font-medium wrap-anywhere whitespace-normal"
+                title={record.convictedName}
               >
-                {record.id}
-              </span>
-            </TableCell>
-            <TableCell
-              className="text-muted-foreground min-w-40 px-4 py-3.5 wrap-anywhere whitespace-normal"
-              title={record.operatorName || 'Indisponível'}
-            >
-              {record.operatorName || 'Indisponível'}
-            </TableCell>
-            <TableCell className="px-4 py-3.5 text-right">
-              <div className="flex items-center justify-end gap-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Visualizar PDF"
-                  title="Visualizar PDF"
-                  disabled={isProcessing || !onViewPdf}
-                  onClick={() => onViewPdf?.(record)}
+                {record.convictedName}
+              </TableCell>
+              <TableCell className="text-muted-foreground px-4 py-3.5">
+                {record.convictedCpf}
+              </TableCell>
+              <TableCell className="px-4 py-3.5">
+                <span
+                  className="bg-muted text-muted-foreground inline-block rounded-md px-2 py-0.5 align-middle font-mono text-xs font-medium"
+                  title={record.id}
                 >
-                  <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Ver foto"
-                  title="Ver foto"
-                  disabled={!onViewPhoto}
-                  onClick={() => onViewPhoto?.(record)}
-                >
-                  <Image className="h-3.5 w-3.5" aria-hidden="true" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Baixar PDF"
-                  title="Baixar PDF"
-                  disabled={isProcessing || !onDownloadPdf}
-                  onClick={() => onDownloadPdf?.(record)}
-                >
-                  <Download className="h-3.5 w-3.5" aria-hidden="true" />
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+                  {record.id}
+                </span>
+              </TableCell>
+              <TableCell className="text-muted-foreground px-4 py-3.5">
+                {record.processNumber || 'Indisponível'}
+              </TableCell>
+              <TableCell
+                className="text-muted-foreground min-w-28 px-4 py-3.5 wrap-anywhere whitespace-normal"
+                title={record.operatorName || 'Indisponível'}
+              >
+                {record.operatorName || 'Indisponível'}
+              </TableCell>
+              <TableCell className="px-4 py-3.5 text-right">
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Visualizar PDF"
+                    title="Visualizar PDF"
+                    disabled={isProcessing || !onViewPdf}
+                    aria-busy={(isProcessing && feedback?.action === 'view') || undefined}
+                    onClick={() => onViewPdf?.(record)}
+                  >
+                    {isProcessing && feedback?.action === 'view' ? (
+                      <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Ver foto"
+                    title="Ver foto"
+                    disabled={!onViewPhoto}
+                    onClick={(event) => onViewPhoto?.(record, event.currentTarget)}
+                  >
+                    <Image className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Baixar PDF"
+                    title="Baixar PDF"
+                    disabled={isProcessing || !onDownloadPdf}
+                    aria-busy={(isProcessing && feedback?.action === 'download') || undefined}
+                    onClick={() => onDownloadPdf?.(record)}
+                  >
+                    {isProcessing && feedback?.action === 'download' ? (
+                      <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                    )}
+                  </Button>
+                </div>
+                {feedback?.error && (
+                  <p
+                    role="alert"
+                    className="text-destructive mt-1 max-w-48 text-xs whitespace-normal"
+                  >
+                    {feedback.action === 'view' ? 'Visualizar PDF' : 'Baixar PDF'}
+                    {' — '}
+                    {feedback.error}
+                  </p>
+                )}
+              </TableCell>
+            </TableRow>
+          )
+        })}
       </TableBody>
     </Table>
   )

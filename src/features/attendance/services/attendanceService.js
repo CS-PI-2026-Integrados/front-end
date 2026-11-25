@@ -10,6 +10,7 @@ import { normalizePhoto } from '@/shared/lib/image'
 import { getConvictedById } from '@/features/convicteds'
 
 const employmentStatus = z.enum(['FORMAL_WORK', 'INFORMAL_WORK', 'UNEMPLOYED'])
+const uuid = z.string().regex(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'UUID inválido.')
 const periodSchema = z
   .object({
     year: z.number().int().min(1).max(9998).optional(),
@@ -31,7 +32,10 @@ const addressSchema = z.object({
 const responseSchema = z.object({
   id: z.string(),
   convicted_id: z.string(),
-  process_id: z.string(),
+  process_id: z.string().nullish(),
+  process_number: z.string().nullish(),
+  receipt_issued: z.boolean().optional(),
+  photo_available: z.boolean().optional(),
   address: addressSchema,
   phone: z.string(),
   employment_status: employmentStatus,
@@ -42,8 +46,8 @@ const responseSchema = z.object({
 })
 const required = z.string().trim().min(1, 'Campo obrigatório.')
 const inputSchema = z.object({
-  convictedId: z.string().regex(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'UUID inválido.'),
-  processId: z.string().regex(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'UUID inválido.'),
+  convictedId: uuid,
+  processId: uuid,
   employmentStatus,
   phone: required
     .transform((phone) => phone.replace(/\D/g, ''))
@@ -66,6 +70,9 @@ const toAttendance = (item) => ({
   id: item.id,
   convictedId: item.convicted_id,
   processId: item.process_id,
+  processNumber: item.process_number,
+  receiptIssued: item.receipt_issued,
+  photoAvailable: item.photo_available,
   address: {
     zipCode: item.address.zip_code,
     street: item.address.street,
@@ -114,21 +121,39 @@ async function enrich(items, options = {}, identities = new Map()) {
       convictedName: convicted?.fullName || 'Indisponível',
       convictedCpf: convicted?.cpf || 'Indisponível',
       processNumber:
+        item.processNumber ||
         convicted?.processes?.find((process) => process.id === item.processId)?.number ||
         'Indisponível',
       verificationCode: item.id,
     }
   })
 }
-async function readPage({ search, year, month, page = 0, size = 20, signal, timeoutMs } = {}) {
+async function readPage({
+  convictedId,
+  search,
+  year,
+  month,
+  page = 0,
+  size = 20,
+  signal,
+  timeoutMs,
+} = {}) {
   const params = new URLSearchParams(parseApiInput(pageParamsSchema, { page, size }))
   const period = parseApiInput(periodSchema, { year, month })
   if (period.year !== undefined) params.set('year', String(period.year))
   if (period.month !== undefined) params.set('month', String(period.month))
   if (search?.trim()) params.set('search', search.trim())
+  const exactId = convictedId === undefined ? undefined : parseApiInput(uuid, convictedId)
+  if (exactId) params.set('convictedId', exactId)
+
+  const itemSchema = exactId
+    ? responseSchema
+        .required({ receipt_issued: true, photo_available: true })
+        .refine((item) => item.convicted_id.toLowerCase() === exactId.toLowerCase())
+    : responseSchema
   return parsePage(
     await apiService.get(`/attendance?${params}`, { signal, timeoutMs }),
-    responseSchema,
+    itemSchema,
     toAttendance
   )
 }
@@ -150,9 +175,10 @@ export const attendanceService = {
       await apiService.get('/attendance/years', options)
     ).years
   },
-  /** Lists one API page (zero-based, size 1..100), with current convicted identity enrichment. */
+  /** Adds identity data for the general list. The exact profile query already knows the identity. */
   async list(params = {}) {
     const page = await readPage(params)
+    if (params.convictedId !== undefined) return page
     return { ...page, items: await enrich(page.items, params) }
   },
   /** Complete dataset for dashboard metrics only. Every backend request stays paginated. */
