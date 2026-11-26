@@ -5,6 +5,12 @@ import { ProofData } from '../components/dashboard/ProofData'
 import { RecentActivities } from '../components/dashboard/RecentActivities'
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbPage,
+} from '@/shared/components/ui/breadcrumb'
 
 const Dashboard = () => {
   const navigate = useNavigate()
@@ -16,6 +22,13 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-5">
+      <Breadcrumb className="mb-2">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbPage>Dashboard</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <PageHeader title="Dashboard" description="Visão geral" />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">

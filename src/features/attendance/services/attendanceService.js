@@ -21,6 +21,10 @@ const periodSchema = z
     path: ['year'],
     message: 'Selecione um ano para filtrar por mês.',
   })
+const dateRangeSchema = z.object({
+  startDate: z.iso.date().optional(),
+  endDate: z.iso.date().optional(),
+})
 const addressSchema = z.object({
   zip_code: z.string(),
   street: z.string(),
@@ -140,6 +144,8 @@ async function readPage({
   search,
   year,
   month,
+  startDate,
+  endDate,
   page = 0,
   size = 20,
   signal,
@@ -147,8 +153,14 @@ async function readPage({
 } = {}) {
   const params = new URLSearchParams(parseApiInput(pageParamsSchema, { page, size }))
   const period = parseApiInput(periodSchema, { year, month })
+  const dateRange = parseApiInput(dateRangeSchema, {
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
+  })
   if (period.year !== undefined) params.set('year', String(period.year))
   if (period.month !== undefined) params.set('month', String(period.month))
+  if (dateRange.startDate !== undefined) params.set('startDate', dateRange.startDate)
+  if (dateRange.endDate !== undefined) params.set('endDate', dateRange.endDate)
   if (search?.trim()) params.set('search', search.trim())
   const exactId = convictedId === undefined ? undefined : parseApiInput(uuid, convictedId)
   if (exactId) params.set('convictedId', exactId)

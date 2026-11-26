@@ -5,6 +5,7 @@ import { DataTableCard } from '@/shared/components/data-display/DataTableCard'
 import { TablePagination } from '@/shared/components/data-display/TablePagination'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
 import { FiltersPanel } from '@/shared/components/data-display/FiltersPanel'
+import { InputField } from '@/shared/components/form-fields/InputField'
 import { useDocuments } from '../hooks/useDocuments'
 import { YearSelector } from './YearSelector'
 import { MonthCarousel } from './MonthCarousel'
@@ -37,6 +38,24 @@ export function DocumentArchive({
               value={data.year}
               onChange={data.setYear}
               disabled={data.yearsLoading || Boolean(data.yearsError)}
+            />
+          </div>
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+            <InputField
+              id="documents-start-date"
+              label="Data inicial"
+              type="date"
+              value={data.startDate}
+              max={data.endDate || undefined}
+              onChange={(event) => data.setStartDate(event.target.value)}
+            />
+            <InputField
+              id="documents-end-date"
+              label="Data final"
+              type="date"
+              value={data.endDate}
+              min={data.startDate || undefined}
+              onChange={(event) => data.setEndDate(event.target.value)}
             />
           </div>
           {data.yearsLoading && <p className="text-muted-foreground text-sm">Carregando anos...</p>}

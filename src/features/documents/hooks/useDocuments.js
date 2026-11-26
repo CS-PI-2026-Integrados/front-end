@@ -30,6 +30,8 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
       )
     )
   )
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [yearsState, setYearsState] = useState({ years: [], isLoading: true, error: null })
   const [monthsState, setMonthsState] = useState({ counts: [], error: null })
   const [viewMode, setViewMode] = useState(readViewPreference)
@@ -43,7 +45,17 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
   })
   const revision = useSyncExternalStore(subscribeAttendanceChanges, getAttendanceRevision)
   const receiptRevision = useSyncExternalStore(subscribeReceiptChanges, getReceiptRevision)
-  const queryKey = JSON.stringify([tenantId, source, session?.user?.id, search, year, month, page])
+  const queryKey = JSON.stringify([
+    tenantId,
+    source,
+    session?.user?.id,
+    search,
+    year,
+    month,
+    startDate,
+    endDate,
+    page,
+  ])
   const key = JSON.stringify([queryKey, revision, receiptRevision, reloadId])
   const yearsKey = JSON.stringify([tenantId, session?.user?.id, revision, reloadId])
   const monthsKey = JSON.stringify([tenantId, session?.user?.id, year, revision, reloadId])
@@ -88,6 +100,8 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
           search,
           year,
           month: month ?? undefined,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
           page: page - 1,
           size: 12,
           signal: controller.signal,
@@ -121,7 +135,7 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
       clearTimeout(timer)
       controller.abort()
     }
-  }, [search, year, month, page, key, queryKey])
+  }, [search, year, month, startDate, endDate, page, key, queryKey])
   const result =
     state.queryKey === queryKey
       ? state
@@ -150,8 +164,18 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
       setPage(1)
     },
     search,
+    startDate,
+    endDate,
     setSearch: (value) => {
       setSearch(value)
+      setPage(1)
+    },
+    setStartDate: (value) => {
+      setStartDate(value)
+      setPage(1)
+    },
+    setEndDate: (value) => {
+      setEndDate(value)
       setPage(1)
     },
     viewMode,
