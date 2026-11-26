@@ -8,8 +8,7 @@ import {
 const VIEW_PREFERENCE_STORAGE_KEY = 'sicape:documentos:view:v1'
 /** Lists official attendance documents using backend search and pagination. */
 export async function listDocuments(params) {
-  const page = await attendanceService.list(params)
-  return { ...page, items: page.items.map((record) => ({ ...record, issuedAt: record.createdAt })) }
+  return attendanceService.list(params)
 }
 export function listDocumentYears(options) {
   return attendanceService.listYears(options)

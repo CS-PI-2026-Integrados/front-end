@@ -29,8 +29,10 @@ export function PdfPreviewModal({ document, isProcessing, error, onDownload, onV
             <span className="font-medium">{document?.processNumber}</span>
           </p>
           <p>
-            <span className="text-muted-foreground">Data e hora:</span>{' '}
-            <span className="font-medium">{document ? formatDateTime(document.issuedAt) : ''}</span>
+            <span className="text-muted-foreground">Data do comparecimento:</span>{' '}
+            <span className="font-medium">
+              {document ? formatDateTime(document.createdAt) : ''}
+            </span>
           </p>
           <p>
             <span className="text-muted-foreground">Operador:</span>{' '}

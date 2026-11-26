@@ -252,8 +252,15 @@ export const attendanceService = {
   /** Returns the protected presence photo as Blob. */
   getPhoto: (id, options) => apiService.getBlob(`/attendance/${id}/photo`, options),
   /** Returns the official PDF as Blob; disposition is inline or attachment. */
-  getReceipt(id, { disposition = 'inline', ...options } = {}) {
+  async getReceipt(id, { disposition = 'inline', ...options } = {}) {
     parseApiInput(z.enum(['inline', 'attachment']), disposition)
-    return apiService.getBlob(`/attendance/${id}/receipt?disposition=${disposition}`, options)
+    const blob = await apiService.getBlob(
+      `/attendance/${id}/receipt?disposition=${disposition}`,
+      options
+    )
+    // Reading a legacy unissued receipt can persist its first PDF on the server.
+    revision += 1
+    listeners.forEach((listener) => listener())
+    return blob
   },
 }

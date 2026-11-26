@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useSession } from '@/features/authentication'
 import { DataTableCard, DataTablePagination } from '@/shared/components/data-display/DataTableCard'
 import { EmptyTableState } from '@/shared/components/data-display/EmptyTableState'
@@ -15,6 +16,7 @@ function ReceiptHistory({ convictedId, convictedName, maskedCpf }) {
   const [activePdf, setActivePdf] = useState(null)
   const photoTrigger = useRef(null)
   const section = useRef(null)
+  const { hash } = useLocation()
   const data = useAttendanceList({ convictedId, page })
   const photo = useAttendancePhoto(selectedPhoto?.id)
   const pdf = useReceiptPdfActions()
@@ -24,13 +26,26 @@ function ReceiptHistory({ convictedId, convictedName, maskedCpf }) {
     convictedCpf: maskedCpf,
   }))
 
+  useEffect(() => {
+    if (hash === '#comprovantes') {
+      section.current?.scrollIntoView({ block: 'start' })
+      section.current?.focus({ preventScroll: true })
+    }
+  }, [hash])
+
   function requestPdf(record, action) {
     setActivePdf({ recordId: record.id, action })
     void pdf[action](record)
   }
 
   return (
-    <section ref={section} aria-label="Comprovantes" tabIndex={-1} className="min-w-0">
+    <section
+      id="comprovantes"
+      ref={section}
+      aria-label="Comprovantes"
+      tabIndex={-1}
+      className="min-w-0 scroll-mt-4"
+    >
       <DataTableCard
         title="Comprovantes"
         count={data.totalItems}
@@ -66,6 +81,7 @@ function ReceiptHistory({ convictedId, convictedName, maskedCpf }) {
         }
       >
         <AttendanceHistoryTable
+          compact
           records={records}
           isProcessing={pdf.isProcessing}
           pdfFeedback={activePdf ? { ...activePdf, error: pdf.error } : null}
