@@ -39,9 +39,9 @@ export function ProofHistory() {
           />
         </div>
       </FiltersPanel>
-      {data.error && (
+      {(data.error || data.refreshError) && (
         <p role="alert" className="text-destructive flex flex-wrap items-center gap-2 text-sm">
-          {data.error}
+          {data.error || data.refreshError}
           <Button type="button" variant="outline" size="sm" onClick={data.reload}>
             Tentar novamente
           </Button>

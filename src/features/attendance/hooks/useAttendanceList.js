@@ -4,6 +4,8 @@ import {
   attendanceService,
   getAttendanceRevision,
   subscribeAttendanceChanges,
+  subscribeReceiptChanges,
+  getReceiptRevision,
 } from '../services/attendanceService'
 
 export function useAttendanceList({
@@ -16,6 +18,7 @@ export function useAttendanceList({
   const { session } = useSession()
   const scope = `${session?.user?.id || ''}:${session?.tenant?.id || ''}`
   const revision = useSyncExternalStore(subscribeAttendanceChanges, getAttendanceRevision)
+  const receiptRevision = useSyncExternalStore(subscribeReceiptChanges, getReceiptRevision)
   const [reloadId, setReloadId] = useState(0)
   const [state, setState] = useState({
     items: [],
@@ -25,7 +28,7 @@ export function useAttendanceList({
     error: null,
   })
   const queryKey = JSON.stringify([scope, convictedId, search, page, size, all])
-  const key = JSON.stringify([queryKey, revision, reloadId])
+  const key = JSON.stringify([queryKey, revision, receiptRevision, reloadId])
   const reload = useCallback(() => setReloadId((value) => value + 1), [setReloadId])
   useEffect(() => {
     const controller = new AbortController()
@@ -41,17 +44,28 @@ export function useAttendanceList({
               size,
               signal: controller.signal,
             })
-        if (current) setState({ ...result, key, queryKey, isLoading: false, error: null })
+        if (current)
+          setState({ ...result, key, queryKey, isLoading: false, error: null, refreshError: null })
       } catch (error) {
         if (current && error.name !== 'AbortError')
-          setState({
-            key,
-            items: [],
-            totalItems: 0,
-            totalPages: 1,
-            isLoading: false,
-            error: error.message,
-          })
+          setState((previous) =>
+            previous.queryKey === queryKey && !previous.error
+              ? {
+                  ...previous,
+                  key,
+                  refreshError:
+                    'Não foi possível atualizar a disponibilidade dos comprovantes. Os dados exibidos foram mantidos.',
+                }
+              : {
+                  key,
+                  queryKey,
+                  items: [],
+                  totalItems: 0,
+                  totalPages: 1,
+                  isLoading: false,
+                  error: error.message,
+                }
+          )
       }
     }, 250)
     return () => {
@@ -61,7 +75,7 @@ export function useAttendanceList({
     }
   }, [convictedId, search, page, size, all, key, queryKey])
   const result =
-    state.key === key || (convictedId && state.queryKey === queryKey)
+    state.queryKey === queryKey
       ? state
       : { items: [], totalItems: 0, totalPages: 1, isLoading: true, error: null }
   return { ...result, totalPages: Math.max(1, result.totalPages), reload }

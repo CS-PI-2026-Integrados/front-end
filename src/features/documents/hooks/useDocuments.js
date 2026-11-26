@@ -8,6 +8,8 @@ import {
   saveViewPreference,
   subscribeAttendanceChanges,
   getAttendanceRevision,
+  subscribeReceiptChanges,
+  getReceiptRevision,
 } from '../services/documentsService'
 
 export function useDocuments(tenantId, source = 'attendance', initialSearch = '') {
@@ -40,17 +42,9 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
     error: null,
   })
   const revision = useSyncExternalStore(subscribeAttendanceChanges, getAttendanceRevision)
-  const key = JSON.stringify([
-    tenantId,
-    source,
-    session?.user?.id,
-    search,
-    year,
-    month,
-    page,
-    revision,
-    reloadId,
-  ])
+  const receiptRevision = useSyncExternalStore(subscribeReceiptChanges, getReceiptRevision)
+  const queryKey = JSON.stringify([tenantId, source, session?.user?.id, search, year, month, page])
+  const key = JSON.stringify([queryKey, revision, receiptRevision, reloadId])
   const yearsKey = JSON.stringify([tenantId, session?.user?.id, revision, reloadId])
   const monthsKey = JSON.stringify([tenantId, session?.user?.id, year, revision, reloadId])
   useEffect(() => {
@@ -89,7 +83,6 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
     const controller = new AbortController()
     let current = true
     const timer = setTimeout(async () => {
-      setState({ items: [], totalItems: 0, totalPages: 1, isLoading: true, error: null })
       try {
         const result = await listDocuments({
           search,
@@ -99,17 +92,28 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
           size: 12,
           signal: controller.signal,
         })
-        if (current) setState({ ...result, key, isLoading: false, error: null })
+        if (current)
+          setState({ ...result, key, queryKey, isLoading: false, error: null, refreshError: null })
       } catch (error) {
         if (current && error.name !== 'AbortError')
-          setState({
-            key,
-            items: [],
-            totalItems: 0,
-            totalPages: 1,
-            isLoading: false,
-            error: error.message,
-          })
+          setState((previous) =>
+            previous.queryKey === queryKey && !previous.error
+              ? {
+                  ...previous,
+                  key,
+                  refreshError:
+                    'Não foi possível atualizar a disponibilidade dos documentos. Os dados exibidos foram mantidos.',
+                }
+              : {
+                  key,
+                  queryKey,
+                  items: [],
+                  totalItems: 0,
+                  totalPages: 1,
+                  isLoading: false,
+                  error: error.message,
+                }
+          )
       }
     }, 250)
     return () => {
@@ -117,13 +121,14 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
       clearTimeout(timer)
       controller.abort()
     }
-  }, [search, year, month, page, tenantId, source, session?.user?.id, revision, reloadId, key])
+  }, [search, year, month, page, key, queryKey])
   const result =
-    state.key === key
+    state.queryKey === queryKey
       ? state
       : { items: [], totalItems: 0, totalPages: 1, isLoading: true, error: null }
   return {
     ...result,
+    isRefreshing: !result.isLoading && state.key !== key,
     totalPages: Math.max(1, result.totalPages),
     page,
     setPage,

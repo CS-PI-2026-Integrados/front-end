@@ -3,6 +3,8 @@ import {
   attendanceService,
   subscribeAttendanceChanges,
   getAttendanceRevision,
+  subscribeReceiptChanges,
+  getReceiptRevision,
 } from '@/features/attendance'
 
 const VIEW_PREFERENCE_STORAGE_KEY = 'sicape:documentos:view:v1'
@@ -16,7 +18,12 @@ export function listDocumentYears(options) {
 export function listDocumentMonths(year, options) {
   return attendanceService.listMonths(year, options)
 }
-export { subscribeAttendanceChanges, getAttendanceRevision }
+export {
+  subscribeAttendanceChanges,
+  getAttendanceRevision,
+  subscribeReceiptChanges,
+  getReceiptRevision,
+}
 export function readViewPreference() {
   return readJson(VIEW_PREFERENCE_STORAGE_KEY, 'grid')
 }

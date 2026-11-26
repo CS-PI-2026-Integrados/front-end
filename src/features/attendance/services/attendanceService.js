@@ -90,12 +90,20 @@ const toAttendance = (item) => ({
 })
 let revision = 0
 const listeners = new Set()
+let receiptRevision = 0
+const receiptListeners = new Set()
 /** Subscribes to invalidation only; no attendance data is persisted or cached globally. */
 export const subscribeAttendanceChanges = (listener) => {
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
 export const getAttendanceRevision = () => revision
+/** Receipt reads change document availability, not attendance counts or periods. */
+export const subscribeReceiptChanges = (listener) => {
+  receiptListeners.add(listener)
+  return () => receiptListeners.delete(listener)
+}
+export const getReceiptRevision = () => receiptRevision
 
 async function enrich(items, options = {}, identities = new Map()) {
   const ids = [...new Set(items.map((item) => item.convictedId))].filter(
@@ -258,9 +266,9 @@ export const attendanceService = {
       `/attendance/${id}/receipt?disposition=${disposition}`,
       options
     )
-    // Reading a legacy unissued receipt can persist its first PDF on the server.
-    revision += 1
-    listeners.forEach((listener) => listener())
+    // A first read can issue the PDF. Refresh availability without invalidating metrics or periods.
+    receiptRevision += 1
+    receiptListeners.forEach((listener) => listener())
     return blob
   },
 }

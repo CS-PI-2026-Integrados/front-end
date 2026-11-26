@@ -46,6 +46,14 @@ function ReceiptHistory({ convictedId, convictedName, maskedCpf }) {
       tabIndex={-1}
       className="min-w-0 scroll-mt-4"
     >
+      {data.refreshError && (
+        <p role="alert" className="text-destructive mb-3 flex flex-wrap items-center gap-2 text-sm">
+          {data.refreshError}
+          <Button type="button" variant="outline" size="sm" onClick={data.reload}>
+            Tentar novamente
+          </Button>
+        </p>
+      )}
       <DataTableCard
         title="Comprovantes"
         count={data.totalItems}

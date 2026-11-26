@@ -11,4 +11,6 @@ export {
   attendanceService,
   subscribeAttendanceChanges,
   getAttendanceRevision,
+  subscribeReceiptChanges,
+  getReceiptRevision,
 } from './services/attendanceService'
