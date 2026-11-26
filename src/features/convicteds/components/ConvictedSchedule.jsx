@@ -77,7 +77,7 @@ export function ConvictedSchedule({ convictedId }) {
   const individualDates = new Set()
 
   events.forEach(({ origin, date, status }) => {
-    if (status !== 'SCHEDULED') return
+    if (status === 'CANCELLED') return
     if (origin === groupOrigin) groupDates.add(date)
     if (origin === individualOrigin) individualDates.add(date)
   })
