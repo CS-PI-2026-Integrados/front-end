@@ -194,11 +194,11 @@ export const attendanceService = {
       await apiService.get('/attendance/years', options)
     ).years
   },
-  /** Adds identity data for the general list. The exact profile query already knows the identity. */
-  async list(params = {}) {
+  /** Adds identity data, reusing the detail already loaded by the profile when available. */
+  async list({ convicted, ...params } = {}) {
     const page = await readPage(params)
-    if (params.convictedId !== undefined) return page
-    return { ...page, items: await enrich(page.items, params) }
+    const identities = new Map(convicted ? [[convicted.id, convicted]] : [])
+    return { ...page, items: await enrich(page.items, params, identities) }
   },
   /** Complete dataset for dashboard metrics only. Every backend request stays paginated. */
   async listAll(options = {}) {

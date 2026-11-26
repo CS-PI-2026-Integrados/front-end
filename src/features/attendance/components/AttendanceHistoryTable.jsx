@@ -17,27 +17,16 @@ export function AttendanceHistoryTable({
   onDownloadPdf,
   isProcessing = false,
   pdfFeedback,
-  compact = false,
 }) {
   return (
-    <Table
-      contentColumns={
-        compact
-          ? 'max-content minmax(8rem, 1fr) max-content max-content'
-          : 'max-content fit-content(24ch) max-content max-content max-content max-content max-content'
-      }
-    >
+    <Table contentColumns="max-content fit-content(24ch) max-content max-content max-content max-content max-content">
       <TableHeader>
         <TableRow className="bg-secondary border-y">
-          {(compact
-            ? ['Data/Hora', 'Documento', 'PDF']
-            : ['Data/Hora', 'Apenado', 'CPF', 'Código', 'Processo', 'PDF']
-          ).map((label) => (
+          {['Data/Hora', 'Apenado', 'CPF', 'Código', 'Processo', 'PDF', 'Ações'].map((label) => (
             <TableHead key={label} className="text-foreground px-4 py-3 text-xs font-semibold">
               {label}
             </TableHead>
           ))}
-          <TableHead className="text-foreground px-4 py-3 text-xs font-semibold">Ações</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -57,7 +46,7 @@ export function AttendanceHistoryTable({
                     timeZone: 'America/Sao_Paulo',
                   })}
                 </span>
-                <span className={`text-muted-foreground text-xs ${compact ? 'block' : 'ml-1.5'}`}>
+                <span className="text-muted-foreground ml-1.5 text-xs">
                   {new Date(record.createdAt).toLocaleTimeString('pt-BR', {
                     hour: '2-digit',
                     minute: '2-digit',
@@ -65,19 +54,15 @@ export function AttendanceHistoryTable({
                   })}
                 </span>
               </TableCell>
-              {!compact && (
-                <TableCell
-                  className="min-w-28 px-4 py-3.5 font-medium wrap-anywhere whitespace-normal"
-                  title={record.convictedName}
-                >
-                  {record.convictedName}
-                </TableCell>
-              )}
-              {!compact && (
-                <TableCell className="text-muted-foreground px-4 py-3.5">
-                  {record.convictedCpf}
-                </TableCell>
-              )}
+              <TableCell
+                className="min-w-28 px-4 py-3.5 font-medium wrap-anywhere whitespace-normal"
+                title={record.convictedName}
+              >
+                {record.convictedName}
+              </TableCell>
+              <TableCell className="text-muted-foreground px-4 py-3.5">
+                {record.convictedCpf}
+              </TableCell>
               <TableCell className="px-4 py-3.5 whitespace-normal">
                 <span
                   className="bg-muted text-muted-foreground inline-block rounded-md px-2 py-0.5 align-middle font-mono text-xs font-medium break-all"
@@ -85,17 +70,10 @@ export function AttendanceHistoryTable({
                 >
                   {record.id}
                 </span>
-                {compact && (
-                  <p className="text-muted-foreground mt-1 text-xs break-all">
-                    Processo: {record.processNumber || 'Não informado'}
-                  </p>
-                )}
               </TableCell>
-              {!compact && (
-                <TableCell className="text-muted-foreground px-4 py-3.5">
-                  {record.processNumber || 'Indisponível'}
-                </TableCell>
-              )}
+              <TableCell className="text-muted-foreground px-4 py-3.5">
+                {record.processNumber || 'Indisponível'}
+              </TableCell>
               <TableCell className="px-4 py-3.5">
                 <Badge variant={record.receiptIssued === true ? 'secondary' : 'outline'}>
                   {receiptStatus}

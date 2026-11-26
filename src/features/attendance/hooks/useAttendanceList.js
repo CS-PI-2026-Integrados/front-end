@@ -9,7 +9,8 @@ import {
 } from '../services/attendanceService'
 
 export function useAttendanceList({
-  convictedId,
+  convicted,
+  convictedId = convicted?.id,
   search = '',
   page = 1,
   size = 5,
@@ -38,6 +39,7 @@ export function useAttendanceList({
         const result = all
           ? await attendanceService.listAll({ signal: controller.signal })
           : await attendanceService.list({
+              convicted,
               convictedId,
               search,
               page: page - 1,
@@ -73,7 +75,7 @@ export function useAttendanceList({
       clearTimeout(timer)
       controller.abort()
     }
-  }, [convictedId, search, page, size, all, key, queryKey])
+  }, [convicted, convictedId, search, page, size, all, key, queryKey])
   const result =
     state.queryKey === queryKey
       ? state

@@ -56,11 +56,7 @@ function ProfileContent({ id, Receipts }) {
           />
         </div>
       </div>
-      <Receipts
-        convictedId={convicted.id}
-        convictedName={convicted.name}
-        maskedCpf={convicted.cpf}
-      />
+      <Receipts convicted={convicted} />
       <ConvictedFormDialog
         open={formOpen}
         convicted={convicted}

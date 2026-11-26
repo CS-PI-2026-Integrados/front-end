@@ -10,21 +10,16 @@ import { useReceiptPdfActions } from '../hooks/useReceiptPdfActions'
 import { AttendanceHistoryTable } from './AttendanceHistoryTable'
 import { AttendancePhotoDialog } from './AttendancePhotoDialog'
 
-function ReceiptHistory({ convictedId, convictedName, maskedCpf }) {
+function ReceiptHistory({ convicted }) {
   const [page, setPage] = useState(1)
   const [selectedPhoto, setSelectedPhoto] = useState(null)
   const [activePdf, setActivePdf] = useState(null)
   const photoTrigger = useRef(null)
   const section = useRef(null)
   const { hash } = useLocation()
-  const data = useAttendanceList({ convictedId, page })
+  const data = useAttendanceList({ convicted, page })
   const photo = useAttendancePhoto(selectedPhoto?.id)
   const pdf = useReceiptPdfActions()
-  const records = data.items.map((record) => ({
-    ...record,
-    convictedName,
-    convictedCpf: maskedCpf,
-  }))
 
   useEffect(() => {
     if (hash === '#comprovantes') {
@@ -59,7 +54,7 @@ function ReceiptHistory({ convictedId, convictedName, maskedCpf }) {
         count={data.totalItems}
         isLoading={data.isLoading}
         loadingMessage="Carregando comprovantes…"
-        isEmpty={Boolean(data.error) || !records.length}
+        isEmpty={Boolean(data.error) || !data.items.length}
         emptyState={
           data.error ? (
             <div
@@ -89,8 +84,7 @@ function ReceiptHistory({ convictedId, convictedName, maskedCpf }) {
         }
       >
         <AttendanceHistoryTable
-          compact
-          records={records}
+          records={data.items}
           isProcessing={pdf.isProcessing}
           pdfFeedback={activePdf ? { ...activePdf, error: pdf.error } : null}
           onViewPdf={(record) => requestPdf(record, 'view')}
@@ -117,16 +111,9 @@ function ReceiptHistory({ convictedId, convictedName, maskedCpf }) {
   )
 }
 
-export function ConvictedReceipts({ convictedId, convictedName, maskedCpf }) {
+export function ConvictedReceipts({ convicted }) {
   const { session } = useSession()
-  const key = JSON.stringify([session?.user?.id, session?.tenant?.id, convictedId])
-  if (!convictedId) return null
-  return (
-    <ReceiptHistory
-      key={key}
-      convictedId={convictedId}
-      convictedName={convictedName}
-      maskedCpf={maskedCpf}
-    />
-  )
+  if (!convicted?.id) return null
+  const key = JSON.stringify([session?.user?.id, session?.tenant?.id, convicted.id])
+  return <ReceiptHistory key={key} convicted={convicted} />
 }
