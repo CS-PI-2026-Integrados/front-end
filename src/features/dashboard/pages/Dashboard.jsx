@@ -7,6 +7,12 @@ import { useDashboardMetrics } from '../hooks/useDashboardMetrics'
 import { PageHeader } from '@/shared/components/data-display/PageHeader'
 import { usePersonDocuments, useDocumentActions, PdfPreviewModal } from '@/features/documents'
 import { ApenadoDocumentsDialog } from '@/features/convicteds'
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbPage,
+} from '@/shared/components/ui/breadcrumb'
 
 const Dashboard = () => {
   const { convicted, attendance } = useDashboardMetrics()
