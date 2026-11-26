@@ -28,6 +28,8 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
       )
     )
   )
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [yearsState, setYearsState] = useState({ years: [], isLoading: true, error: null })
   const [monthsState, setMonthsState] = useState({ counts: [], error: null })
   const [viewMode, setViewMode] = useState(readViewPreference)
@@ -47,6 +49,8 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
     search,
     year,
     month,
+    startDate,
+    endDate,
     page,
     revision,
     reloadId,
@@ -95,6 +99,8 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
           search,
           year,
           month: month ?? undefined,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
           page: page - 1,
           size: 12,
           signal: controller.signal,
@@ -117,7 +123,20 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
       clearTimeout(timer)
       controller.abort()
     }
-  }, [search, year, month, page, tenantId, source, session?.user?.id, revision, reloadId, key])
+  }, [
+    search,
+    year,
+    month,
+    startDate,
+    endDate,
+    page,
+    tenantId,
+    source,
+    session?.user?.id,
+    revision,
+    reloadId,
+    key,
+  ])
   const result =
     state.key === key
       ? state
@@ -145,8 +164,18 @@ export function useDocuments(tenantId, source = 'attendance', initialSearch = ''
       setPage(1)
     },
     search,
+    startDate,
+    endDate,
     setSearch: (value) => {
       setSearch(value)
+      setPage(1)
+    },
+    setStartDate: (value) => {
+      setStartDate(value)
+      setPage(1)
+    },
+    setEndDate: (value) => {
+      setEndDate(value)
       setPage(1)
     },
     viewMode,
