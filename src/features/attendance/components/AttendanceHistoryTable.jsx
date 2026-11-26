@@ -1,4 +1,5 @@
 import { Download, Eye, Image, Loader2 } from 'lucide-react'
+import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 import {
   Table,
@@ -22,15 +23,15 @@ export function AttendanceHistoryTable({
     <Table
       contentColumns={
         compact
-          ? 'max-content minmax(8rem, 1fr) max-content'
-          : 'max-content fit-content(24ch) max-content max-content max-content fit-content(24ch) max-content'
+          ? 'max-content minmax(8rem, 1fr) max-content max-content'
+          : 'max-content fit-content(24ch) max-content max-content max-content max-content max-content'
       }
     >
       <TableHeader>
         <TableRow className="bg-secondary border-y">
           {(compact
-            ? ['Data/Hora', 'Documento']
-            : ['Data/Hora', 'Apenado', 'CPF', 'Código', 'Processo', 'Operador']
+            ? ['Data/Hora', 'Documento', 'PDF']
+            : ['Data/Hora', 'Apenado', 'CPF', 'Código', 'Processo', 'PDF']
           ).map((label) => (
             <TableHead key={label} className="text-foreground px-4 py-3 text-xs font-semibold">
               {label}
@@ -42,6 +43,12 @@ export function AttendanceHistoryTable({
       <TableBody>
         {records.map((record) => {
           const feedback = pdfFeedback?.recordId === record.id ? pdfFeedback : null
+          const receiptStatus =
+            typeof record.receiptIssued === 'boolean'
+              ? record.receiptIssued
+                ? 'Emitido'
+                : 'Não emitido'
+              : 'Não informado'
           return (
             <TableRow key={record.id} className="hover:bg-muted/50 border-b transition-colors">
               <TableCell className="px-4 py-3.5">
@@ -83,27 +90,17 @@ export function AttendanceHistoryTable({
                     Processo: {record.processNumber || 'Não informado'}
                   </p>
                 )}
-                {typeof record.receiptIssued === 'boolean' && (
-                  <p className="text-muted-foreground mt-1 text-xs">
-                    {record.receiptIssued
-                      ? 'PDF emitido'
-                      : 'Presença registrada · PDF ainda não emitido'}
-                  </p>
-                )}
               </TableCell>
               {!compact && (
                 <TableCell className="text-muted-foreground px-4 py-3.5">
                   {record.processNumber || 'Indisponível'}
                 </TableCell>
               )}
-              {!compact && (
-                <TableCell
-                  className="text-muted-foreground min-w-28 px-4 py-3.5 wrap-anywhere whitespace-normal"
-                  title={record.operatorName || 'Indisponível'}
-                >
-                  {record.operatorName || 'Indisponível'}
-                </TableCell>
-              )}
+              <TableCell className="px-4 py-3.5">
+                <Badge variant={record.receiptIssued === true ? 'secondary' : 'outline'}>
+                  {receiptStatus}
+                </Badge>
+              </TableCell>
               <TableCell className="px-4 py-3.5 text-right">
                 <div className="flex items-center justify-end gap-1">
                   <Button
