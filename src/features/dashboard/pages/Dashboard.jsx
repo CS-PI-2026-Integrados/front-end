@@ -43,7 +43,9 @@ const Dashboard = () => {
     <div className="space-y-5">
       <Breadcrumb className="mb-2">
         <BreadcrumbList>
-          <BreadcrumbItem></BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbPage>Dashboard</BreadcrumbPage>
+          </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <PageHeader title="Dashboard" description="Visão geral" />
