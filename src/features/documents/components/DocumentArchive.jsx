@@ -90,6 +90,14 @@ export function DocumentArchive({
           )}
         </div>
       </FiltersPanel>
+      {data.refreshError && (
+        <p role="alert" className="text-destructive flex flex-wrap items-center gap-2 text-sm">
+          {data.refreshError}
+          <Button type="button" variant="outline" size="sm" onClick={data.reload}>
+            Tentar novamente
+          </Button>
+        </p>
+      )}
       <DataTableCard
         title="Documentos"
         count={data.totalItems}

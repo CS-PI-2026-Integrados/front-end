@@ -6,8 +6,11 @@ export { useAttendanceList } from './hooks/useAttendanceList'
 export { useAttendancePhoto } from './hooks/useAttendancePhoto'
 export { AttendanceHistoryTable } from './components/AttendanceHistoryTable'
 export { AttendancePhotoDialog } from './components/AttendancePhotoDialog'
+export { ConvictedReceipts } from './components/ConvictedReceipts'
 export {
   attendanceService,
   subscribeAttendanceChanges,
   getAttendanceRevision,
+  subscribeReceiptChanges,
+  getReceiptRevision,
 } from './services/attendanceService'

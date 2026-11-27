@@ -18,7 +18,7 @@ export function usePersonDocuments(person) {
     const controller = new AbortController()
     let current = true
 
-    listDocuments({ search, page: 0, size: 100, signal: controller.signal })
+    listDocuments({ convictedId, page: 0, size: 100, signal: controller.signal })
       .then((page) => {
         if (!current) return
         const comprovantes = page.items.filter(

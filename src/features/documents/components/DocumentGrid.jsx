@@ -17,7 +17,8 @@ export function DocumentGrid({ documents, renderMeta, renderActions }) {
                 <p className="text-muted-foreground text-xs">{document.processNumber}</p>
                 {renderMeta?.(document)}
                 <p className="text-muted-foreground mt-0.5 text-xs">
-                  {formatDateTime(document.issuedAt)}
+                  {document.createdAt ? 'Comparecimento: ' : 'Emissão: '}
+                  {formatDateTime(document.createdAt ?? document.issuedAt)}
                 </p>
               </div>
             </div>

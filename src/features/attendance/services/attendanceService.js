@@ -11,6 +11,7 @@ import { normalizePhoto } from '@/shared/lib/image'
 import { getConvictedById } from '@/features/convicteds'
 
 const employmentStatus = z.enum(['FORMAL_WORK', 'INFORMAL_WORK', 'UNEMPLOYED'])
+const uuid = z.string().regex(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'UUID inválido.')
 const periodSchema = z
   .object({
     year: z.number().int().min(1).max(9998).optional(),
@@ -36,7 +37,10 @@ const addressSchema = z.object({
 const responseSchema = z.object({
   id: z.string(),
   convicted_id: z.string(),
-  process_id: z.string(),
+  process_id: z.string().nullish(),
+  process_number: z.string().nullish(),
+  receipt_issued: z.boolean().optional(),
+  photo_available: z.boolean().optional(),
   address: addressSchema,
   phone: z.string().nullish(),
   employment_status: employmentStatus,
@@ -47,8 +51,8 @@ const responseSchema = z.object({
 })
 const required = z.string().trim().min(1, 'Campo obrigatório.')
 const inputSchema = z.object({
-  convictedId: z.string().regex(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'UUID inválido.'),
-  processId: z.string().regex(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'UUID inválido.'),
+  convictedId: uuid,
+  processId: uuid,
   employmentStatus,
   phone: optionalPhoneSchema,
   address: z.object({
@@ -69,6 +73,9 @@ const toAttendance = (item) => ({
   id: item.id,
   convictedId: item.convicted_id,
   processId: item.process_id,
+  processNumber: item.process_number,
+  receiptIssued: item.receipt_issued,
+  photoAvailable: item.photo_available,
   address: {
     zipCode: item.address.zip_code,
     street: item.address.street,
@@ -87,12 +94,20 @@ const toAttendance = (item) => ({
 })
 let revision = 0
 const listeners = new Set()
+let receiptRevision = 0
+const receiptListeners = new Set()
 /** Subscribes to invalidation only; no attendance data is persisted or cached globally. */
 export const subscribeAttendanceChanges = (listener) => {
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
 export const getAttendanceRevision = () => revision
+/** Receipt reads change document availability, not attendance counts or periods. */
+export const subscribeReceiptChanges = (listener) => {
+  receiptListeners.add(listener)
+  return () => receiptListeners.delete(listener)
+}
+export const getReceiptRevision = () => receiptRevision
 
 async function enrich(items, options = {}, identities = new Map()) {
   const ids = [...new Set(items.map((item) => item.convictedId))].filter(
@@ -117,6 +132,7 @@ async function enrich(items, options = {}, identities = new Map()) {
       convictedName: convicted?.fullName || 'Indisponível',
       convictedCpf: convicted?.cpf || 'Indisponível',
       processNumber:
+        item.processNumber ||
         convicted?.processes?.find((process) => process.id === item.processId)?.number ||
         'Indisponível',
       verificationCode: item.id,
@@ -124,6 +140,7 @@ async function enrich(items, options = {}, identities = new Map()) {
   })
 }
 async function readPage({
+  convictedId,
   search,
   year,
   month,
@@ -145,9 +162,17 @@ async function readPage({
   if (dateRange.startDate !== undefined) params.set('startDate', dateRange.startDate)
   if (dateRange.endDate !== undefined) params.set('endDate', dateRange.endDate)
   if (search?.trim()) params.set('search', search.trim())
+  const exactId = convictedId === undefined ? undefined : parseApiInput(uuid, convictedId)
+  if (exactId) params.set('convictedId', exactId)
+
+  const itemSchema = exactId
+    ? responseSchema
+        .required({ receipt_issued: true, photo_available: true })
+        .refine((item) => item.convicted_id.toLowerCase() === exactId.toLowerCase())
+    : responseSchema
   return parsePage(
     await apiService.get(`/attendance?${params}`, { signal, timeoutMs }),
-    responseSchema,
+    itemSchema,
     toAttendance
   )
 }
@@ -169,10 +194,11 @@ export const attendanceService = {
       await apiService.get('/attendance/years', options)
     ).years
   },
-  /** Lists one API page (zero-based, size 1..100), with current convicted identity enrichment. */
-  async list(params = {}) {
+  /** Adds identity data, reusing the detail already loaded by the profile when available. */
+  async list({ convicted, ...params } = {}) {
     const page = await readPage(params)
-    return { ...page, items: await enrich(page.items, params) }
+    const identities = new Map(convicted ? [[convicted.id, convicted]] : [])
+    return { ...page, items: await enrich(page.items, params, identities) }
   },
   /** Complete dataset for dashboard metrics only. Every backend request stays paginated. */
   async listAll(options = {}) {
@@ -246,8 +272,15 @@ export const attendanceService = {
   /** Returns the protected presence photo as Blob. */
   getPhoto: (id, options) => apiService.getBlob(`/attendance/${id}/photo`, options),
   /** Returns the official PDF as Blob; disposition is inline or attachment. */
-  getReceipt(id, { disposition = 'inline', ...options } = {}) {
+  async getReceipt(id, { disposition = 'inline', ...options } = {}) {
     parseApiInput(z.enum(['inline', 'attachment']), disposition)
-    return apiService.getBlob(`/attendance/${id}/receipt?disposition=${disposition}`, options)
+    const blob = await apiService.getBlob(
+      `/attendance/${id}/receipt?disposition=${disposition}`,
+      options
+    )
+    // A first read can issue the PDF. Refresh availability without invalidating metrics or periods.
+    receiptRevision += 1
+    receiptListeners.forEach((listener) => listener())
+    return blob
   },
 }
