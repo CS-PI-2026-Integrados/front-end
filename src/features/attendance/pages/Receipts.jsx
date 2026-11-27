@@ -21,7 +21,9 @@ export default function Receipts() {
     if (detail.convicted && detail.convicted.id === selectedId) selectConvicted(detail.convicted)
   }, [detail.convicted, selectedId, selectConvicted])
   const photo = useConvictedPhoto(flow.convicted?.id)
-  const ready = Boolean(flow.convicted && flow.process?.status === 'ACTIVE')
+  const ready = Boolean(
+    flow.convicted && (flow.noProcessDeclared || flow.process?.status === 'ACTIVE')
+  )
   return (
     <Tabs defaultValue="new" className="min-h-full lg:h-full lg:min-h-0">
       <PageHeader

@@ -72,7 +72,11 @@ export function ConvictedProfileDetails({ convicted, onEdit, onChangeStatus }) {
               ))}
             </ul>
           ) : (
-            <p className="text-muted-foreground">Nenhum processo vinculado.</p>
+            <p className="text-muted-foreground">
+              {convicted.noProcessDeclared
+                ? 'Ausência de processo declarada.'
+                : 'Nenhum processo vinculado.'}
+            </p>
           )}
         </section>
       </CardContent>

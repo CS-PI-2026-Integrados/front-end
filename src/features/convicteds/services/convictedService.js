@@ -49,6 +49,7 @@ const responseSchema = z.object({
     )
     .optional(),
   birth_date: z.string().nullish(),
+  no_process_declared: z.boolean().optional().default(false),
   main_process_number: z.string().optional(),
   same_process_convicted_count: z.number().optional(),
 })
@@ -89,6 +90,7 @@ const toConvictedDetail = (item) => ({
   fullName: item.name,
   cpf: item.cpf,
   birthDate: item.birthDate || item.birth_date || '',
+  noProcessDeclared: item.no_process_declared,
   phone: item.phone || '',
   address: normalizeAddressFromApi(item.address) || {
     zipCode: '',
@@ -159,6 +161,7 @@ class ConvictedService {
   /** Creates a convicted from camelCase data; returns cadastral detail. */
   async create(data, options) {
     const payload = {
+      no_process_declared: parseApiInput(z.boolean().default(false), data.noProcessDeclared),
       name: data.name?.trim(),
       cpf: (data.cpf || '').replace(/\D/g, ''),
       birth_date: parseApiInput(convictedUpdateSchema.shape.birthDate, data.birthDate),
@@ -195,6 +198,8 @@ class ConvictedService {
 
     const payload = {}
 
+    if (data.noProcessDeclared !== undefined)
+      payload.no_process_declared = parseApiInput(z.boolean(), data.noProcessDeclared)
     if (data.name !== undefined) payload.name = data.name.trim()
     const cpf = parseApiInput(convictedUpdateSchema.shape.cpf, data.cpf)
     if (cpf !== undefined) payload.cpf = cpf.replace(/\D/g, '')

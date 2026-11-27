@@ -53,7 +53,7 @@ export function AttendancePhotoDialog({
           <div className="text-muted-foreground w-full space-y-1 text-sm">
             <p>
               <span className="text-foreground font-medium">Processo:</span>{' '}
-              {document?.processNumber}
+              {document?.noProcessDeclared ? '-' : document?.processNumber || 'Indisponível'}
             </p>
             <p>
               <span className="text-foreground font-medium">Data e hora:</span>{' '}

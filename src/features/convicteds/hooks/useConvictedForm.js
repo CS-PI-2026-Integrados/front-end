@@ -17,6 +17,7 @@ export function convictedToFormState(convicted) {
     birthDate: convicted?.birthDate?.slice(0, 10) || '',
     phone: convicted?.phone || '',
     employmentStatus: convicted?.employmentStatus || '',
+    noProcessDeclared: convicted?.noProcessDeclared === true,
     processes: (convicted?.processes || []).map((process) => ({
       ...process,
       principal: Boolean(process.principal),
@@ -82,6 +83,11 @@ export function useConvictedForm(convicted = null, { onSuccess, photoUrl, open =
     },
     [isSubmitted, setValue]
   )
+
+  const setProcesses = (processes) => {
+    setFieldValue('processes', processes)
+    if (processes.length) setFieldValue('noProcessDeclared', false)
+  }
 
   const handleFoto = async (event) => {
     const file = event.target.files?.[0]
@@ -203,6 +209,14 @@ export function useConvictedForm(convicted = null, { onSuccess, photoUrl, open =
     error,
     preview: photo ? localPreview : photoUrl || convicted?.photoUrl || null,
     isSubmitting: form.formState.isSubmitting,
-    actions: { setFieldValue, handleFoto, removerFoto, buscarCep, submit, validate: trigger },
+    actions: {
+      setFieldValue,
+      setProcesses,
+      handleFoto,
+      removerFoto,
+      buscarCep,
+      submit,
+      validate: trigger,
+    },
   }
 }

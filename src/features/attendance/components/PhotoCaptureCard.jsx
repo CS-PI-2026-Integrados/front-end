@@ -106,7 +106,8 @@ export function PhotoCaptureCard({
           )}
           {file && !isReadyToCapture && (
             <p className="text-muted-foreground text-center text-xs">
-              Selecione um apenado e um processo ativo para continuar
+              Selecione um apenado e um processo ativo ou declare a ausência de processo para
+              continuar
             </p>
           )}
 

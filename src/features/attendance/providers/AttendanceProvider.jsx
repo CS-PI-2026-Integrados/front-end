@@ -4,6 +4,7 @@ import { AtendimentoContext } from '../context/attendanceContext'
 export function AtendimentoProvider({ children }) {
   const [convicted, setConvicted] = useState(null)
   const [process, setProcess] = useState(null)
+  const [noProcessDeclared, setNoProcessDeclared] = useState(false)
   const [photo, setPhoto] = useState(null)
   const [canEdit, setCanEdit] = useState(false)
   const [addressError, setAddressError] = useState(null)
@@ -12,11 +13,24 @@ export function AtendimentoProvider({ children }) {
   const selectConvicted = useCallback((person) => {
     setConvicted(person)
     setProcess(person?.processes?.find((item) => item.status === 'ACTIVE') || null)
+    setNoProcessDeclared(person?.noProcessDeclared === true && person.processes.length === 0)
     setPhoto(null)
     setReceipt(null)
     setCanEdit(false)
     setAddressError(null)
     setHasSubmitted(false)
+  }, [])
+  const declareNoProcess = useCallback(
+    (declared) => {
+      if (!convicted || convicted.processes.length > 0) return
+      setNoProcessDeclared(declared === true)
+      if (declared === true) setProcess(null)
+    },
+    [convicted]
+  )
+  const selectProcess = useCallback((selected) => {
+    setProcess(selected)
+    if (selected) setNoProcessDeclared(false)
   }, [])
   const updateField = useCallback(
     (key, value) =>
@@ -37,7 +51,9 @@ export function AtendimentoProvider({ children }) {
       setHasSubmitted,
       receipt,
       selectConvicted,
-      selectProcess: setProcess,
+      selectProcess,
+      noProcessDeclared,
+      declareNoProcess,
       setPhoto,
       setCanEdit,
       setAddressError,
@@ -54,6 +70,9 @@ export function AtendimentoProvider({ children }) {
       hasSubmitted,
       receipt,
       selectConvicted,
+      selectProcess,
+      noProcessDeclared,
+      declareNoProcess,
       updateField,
       reset,
     ]

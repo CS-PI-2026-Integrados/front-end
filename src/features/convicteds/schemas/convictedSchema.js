@@ -52,15 +52,27 @@ export const convictedFormSchema = z.object({
   phone: optionalPhoneSchema,
   address: addressSchema,
   processes: processesSchema.default([]),
+  noProcessDeclared: z.boolean().default(false),
   photo: photoSchema.nullable().optional().default(null),
 })
-export const convictedCreateSchema = convictedFormSchema.extend({ photo: photoSchema })
-export const convictedUpdateSchema = convictedFormSchema.extend({
-  cpf: z.preprocess(
-    (value) => (typeof value === 'string' && !value.trim() ? undefined : value),
-    convictedFormSchema.shape.cpf.optional()
-  ),
-})
+const processDeclarationIsConsistent = (data) =>
+  data.noProcessDeclared ? data.processes.length === 0 : data.processes.length > 0
+const processDeclarationError = {
+  path: ['noProcessDeclared'],
+  message:
+    'Selecione um processo ou marque Apenado sem processo. A declaração exige ausência de vínculos.',
+}
+export const convictedCreateSchema = convictedFormSchema
+  .extend({ photo: photoSchema })
+  .refine(processDeclarationIsConsistent, processDeclarationError)
+export const convictedUpdateSchema = convictedFormSchema
+  .extend({
+    cpf: z.preprocess(
+      (value) => (typeof value === 'string' && !value.trim() ? undefined : value),
+      convictedFormSchema.shape.cpf.optional()
+    ),
+  })
+  .refine(processDeclarationIsConsistent, processDeclarationError)
 
 export function validateConvictedForm(form, { isEditing = false } = {}) {
   const result = (isEditing ? convictedUpdateSchema : convictedCreateSchema).safeParse(form)

@@ -38,6 +38,7 @@ const responseSchema = z.object({
   id: z.string(),
   convicted_id: z.string(),
   process_id: z.string().nullish(),
+  no_process_declared: z.boolean().optional().default(false),
   process_number: z.string().nullish(),
   receipt_issued: z.boolean().optional(),
   photo_available: z.boolean().optional(),
@@ -50,29 +51,36 @@ const responseSchema = z.object({
   updated_at: z.string(),
 })
 const required = z.string().trim().min(1, 'Campo obrigatório.')
-const inputSchema = z.object({
-  convictedId: uuid,
-  processId: uuid,
-  employmentStatus,
-  phone: optionalPhoneSchema,
-  address: z.object({
-    zipCode: required
-      .transform((zip) => zip.replace(/\D/g, ''))
-      .refine((zip) => /^\d{8}$/.test(zip), 'Informe um CEP com 8 dígitos.'),
-    street: required,
-    number: required,
-    complement: z.string().nullable().optional(),
-    neighborhood: required,
-    city: required,
-    state: required
-      .transform((state) => state.toUpperCase())
-      .refine((state) => /^[A-Z]{2}$/.test(state), 'Informe a UF com duas letras.'),
-  }),
-})
+const inputSchema = z
+  .object({
+    convictedId: uuid,
+    processId: uuid.nullish(),
+    noProcessDeclared: z.boolean().default(false),
+    employmentStatus,
+    phone: optionalPhoneSchema,
+    address: z.object({
+      zipCode: required
+        .transform((zip) => zip.replace(/\D/g, ''))
+        .refine((zip) => /^\d{8}$/.test(zip), 'Informe um CEP com 8 dígitos.'),
+      street: required,
+      number: required,
+      complement: z.string().nullable().optional(),
+      neighborhood: required,
+      city: required,
+      state: required
+        .transform((state) => state.toUpperCase())
+        .refine((state) => /^[A-Z]{2}$/.test(state), 'Informe a UF com duas letras.'),
+    }),
+  })
+  .refine((data) => (data.noProcessDeclared ? data.processId == null : Boolean(data.processId)), {
+    path: ['noProcessDeclared'],
+    message: 'Selecione um processo ou declare sua ausência, sem informar as duas opções.',
+  })
 const toAttendance = (item) => ({
   id: item.id,
   convictedId: item.convicted_id,
-  processId: item.process_id,
+  processId: item.process_id ?? null,
+  noProcessDeclared: item.no_process_declared,
   processNumber: item.process_number,
   receiptIssued: item.receipt_issued,
   photoAvailable: item.photo_available,
@@ -131,10 +139,11 @@ async function enrich(items, options = {}, identities = new Map()) {
       ...item,
       convictedName: convicted?.fullName || 'Indisponível',
       convictedCpf: convicted?.cpf || 'Indisponível',
-      processNumber:
-        item.processNumber ||
-        convicted?.processes?.find((process) => process.id === item.processId)?.number ||
-        'Indisponível',
+      processNumber: item.noProcessDeclared
+        ? null
+        : item.processNumber ||
+          convicted?.processes?.find((process) => process.id === item.processId)?.number ||
+          null,
       verificationCode: item.id,
     }
   })
@@ -244,7 +253,8 @@ export const attendanceService = {
         [
           JSON.stringify({
             convicted_id: data.convictedId,
-            process_id: data.processId,
+            process_id: data.processId ?? null,
+            no_process_declared: data.noProcessDeclared,
             address: {
               zip_code: data.address.zipCode,
               street: data.address.street,

@@ -72,7 +72,7 @@ export function AttendanceHistoryTable({
                 </span>
               </TableCell>
               <TableCell className="text-muted-foreground px-4 py-3.5">
-                {record.processNumber || 'Indisponível'}
+                {record.noProcessDeclared ? '-' : record.processNumber || 'Indisponível'}
               </TableCell>
               <TableCell className="px-4 py-3.5">
                 <Badge variant={record.receiptIssued === true ? 'secondary' : 'outline'}>
