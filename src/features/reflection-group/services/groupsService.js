@@ -189,7 +189,7 @@ export const groupsService = {
         '/group',
         {
           name: data.name,
-          description: data.description?.trim() || null,
+          description: data.description?.trim(),
           subject: data.subject,
           presenters: data.presenters,
           total_meetings_count: data.totalMeetingsCount,
@@ -219,7 +219,7 @@ export const groupsService = {
           Object.entries(data).map(([key, value]) => [
             names[key] || key,
             key === 'description'
-              ? value?.trim() || null
+              ? value?.trim()
               : key === 'meetingBaseTime'
                 ? value || null
                 : value,

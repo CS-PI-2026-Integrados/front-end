@@ -8,7 +8,7 @@ export const groupStatuses = {
 export const groupFrequencies = { WEEKLY: 'Semanal', BIWEEKLY: 'Quinzenal', MONTHLY: 'Mensal' }
 const required = z.string().trim().min(1, 'Campo obrigatório.')
 const date = z.iso.date({ error: 'Informe uma data válida.' })
-const optionalDescription = z.string().trim().nullable().optional()
+const description = required
 const optionalMeetingTime = z
   .union([
     z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Informe o horário HH:mm.'),
@@ -21,7 +21,7 @@ export const groupParticipantIdSchema = z.guid({ error: 'Selecione um apenado v�
 export const groupCreateSchema = z
   .object({
     name: required,
-    description: optionalDescription,
+    description: description,
     subject: required,
     presenters: z.array(required).min(1, 'Informe pelo menos um ministrante.'),
     totalMeetingsCount: z.coerce
@@ -49,7 +49,7 @@ export const groupCreateSchema = z
 export const groupUpdateSchema = z
   .object({
     name: required.optional(),
-    description: optionalDescription,
+    description: description.optional(),
     subject: required.optional(),
     presenters: z.array(required).min(1).optional(),
     status: z.enum(['PLANNED', 'ACTIVE', 'CLOSED']).optional(),
@@ -91,7 +91,7 @@ export function getGroupFormSchema(group) {
   return z
     .object({
       name: required,
-      description: optionalDescription,
+      description: description,
       subject: required,
       presenters: presentersInput,
       status: z.enum(['PLANNED', 'ACTIVE', 'CLOSED'], { error: 'Selecione o status.' }),

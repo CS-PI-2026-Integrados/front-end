@@ -37,6 +37,7 @@ export function GroupForm({ form, editing, persistedStatus, isSaving }) {
         <TextareaField
           id="group-description"
           label="Descrição"
+          required
           variant="modal"
           registration={register('description')}
           placeholder="Descreva os objetivos e a proposta do grupo"
