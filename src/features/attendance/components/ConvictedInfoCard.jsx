@@ -18,6 +18,8 @@ export function ConvictedInfoCard({ disabled = false, errors = {} }) {
     convicted,
     process,
     selectProcess,
+    noProcessDeclared,
+    declareNoProcess,
     canEdit,
     setCanEdit,
     updateField,
@@ -31,10 +33,35 @@ export function ConvictedInfoCard({ disabled = false, errors = {} }) {
   return (
     <div className="space-y-4">
       <ConvictedCpf convictedId={convicted.id} maskedCpf={convicted.cpf} disabled={disabled} />
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="attendance-no-process"
+            checked={noProcessDeclared}
+            disabled={disabled || convicted.processes.length > 0}
+            onCheckedChange={(checked) => declareNoProcess(checked === true)}
+            aria-describedby="attendance-no-process-description attendance-no-process-error"
+            aria-invalid={errors.noProcessDeclared ? true : undefined}
+          />
+          <Label htmlFor="attendance-no-process">Apenado sem processo</Label>
+        </div>
+        <p id="attendance-no-process-description" className="text-muted-foreground text-xs">
+          {convicted.processes.length > 0
+            ? 'A declaração não está disponível para apenados com processos vinculados, inclusive inativos.'
+            : 'Marque para declarar a ausência e continuar o atendimento sem processo.'}
+        </p>
+        <p
+          id="attendance-no-process-error"
+          role={errors.noProcessDeclared ? 'alert' : undefined}
+          className="text-destructive text-xs"
+        >
+          {errors.noProcessDeclared}
+        </p>
+      </div>
       <div className="space-y-1.5">
         <Label htmlFor="attendance-process">Processo Ativo</Label>
         <Select
-          disabled={disabled}
+          disabled={disabled || noProcessDeclared}
           value={process?.id || ''}
           onValueChange={(id) => selectProcess(processes.find((item) => item.id === id))}
         >
@@ -60,11 +87,16 @@ export function ConvictedInfoCard({ disabled = false, errors = {} }) {
           </p>
         )}
       </div>
-      {!processes.length && <p className="text-destructive">Nenhum processo ativo vinculado.</p>}
+      {!processes.length && !noProcessDeclared && (
+        <p className="text-muted-foreground text-sm">
+          Nenhum processo ativo vinculado. Se não houver vínculos, declare a ausência acima ou
+          vincule um processo pelo cadastro do apenado.
+        </p>
+      )}
       <div className="bg-muted rounded-md px-3 py-2.5">
         <p>
           <span className="text-muted-foreground">Processo:</span>{' '}
-          {process?.number || 'Não informado'}
+          {noProcessDeclared ? '-' : process?.number || 'Não informado'}
         </p>
         <p>
           <span className="text-muted-foreground">Situação:</span> {statusLabel || 'Não informada'}

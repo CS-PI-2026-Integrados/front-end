@@ -55,7 +55,9 @@ export function GroupDocumentList({ documents, onOpenGroup, onDownloadPdf }) {
       renderRow={(document) => (
         <>
           <TableCell className="font-medium">{document.convictedName}</TableCell>
-          <TableCell>{document.processNumber}</TableCell>
+          <TableCell>
+            {document.noProcessDeclared ? '-' : document.processNumber || 'Indisponível'}
+          </TableCell>
           <TableCell>
             <GroupNameButton
               document={document}

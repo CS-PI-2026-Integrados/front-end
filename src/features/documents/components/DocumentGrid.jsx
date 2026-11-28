@@ -14,7 +14,9 @@ export function DocumentGrid({ documents, renderMeta, renderActions }) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-foreground truncate font-semibold">{document.convictedName}</p>
-                <p className="text-muted-foreground text-xs">{document.processNumber}</p>
+                <p className="text-muted-foreground text-xs">
+                  {document.noProcessDeclared ? '-' : document.processNumber || 'Indisponível'}
+                </p>
                 {renderMeta?.(document)}
                 <p className="text-muted-foreground mt-0.5 text-xs">
                   {document.createdAt ? 'Comparecimento: ' : 'Emissão: '}

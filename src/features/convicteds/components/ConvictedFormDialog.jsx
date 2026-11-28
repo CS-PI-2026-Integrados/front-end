@@ -11,6 +11,8 @@ import { SelectField } from '@/shared/components/form-fields/SelectField'
 import { MaskedInputField } from '@/shared/components/form-fields/MaskedInputField'
 import { ImageUploadField } from '@/shared/components/form-fields/ImageUploadField'
 import { Button } from '@/shared/components/ui/button'
+import { Checkbox } from '@/shared/components/ui/checkbox'
+import { Label } from '@/shared/components/ui/label'
 import { stateOptions } from '@/shared/utils/states'
 
 const employmentOptions = [
@@ -37,6 +39,8 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
     formState: { errors, isSubmitting },
   } = form
   const disabled = isSubmitting || isProcessingPhoto
+  const noProcessDeclared = form.watch('noProcessDeclared')
+  const hasProcesses = Boolean(convicted?.processes?.length || form.watch('processes')?.length)
   const input = (name, label, props = {}) => (
     <InputField
       id={`convicted-${name}`}
@@ -218,13 +222,46 @@ export function ConvictedFormDialog({ open, onOpenChange, convicted = null, onSu
       <FormSection title="Processos">
         <Controller
           control={control}
+          name="noProcessDeclared"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="convicted-no-process"
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  disabled={disabled || hasProcesses}
+                  aria-describedby="convicted-no-process-description convicted-no-process-error"
+                  aria-invalid={errors.noProcessDeclared ? true : undefined}
+                />
+                <Label htmlFor="convicted-no-process">Apenado sem processo</Label>
+              </div>
+              <p id="convicted-no-process-description" className="text-muted-foreground text-xs">
+                {hasProcesses
+                  ? 'A declaração não está disponível para apenados com processos vinculados.'
+                  : 'Declare a ausência para continuar sem selecionar um processo. Para vincular um processo depois, desmarque esta opção.'}
+              </p>
+              <p
+                id="convicted-no-process-error"
+                role={errors.noProcessDeclared ? 'alert' : undefined}
+                className="text-destructive text-xs"
+              >
+                {errors.noProcessDeclared?.message}
+              </p>
+            </div>
+          )}
+        />
+        <Controller
+          control={control}
           name="processes"
           render={({ field }) => (
             <ProcessSelector
               processes={field.value}
-              onChange={field.onChange}
+              onChange={actions.setProcesses}
               onBlur={field.onBlur}
-              disabled={disabled}
+              disabled={disabled || noProcessDeclared}
               error={
                 errors.processes &&
                 (errors.processes.message ||

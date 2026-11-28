@@ -26,7 +26,9 @@ export function PdfPreviewModal({ document, isProcessing, error, onDownload, onV
           </p>
           <p>
             <span className="text-muted-foreground">Processo:</span>{' '}
-            <span className="font-medium">{document?.processNumber}</span>
+            <span className="font-medium">
+              {document?.noProcessDeclared ? '-' : document?.processNumber || 'Indisponível'}
+            </span>
           </p>
           <p>
             <span className="text-muted-foreground">Data do comparecimento:</span>{' '}

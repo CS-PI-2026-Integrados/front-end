@@ -47,7 +47,11 @@ export function ReceiptSuccessCard({
           {photo.error && <p className="text-destructive text-sm">{photo.error}</p>}
           <div className="w-full shrink-0 space-y-1 text-center">
             <p className="font-semibold">{convicted?.fullName || 'Apenado'}</p>
-            <p className="text-sm font-medium">{process?.number || 'Sem Processo Vinculado'}</p>
+            <p className="text-sm font-medium">
+              {receipt.noProcessDeclared
+                ? '-'
+                : receipt.processNumber || process?.number || 'Indisponível'}
+            </p>
             <p className="text-muted-foreground mt-1 font-mono text-xs break-all">
               Protocolo: {receipt.id}
             </p>

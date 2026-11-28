@@ -33,11 +33,16 @@ export function useReceiptFlow() {
     const missingFields = []
     if (!attendance.convicted)
       missingFields.push({ field: 'convictedId', message: 'Selecione um apenado.' })
-    else if (attendance.process?.status !== 'ACTIVE')
+    else if (attendance.noProcessDeclared && attendance.convicted.processes.length > 0)
+      missingFields.push({
+        field: 'noProcessDeclared',
+        message: 'Apenado com processos vinculados não pode declarar ausência de processo.',
+      })
+    else if (!attendance.noProcessDeclared && attendance.process?.status !== 'ACTIVE')
       missingFields.push({ field: 'processId', message: 'Selecione um processo ativo vinculado.' })
     if (missingFields.length) {
       setFields(missingFields)
-      setError('Selecione um apenado e um processo ativo vinculado.')
+      setError('Verifique a seleção do apenado e a informação de processo.')
       return
     }
     if (attendance.addressError) {
@@ -54,7 +59,8 @@ export function useReceiptFlow() {
       const receipt = await generateReceipt(
         {
           convictedId: attendance.convicted.id,
-          processId: attendance.process.id,
+          processId: attendance.noProcessDeclared ? null : attendance.process?.id,
+          noProcessDeclared: attendance.noProcessDeclared,
           address: attendance.convicted.address,
           phone: attendance.convicted.phone,
           employmentStatus: attendance.convicted.employmentStatus,
